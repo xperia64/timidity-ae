@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <FrameLayout
+        android:id="@+id/midiContainer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/seekBar"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/loopButton" >
+    </FrameLayout>
+
+    <ImageButton
+        android:id="@+id/previousButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:src="@drawable/ic_media_previous" />
+
+    <ImageButton
+        android:id="@+id/rewindButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_toRightOf="@+id/previousButton"
+        android:src="@drawable/ic_media_rew" />
+
+    <ImageButton
+        android:id="@+id/nextButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:src="@drawable/ic_media_next" />
+
+    <ImageButton
+        android:id="@+id/shuffleButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_alignTop="@+id/loopButton"
+        android:src="@drawable/ic_menu_forward" />
+
+    <ImageButton
+        android:id="@+id/stopButton"
+        android:layout_width="100dp"
+        android:layout_height="10dp"
+        android:layout_alignBottom="@+id/shuffleButton"
+        android:layout_alignTop="@+id/shuffleButton"
+        android:layout_centerHorizontal="true"
+        android:src="@drawable/ic_media_stop" />
+
+    <SeekBar
+        android:id="@+id/seekBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/previousButton"
+        android:layout_alignParentLeft="true"
+        android:layout_toLeftOf="@+id/timeCount" />
+
+    <ImageButton
+        android:id="@+id/playButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:src="@drawable/ic_media_play" />
+
+    <ImageButton
+        android:id="@+id/fastForwardButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_toLeftOf="@+id/nextButton"
+        android:src="@drawable/ic_media_ff" />
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:id="@+id/potato"
+        android:orientation="horizontal" >
+
+        <TextView
+            android:id="@+id/songTitle"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="marquee"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:gravity="center"
+            android:marqueeRepeatLimit="marquee_forever"
+            android:scrollHorizontally="true"
+            android:singleLine="true"
+            android:text=""
+            android:textSize="22sp" >
+            <requestFocus/>
+            </TextView>
+
+    </LinearLayout>
+
+    <ImageButton
+        android:id="@+id/loopButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/potato"
+        android:layout_toLeftOf="@+id/rewindButton"
+        android:src="@drawable/ic_menu_refresh" />
+
+    <TextView
+        android:id="@+id/timeCount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/nextButton"
+        android:layout_alignParentRight="true"
+        android:layout_alignTop="@+id/seekBar"
+        android:gravity="center"
+        android:paddingRight="5sp"
+        android:text="0:00/0:00"
+        android:textSize="16sp" />
+
+</RelativeLayout>

@@ -1,0 +1,243 @@
+/*******************************************************************************
+ * Copyright (C) 2014 xperia64 <xperiancedapps@gmail.com>
+ * 
+ * Copyright (C) 1999-2008 Masanao Izumo <iz@onicos.co.jp>
+ *     
+ * Copyright (C) 1995 Tuukka Toivonen <tt@cgs.fi>
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the GNU Public License v3.0
+ * which accompanies this distribution, and is available at
+ * http://www.gnu.org/licenses/gpl.html
+ ******************************************************************************/
+package com.xperia64.timidityae;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Locale;
+
+import com.xperia64.timidityae.FileBrowserDialog.FileBrowserDialogListener;
+import com.xperia64.timidityae.R;
+
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.ProgressDialog;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.os.AsyncTask;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemLongClickListener;
+import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.Toast;
+
+public class SoundfontDialog implements OnItemLongClickListener, FileBrowserDialogListener, SoundfontArrayAdapter.SoundfontArrayAdapterListener {
+
+	ArrayList<String> sfList;
+	ArrayList<String> tmpList;
+	Context context;
+	ListView mList;
+	LinearLayout mLayout;
+	SoundfontDialogListener mCallback;
+	public interface SoundfontDialogListener{
+		public void writeSoundfonts(ArrayList<String> l);
+	}
+	public void create(ArrayList<String> currList, SoundfontDialogListener sl, final Activity c, final LayoutInflater f, final String path)
+	{
+		sfList = new ArrayList<String>(currList.size());
+
+		for (String foo: currList) {
+		  sfList.add((String)foo);
+		}
+		context=c;
+		mCallback = sl;
+		AlertDialog.Builder b = new AlertDialog.Builder(context);
+		mLayout = (LinearLayout) f.inflate(R.layout.list, null);
+		mList = (ListView) mLayout.findViewById(android.R.id.list);
+		
+		SoundfontArrayAdapter fileList =
+				new SoundfontArrayAdapter(this, context, sfList);
+		mList.setAdapter(fileList);
+		mList.setOnItemLongClickListener(this);
+		b.setView(mLayout);
+		b.setCancelable(false);
+		b.setTitle(c.getResources().getString(R.string.sf_man));
+		b.setPositiveButton(c.getResources().getString(R.string.done), new DialogInterface.OnClickListener()
+		{
+			@Override public void onClick(DialogInterface dialog, int which) {mCallback.writeSoundfonts(sfList);}
+			});
+		b.setNeutralButton(c.getResources().getString(R.string.addcon), new DialogInterface.OnClickListener()
+		{
+			@Override public void onClick(DialogInterface dialog, int which) {}
+		});
+		b.setNegativeButton(c.getResources().getString(android.R.string.cancel), new DialogInterface.OnClickListener()
+		{
+			@Override public void onClick(DialogInterface dialog, int which) {dialog.dismiss();}
+			});
+		AlertDialog ddd = b.create();
+		ddd.show();
+		Button theButton = ddd.getButton(DialogInterface.BUTTON_NEUTRAL);
+		theButton.setOnClickListener(new View.OnClickListener() {@Override public void onClick(View v) {tmpList = new ArrayList<String>(); new FileBrowserDialog().create(0, Globals.fontFiles, SoundfontDialog.this, c, f, false, path);}});
+
+	}
+
+	@Override
+	public void setItem(final String path, int type) {
+		if(path.toLowerCase(Locale.US).endsWith(".sfark"))
+		{
+			AlertDialog.Builder be = new AlertDialog.Builder(context);
+			be.setCancelable(false);
+			be.setTitle("Extract sfArk?");
+			be.setMessage(String.format("%s must be extracted. Extract to %s?",path.substring(path.lastIndexOf('/')+1),path.substring(path.lastIndexOf('/')+1,path.lastIndexOf('.'))+".sf2"));
+			be.setNegativeButton(context.getResources().getString(android.R.string.cancel), new DialogInterface.OnClickListener(){
+
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					// TODO Auto-generated method stub
+					
+				}});
+			be.setPositiveButton(context.getResources().getString(android.R.string.ok), new DialogInterface.OnClickListener(){
+
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					// TODO Auto-generated method stub
+					AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
+						
+						ProgressDialog pd;
+						@Override
+						protected void onPreExecute() {
+							pd = new ProgressDialog(context);
+							pd.setTitle(context.getResources().getString(R.string.extract));
+							pd.setMessage("Extracting");
+							pd.setCancelable(false);
+							pd.setIndeterminate(true);
+							pd.show();
+						}
+							
+						@Override
+						protected Void doInBackground(Void... arg0) {
+							JNIHandler.decompressSFArk(path, path.substring(path.lastIndexOf('/')+1,path.lastIndexOf('.'))+".sf2");
+							return null;
+						}
+						
+						@Override
+						protected void onPostExecute(Void result) {
+							if(pd!=null)
+								pd.dismiss();
+							if(new File(path.substring(0,path.lastIndexOf('.'))+".sf2").exists())
+							{
+								tmpList.add(path.substring(0,path.lastIndexOf('.'))+".sf2");
+								AlertDialog.Builder bee = new AlertDialog.Builder(context);
+								bee.setCancelable(false);
+								bee.setTitle("Delete sfArk?");
+								bee.setMessage(String.format("Delete %?",path.substring(path.lastIndexOf('/')+1),path.substring(path.lastIndexOf('/')+1)));
+								bee.setNegativeButton(context.getResources().getString(android.R.string.cancel), new DialogInterface.OnClickListener(){
+
+									@Override
+									public void onClick(DialogInterface dialog, int which) {
+										// TODO Auto-generated method stub
+										
+									}});
+								bee.setPositiveButton(context.getResources().getString(android.R.string.ok), new DialogInterface.OnClickListener() {
+									
+									@Override
+									public void onClick(DialogInterface dialog, int which) {
+										// TODO Auto-generated method stub
+										new File(path).delete();
+									}
+								});
+							}
+							else
+								Toast.makeText(context, "Error extracting sfArk", Toast.LENGTH_SHORT);
+								//b.setEnabled(true);
+						}
+							
+					};
+					task.execute((Void[])null);
+					
+				}});
+			be.show();
+		}else{
+			tmpList.add(path);
+		}
+		
+	}
+	@Override
+	public void write() {
+		
+		sfList.addAll(tmpList);
+
+		SoundfontArrayAdapter fileList =
+				new SoundfontArrayAdapter(this, context, sfList);
+		mList.setAdapter(fileList);
+		mList.setOnItemLongClickListener(this);
+	}
+	@Override
+	public void ignore() {
+		tmpList=null;
+	}
+	@Override
+	public boolean onItemLongClick(AdapterView<?> arg0, View arg1, final int arg2,
+			long arg3) {
+		AlertDialog.Builder builderSingle = new AlertDialog.Builder(
+                context);
+        builderSingle.setIcon(R.drawable.ic_launcher);
+        builderSingle.setTitle(context.getResources().getString(R.string.sf_rem));
+        builderSingle.setCancelable(false);
+        builderSingle.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+			
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				dialog.dismiss();
+				
+			}
+		});
+        builderSingle.setPositiveButton(context.getResources().getString(R.string.sf_rem2), new DialogInterface.OnClickListener() {
+			
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				AlertDialog.Builder builderDouble = new AlertDialog.Builder(
+	                    context).setIcon(R.drawable.ic_launcher).setTitle(String.format(context.getResources().getString(R.string.sf_com), sfList.get(arg2).substring(sfList.get(arg2).lastIndexOf('/')+1))).setCancelable(false);
+				builderDouble.setPositiveButton(context.getResources().getString(R.string.yes),new DialogInterface.OnClickListener() {
+					
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						sfList.remove(arg2);
+
+						SoundfontArrayAdapter fileList =
+								new SoundfontArrayAdapter(SoundfontDialog.this, context, sfList);
+						mList.setAdapter(fileList);
+						mList.setOnItemLongClickListener(SoundfontDialog.this);
+						} 
+					});
+				builderDouble.setNegativeButton(context.getResources().getString(R.string.no), new DialogInterface.OnClickListener() {
+					
+					@Override
+					public void onClick(DialogInterface dialog, int which) {dialog.dismiss();}});
+				builderDouble.show();
+				dialog.dismiss();
+				
+			}
+		});
+        builderSingle.show();
+		return true;
+	}
+
+	@Override
+	public void setEnabled(int position, boolean yes) {
+		String pos = sfList.get(position);
+		if(pos.startsWith("#")&&yes)
+		{
+			pos = pos.substring(1);
+			sfList.set(position, pos);
+		}else if(!pos.startsWith("#")&&!yes)
+		{
+			sfList.set(position, "#"+pos);
+		}
+	}
+	
+	
+
+}

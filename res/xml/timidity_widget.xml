@@ -1,0 +1,13 @@
+<!--  android:configure="com.xperia64.timidityae.TimidityAEWidgetConfigure" -->
+<!--  android:previewImage="@drawable/timidity" -->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:minWidth="250dp"
+    android:minHeight="40dp"
+    android:updatePeriodMillis="86400000"
+   
+    android:initialLayout="@layout/music_notification"
+    
+    android:resizeMode="horizontal|vertical"
+    android:widgetCategory="keyguard"
+    android:initialKeyguardLayout="@layout/music_notification">
+</appwidget-provider>

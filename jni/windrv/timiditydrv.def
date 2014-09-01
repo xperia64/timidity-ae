@@ -1,0 +1,9 @@
+LIBRARY      "timiditydrv.dll"
+	EXETYPE NT
+EXPORTS
+	DllCanUnloadNow  PRIVATE
+	DllGetClassObject PRIVATE
+	DllRegisterServer PRIVATE
+	DllUnregisterServer PRIVATE
+	DriverProc PRIVATE
+	modMessage PRIVATE

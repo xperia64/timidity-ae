@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/mainact"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent" 
+    android:descendantFocusability="beforeDescendants"
+android:focusableInTouchMode="true" >
+<RelativeLayout 
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+
+    <Spinner
+        android:id="@+id/instSpin"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/defInstr" />
+
+    <CheckBox
+        android:id="@+id/defInstr"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/defVol"
+        android:layout_alignParentTop="true"
+        android:checked="true"
+        android:text="@string/trk_dinst" />
+
+    <SeekBar
+        android:id="@+id/volSeek"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/defVol"
+        android:layout_toLeftOf="@+id/txtVol" />
+
+    <CheckBox
+        android:id="@+id/defVol"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/volTxt"
+        android:layout_alignBottom="@+id/volTxt"
+        android:layout_centerHorizontal="true"
+        android:checked="true"
+        android:text="@string/trk_dvol" />
+
+    <EditText
+        android:id="@+id/txtVol"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/defVol"
+        android:layout_toRightOf="@+id/defVol"
+        android:ems="10"
+        android:inputType="number"
+        android:text="127" />
+
+    <TextView
+        android:id="@+id/instTxt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/defInstr"
+        android:layout_alignBottom="@+id/defInstr"
+        android:layout_toLeftOf="@+id/defInstr"
+        android:text="@string/trk_inst" />
+
+    <TextView
+        android:id="@+id/volTxt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/instTxt"
+        android:layout_below="@+id/instSpin"
+        android:text="@string/trk_vol" />
+
+</RelativeLayout>
+</ScrollView>

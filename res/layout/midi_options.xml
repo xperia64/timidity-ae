@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/mainact"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent" 
+    android:descendantFocusability="beforeDescendants"
+android:focusableInTouchMode="true" >
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <Button
+        android:id="@+id/keyUp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/keyDown"
+        android:layout_alignParentTop="true"
+        android:layout_alignRight="@+id/keyDown"
+        android:text="@string/mop_up" />
+
+    <Button
+        android:id="@+id/speedUp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/slowDown"
+        android:layout_alignBottom="@+id/slowDown"
+        android:layout_alignParentRight="true"
+        android:layout_toRightOf="@+id/keyDown"
+        android:text="@string/mop_fast" />
+
+    <Button
+        android:id="@+id/keyDown"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/slowDown"
+        android:layout_centerHorizontal="true"
+        android:text="@string/mop_down" />
+
+    <Button
+        android:id="@+id/slowDown"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/keyUp"
+        android:layout_toLeftOf="@+id/keyUp"
+        android:text="@string/mop_slow" />
+
+    <TextView
+        android:id="@+id/textView1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/keyDown"
+        android:layout_centerHorizontal="true"
+        android:text="@string/mop_resamp"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    <Spinner
+        android:id="@+id/resampSpinner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/textView1" />
+
+    <Button
+        android:id="@+id/vplus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/keyDown"
+        android:layout_alignLeft="@+id/speedUp"
+        android:layout_alignParentRight="true"
+        android:layout_alignTop="@+id/keyDown"
+        android:text="@string/mop_vplus" />
+
+    <Button
+        android:id="@+id/vminus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/keyDown"
+        android:layout_alignParentLeft="true"
+        android:layout_alignRight="@+id/slowDown"
+        android:layout_alignTop="@+id/keyDown"
+        android:text="@string/mop_vminus" />
+
+</RelativeLayout>
+</ScrollView>
