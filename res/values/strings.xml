@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
     <string name = "app_name">Timidity AE</string>
     <string name = "action_settings">Settings</string>
     <string name = "action_help">Help</string>
@@ -44,6 +43,8 @@
 	<string name = "sett_mandir">Manually Enter Data Folder</string>
 	<string name = "sett_mandir_sum">Manually enter Timidity AE\'s system folder</string>
 	<string name = "sett_other">Other Settings</string>
+	<string name = "sett_kpw">Keep Partial Conversions</string>
+	<string name = "sett_kpw_sum">Keep partially converted WAV files instead of deleting them</string>
 	
 	<string name = "intErr1">File not found/unsupported format</string>
 	<string name = "intErr2">Unsupported protocol; Timidity AE does not support streaming</string>
@@ -67,6 +68,11 @@
 	<string name = "mop_vplus">Voices+</string>
 	<string name = "mop_vminus">Voices-</string>
 	<string name = "mop_resamp">Resampling Algorithm</string>
+	<string name = "mop_tempo">Tempo: %2$d BPM (%1$d%%)</string>
+	<string name = "mop_pitch">Pitch: %s</string>
+	<string name = "mop_voice">Voices: %1$d/%2$d</string>
+	<string name = "mop_export">Export to WAV</string>
+	
 	<string name = "trk_dinst">Default Instrument</string>
 	<string name = "trk_dvol">Default Volume</string>
 	<string name = "trk_inst">Instrument</string>
@@ -121,6 +127,13 @@
 	<string name = "helpt">Timidity AE Help</string>
 	<string name = "helper">Frequently Asked Questions\n\n
 	    
+	    Q: How do I export to a WAV file?\n
+	    A: Long press your file in the file browser or press the export button in the TiMidity++ Controls dialog box.\n\n
+	    
+	    Q: Why is Timidity AE Skipping?\n
+	    A: Interpreting MIDI files can be CPU intensive. Try increasing the buffer size. If that fails, try to export the problematic MIDI file as WAV.\n
+	    If you experience skipping only when your device is asleep, your device may be underclocking in an attempt to save power. Timidity AE tries to prevent this, but some devices don\'t respond. If you are rooted, try increasing the minimum CPU speed.\n\n
+	    
 	    Q: Why wont my MOD file play?\n
 	    A: Because the core of Timidity AE was changed to TiMidity++, TiMidity++ handles the playback of MOD files instead of modplug. As such, MOD compatibility has changed. We apologize for any inconvenience this may have caused and hope you enjoy the other new features.\n\n
 	    
@@ -144,6 +157,7 @@
 	    
 	    Q: How do I shuffle playlists?\n
 	    A: Press the upper right button of the player to toggle shuffle mode.
+	    
 	</string>
 	
 <!-- MusicService Commands (DO NOT TRANSLATE) -->
@@ -155,7 +169,9 @@
 <string name = "msrv_loopmode" translatable="false">com.xperia64.timidityae.MusicService_LoopMode</string>
 <string name = "msrv_shufmode" translatable="false">com.xperia64.timidityae.MusicService_ShuffleMode</string>
 <string name = "msrv_seektime" translatable="false">com.xperia64.timidityae.MusicService_SeekTime</string>
-
+<string name = "msrv_infile" translatable="false">com.xperia64.timidityae.MusicService_InputFile</string>
+<string name = "msrv_outfile" translatable="false">com.xperia64.timidityae.MusicService_OutputFile</string>
+<string name = "msrv_reset" translatable="false">com.xperia64.timidityae.MusicService_Reset</string>
 <!-- TimidityActivity Commands (DO NOT TRANSLATE) -->
 <string name = "ta_rec" translatable="false">com.xperia64.timidityae.TimidityActivity_RECEIVER</string>
 <string name = "ta_cmd" translatable="false">com.xperia64.timidityae.TimidityActivity_CMD</string>
@@ -181,12 +197,12 @@
     <item>2</item>
 </string-array>
 <string-array name="resamp_items">
-    <item>CSPLINE</item>
-    <item>LAGRANGE</item>
-    <item>GAUSS</item>
-    <item>NEWTON</item>
-    <item>LINEAR</item>
-    <item>NONE</item>
+    <item>Cubic Spline</item>
+    <item>Lagrange</item>
+    <item>Gaussian</item>
+    <item>Newton</item>
+    <item>Linear</item>
+    <item>None</item>
 </string-array>
 <string-array name="background_resamp_items">
     <item>0</item>
@@ -391,7 +407,4 @@
 	                    <item>80. Mute Triangle</item>
 	                    <item>81. Open Triangle</item>
 </string-array>
-
-
-
 </resources>

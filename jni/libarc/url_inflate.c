@@ -28,7 +28,6 @@
 #include "mblock.h"
 #include "zip.h"
 
-extern int errno;
 typedef struct _URL_inflate
 {
     char common[sizeof(struct _URL)];

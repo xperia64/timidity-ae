@@ -47,7 +47,6 @@ public class SoundfontDialog implements OnItemLongClickListener, FileBrowserDial
 	public void create(ArrayList<String> currList, SoundfontDialogListener sl, final Activity c, final LayoutInflater f, final String path)
 	{
 		sfList = new ArrayList<String>(currList.size());
-
 		for (String foo: currList) {
 		  sfList.add((String)foo);
 		}
@@ -79,7 +78,7 @@ public class SoundfontDialog implements OnItemLongClickListener, FileBrowserDial
 		AlertDialog ddd = b.create();
 		ddd.show();
 		Button theButton = ddd.getButton(DialogInterface.BUTTON_NEUTRAL);
-		theButton.setOnClickListener(new View.OnClickListener() {@Override public void onClick(View v) {tmpList = new ArrayList<String>(); new FileBrowserDialog().create(0, Globals.fontFiles, SoundfontDialog.this, c, f, false, path);}});
+		theButton.setOnClickListener(new View.OnClickListener() {@Override public void onClick(View v) {tmpList = new ArrayList<String>(); new FileBrowserDialog().create(0, Globals.fontFiles, SoundfontDialog.this, c, f, false, path, c.getResources().getString(R.string.fb_add));}});
 
 	}
 
@@ -95,14 +94,12 @@ public class SoundfontDialog implements OnItemLongClickListener, FileBrowserDial
 
 				@Override
 				public void onClick(DialogInterface dialog, int which) {
-					// TODO Auto-generated method stub
 					
 				}});
 			be.setPositiveButton(context.getResources().getString(android.R.string.ok), new DialogInterface.OnClickListener(){
 
 				@Override
 				public void onClick(DialogInterface dialog, int which) {
-					// TODO Auto-generated method stub
 					AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
 						
 						ProgressDialog pd;
@@ -137,14 +134,12 @@ public class SoundfontDialog implements OnItemLongClickListener, FileBrowserDial
 
 									@Override
 									public void onClick(DialogInterface dialog, int which) {
-										// TODO Auto-generated method stub
 										
 									}});
 								bee.setPositiveButton(context.getResources().getString(android.R.string.ok), new DialogInterface.OnClickListener() {
 									
 									@Override
 									public void onClick(DialogInterface dialog, int which) {
-										// TODO Auto-generated method stub
 										new File(path).delete();
 									}
 								});
@@ -229,13 +224,9 @@ public class SoundfontDialog implements OnItemLongClickListener, FileBrowserDial
 	public void setEnabled(int position, boolean yes) {
 		String pos = sfList.get(position);
 		if(pos.startsWith("#")&&yes)
-		{
-			pos = pos.substring(1);
-			sfList.set(position, pos);
-		}else if(!pos.startsWith("#")&&!yes)
-		{
+			sfList.set(position, pos.substring(1));
+		else if(!pos.startsWith("#")&&!yes)
 			sfList.set(position, "#"+pos);
-		}
 	}
 	
 	

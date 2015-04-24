@@ -59,7 +59,7 @@
 #include "wrd.h"
 #include "aq.h"
 #include "freq.h"
-//#include <android/log.h>
+#include <android/log.h>
 #include "quantity.h"
 extern int convert_mod_to_midi_file(MidiEvent * ev);
 
@@ -6230,8 +6230,9 @@ int check_apply_control(void)
 
 static void voice_increment(int n)
 {
-    int i;
-    for(i = 0; i < n; i++)
+	int theta = n; // Copy, because this value gets nuked
+	int i;
+    for(i = 0; i < theta; i++)
     {
 	if(voices == max_voices)
 	    break;
@@ -6240,17 +6241,18 @@ static void voice_increment(int n)
 	voice[voices].chorus_link = voices;
 	voices++;
     }
-    if(n > 0)
+    if(theta > 0 )
 	ctl_mode_event(CTLE_MAXVOICES, 1, voices, 0);
 }
 
 static void voice_decrement(int n)
 {
+	int theta = n; // Copy, because this value gets nuked
     int i, j, lowest;
     int32 lv, v;
 
     /* decrease voice */
-    for(i = 0; i < n && voices > 0; i++)
+    for(i = 0; i < theta && voices > 0; i++)
     {
 	voices--;
 	if(voice[voices].status == VOICE_FREE)
@@ -6296,7 +6298,7 @@ static void voice_decrement(int n)
     }
     if(upper_voices > voices)
 	upper_voices = voices;
-    if(n > 0)
+    if(theta > 0)
 	ctl_mode_event(CTLE_MAXVOICES, 1, voices, 0);
 }
 
@@ -6443,9 +6445,10 @@ static int apply_controls(void)
 	  case RC_JUMP:
 		jumping=1;
 		realjumping=1;
-		//__android_log_print(ANDROID_LOG_DEBUG, "TIMIDITY", "Seeking to: %d",val);
-		if(val>100000000||val<0) // Wat.
-			val=0;
+		//__android_log_print(ANDROID_LOG_DEBUG, "TIMIDITY", "Seeking to: %d out of %d",val, sample_count);
+		//val&=0xFFFFFF; //This shouldn't be huge.
+		//if(val>100000000||val<0) // Wat.
+		//	val=0;
 	    if(play_pause_flag)
 	    {
 		midi_restart_time = val;
@@ -6543,11 +6546,13 @@ static int apply_controls(void)
 
 	  case RC_SPEEDUP:
 		jumping=1;
+		
 	    r = 1.0;
 	    for(i = 0; i < val; i++)
 		r *= SPEED_CHANGE_RATE;
 	    sync_restart(0);
 	    midi_time_ratio /= r;
+		sample_count = (int32)(sample_count / r + 0.5); 
 	    current_sample = (int32)(current_sample / r + 0.5);
 	    trace_offset(current_sample);
 		jump_flag = 1;
@@ -6561,6 +6566,7 @@ static int apply_controls(void)
 		r *= SPEED_CHANGE_RATE;
 	    sync_restart(0);
 	    midi_time_ratio *= r;
+		sample_count = (int32)(sample_count * r + 0.5); // We get more samples as we slow down. The original timidity++ didn't have this
 	    current_sample = (int32)(current_sample * r + 0.5);
 	    trace_offset(current_sample);
 		jump_flag = 1;

@@ -16,6 +16,8 @@ import java.util.List;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -39,10 +41,10 @@ import com.xperia64.timidityae.R;
 
 public class TrackFragment extends SherlockFragment {
 	ArrayList<Integer> localInst = new ArrayList<Integer>();
-	ArrayList<Boolean> custInst = new ArrayList<Boolean>();
+
 	ArrayList<Integer> localVol = new ArrayList<Integer>();
-	ArrayList<Boolean> custVol = new ArrayList<Boolean>();
-	ArrayList<Boolean> localDrum = new ArrayList<Boolean>();
+
+	//ArrayList<Boolean> JNIHandler.drums = new ArrayList<Boolean>();
 	ArrayAdapter<String> fileList;
 	boolean fromUser;
 	ListView channelList;
@@ -65,7 +67,7 @@ public class TrackFragment extends SherlockFragment {
 				new ArrayAdapter<String>(getActivity(), R.layout.row);
 		for(int i = 0; i<JNIHandler.MAX_CHANNELS; i++)
 		{
-			fileList.add(String.format(getActivity().getResources().getString(R.string.trk_form),(getActivity().getResources().getString(localDrum.get(i)?R.string.trk_drum:R.string.trk_inst2)),(i+1),localDrum.get(i)?0:localInst.get(i)+1, localVol.get(i)));
+			fileList.add(String.format(getActivity().getResources().getString(R.string.trk_form),(getActivity().getResources().getString(JNIHandler.drums.get(i)?R.string.trk_drum:R.string.trk_inst2)),(i+1),JNIHandler.drums.get(i)?0:localInst.get(i)+1, localVol.get(i)));
 		}
 		channelList.setAdapter(fileList);
 		channelList.setOnItemClickListener(new OnItemClickListener()
@@ -77,11 +79,11 @@ public class TrackFragment extends SherlockFragment {
 				AlertDialog.Builder b = new AlertDialog.Builder(getActivity());
 				View v = getActivity().getLayoutInflater().inflate(R.layout.track_dialog, null);
 				final Spinner x = (Spinner) v.findViewById(R.id.instSpin);
-				x.setClickable(custInst.get(arg2)&&!localDrum.get(arg2));
-				x.setEnabled(custInst.get(arg2)&&!localDrum.get(arg2));
+				x.setClickable(JNIHandler.custInst.get(arg2)&&!JNIHandler.drums.get(arg2));
+				x.setEnabled(JNIHandler.custInst.get(arg2)&&!JNIHandler.drums.get(arg2));
 				List<String> arrayAdapter = new ArrayList<String>();
-				 final int offset=(!localDrum.get(arg2))?0:34;
-	                if(!localDrum.get(arg2))
+				 final int offset=(!JNIHandler.drums.get(arg2))?0:34;
+	                if(!JNIHandler.drums.get(arg2))
 	                {
 	                	for(String inst : getActivity().getResources().getStringArray(R.array.midi_instruments))
 	                		arrayAdapter.add(inst);
@@ -92,18 +94,18 @@ public class TrackFragment extends SherlockFragment {
 				ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(getActivity(),
 					android.R.layout.simple_spinner_item, arrayAdapter);
 				dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-				if(!localDrum.get(arg2))
+				if(!JNIHandler.drums.get(arg2))
 				{x.setAdapter(dataAdapter);
 				x.setSelection(localInst.get(arg2)-offset);
 				}
 				final EditText txtVol = (EditText) v.findViewById(R.id.txtVol);
 				txtVol.setText(Integer.toString(localVol.get(arg2)));
-				txtVol.setClickable(custVol.get(arg2));
-				txtVol.setEnabled(custVol.get(arg2));
+				txtVol.setClickable(JNIHandler.custVol.get(arg2));
+				txtVol.setEnabled(JNIHandler.custVol.get(arg2));
 				
 				final SeekBar y = (SeekBar) v.findViewById(R.id.volSeek);
-				y.setClickable(custVol.get(arg2));
-				y.setEnabled(custVol.get(arg2));
+				y.setClickable(JNIHandler.custVol.get(arg2));
+				y.setEnabled(JNIHandler.custVol.get(arg2));
 				y.setMax(127);
 				y.setProgress(localVol.get(arg2));
 				y.setOnSeekBarChangeListener(new OnSeekBarChangeListener()
@@ -131,24 +133,24 @@ public class TrackFragment extends SherlockFragment {
 			        	{
 			        		if(s.length()>0)
 			        		{
-			        			
 			        		int numm = Integer.parseInt(s.toString());
 			        		if(numm>127)
 			        		{
 			        			fromUser=true;
 			        			numm=127;
 			        		}
-			        	
 			        		if(numm<0)
-			        		{	fromUser=true;
+			        		{
+			        			fromUser=true;
 			        			numm=0;
 			        		}
 			        		if(fromUser)
 			        		{
 			        			txtVol.setText(Integer.toString(numm));
 			        		}
+			        		fromUser=true;
 			            	y.setProgress(numm);
-			            	fromUser=true;
+			            	fromUser=false;
 			        		}
 			        	}else{
 			        		fromUser=false;
@@ -158,8 +160,8 @@ public class TrackFragment extends SherlockFragment {
 			        public void onTextChanged(CharSequence s, int start, int before, int count){}
 			    }); 
 				final CheckBox inst = (CheckBox) v.findViewById(R.id.defInstr);
-				inst.setEnabled(!localDrum.get(arg2));
-				inst.setChecked(!custInst.get(arg2));
+				inst.setEnabled(!JNIHandler.drums.get(arg2));
+				inst.setChecked(!JNIHandler.custInst.get(arg2));
 				inst.setOnCheckedChangeListener(new OnCheckedChangeListener(){
 
 					@Override
@@ -172,8 +174,8 @@ public class TrackFragment extends SherlockFragment {
 					
 				});
 				final CheckBox vol = (CheckBox) v.findViewById(R.id.defVol);
-				vol.setChecked(!custVol.get(arg2));
-				//System.out.println("Def inst: "+(!custInst.get(arg2)?"true":"false")+" def vol: "+(!custVol.get(arg2)?"true":"false"));
+				vol.setChecked(!JNIHandler.custVol.get(arg2));
+				//System.out.println("Def inst: "+(!JNIHandler.custInst.get(arg2)?"true":"false")+" def vol: "+(!JNIHandler.custVol.get(arg2)?"true":"false"));
 				vol.setOnCheckedChangeListener(new OnCheckedChangeListener(){
 
 					@Override
@@ -187,6 +189,8 @@ public class TrackFragment extends SherlockFragment {
 					}
 					
 				});
+				if (Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH)
+					v.setBackgroundColor(Globals.theme==1?Color.WHITE:Color.BLACK);
 				b.setView(v);
 				b.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener()
 				{
@@ -194,10 +198,10 @@ public class TrackFragment extends SherlockFragment {
 					@Override
 					public void onClick(DialogInterface dialog, int which) {
 						
-						custInst.set(arg2, !inst.isChecked());
-						custVol.set(arg2, !vol.isChecked());
-						JNIHandler.setChannelVolumeTimidity(arg2|(custVol.get(arg2)?0x800:0x8000), y.getProgress());
-						JNIHandler.setChannelTimidity(arg2|(custInst.get(arg2)?0x800:0x8000), x.getSelectedItemPosition());
+						JNIHandler.custInst.set(arg2, !inst.isChecked());
+						JNIHandler.custVol.set(arg2, !vol.isChecked());
+						JNIHandler.setChannelVolumeTimidity(arg2|(JNIHandler.custVol.get(arg2)?0x800:0x8000), y.getProgress());
+						JNIHandler.setChannelTimidity(arg2|(JNIHandler.custInst.get(arg2)?0x800:0x8000), x.getSelectedItemPosition());
 						if(!JNIHandler.paused&&Globals.isPlaying==0)
 							JNIHandler.seekTo(JNIHandler.currTime);
 						//bigCounter=12;
@@ -220,9 +224,6 @@ public class TrackFragment extends SherlockFragment {
 	{
 		localInst = new ArrayList<Integer>();
 		localVol = new ArrayList<Integer>();
-		localDrum = new ArrayList<Boolean>();
-		custInst = new ArrayList<Boolean>();
-		custVol = new ArrayList<Boolean>();
 		if(ddd!=null)
 		{
 			if(ddd.isShowing())
@@ -238,15 +239,6 @@ public class TrackFragment extends SherlockFragment {
 		for(Integer x : JNIHandler.volumes)
 		{
 			localVol.add(x);
-		}
-		for(Boolean x : JNIHandler.drums)
-		{
-			localDrum.add(x);
-		}
-		for(int i = 0; i<JNIHandler.MAX_CHANNELS; i++)
-		{
-			custInst.add(false);
-			custVol.add(false);
 		}
 	}
 	public void updateList()
@@ -276,14 +268,6 @@ public class TrackFragment extends SherlockFragment {
 					needUpdate=true;
 				}
 			}
-			if(i<localDrum.size())
-			{
-				if(localDrum.get(i)!=JNIHandler.drums.get(i))
-				{
-					localDrum.set(i, JNIHandler.drums.get(i));
-					needUpdate=true;
-				}
-			}
 		}
 		if(needUpdate)	
 		{
@@ -292,7 +276,7 @@ public class TrackFragment extends SherlockFragment {
 			fileList.clear();
 				for(int i = 0; i<JNIHandler.MAX_CHANNELS; i++)
 				{
-					fileList.add(String.format(getActivity().getResources().getString(R.string.trk_form),(getActivity().getResources().getString(localDrum.get(i)?R.string.trk_drum:R.string.trk_inst2)),(i+1),localDrum.get(i)?0:localInst.get(i)+1, localVol.get(i)));
+					fileList.add(String.format(getActivity().getResources().getString(R.string.trk_form),(getActivity().getResources().getString(JNIHandler.drums.get(i)?R.string.trk_drum:R.string.trk_inst2)),(i+1),JNIHandler.drums.get(i)?0:localInst.get(i)+1, localVol.get(i)));
 				}
 				fileList.notifyDataSetChanged(); 
 		}

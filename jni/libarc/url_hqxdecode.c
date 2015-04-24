@@ -33,7 +33,6 @@
 
 #define DECODEBUFSIZ 255 /* Must be power of 3 */
 #define INFOBYTES 128
-extern int errno;
 
 typedef struct _URL_hqxdecode
 {

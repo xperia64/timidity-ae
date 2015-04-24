@@ -14,7 +14,10 @@ package com.xperia64.timidityae;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
+import com.actionbarsherlock.app.SherlockPreferenceActivity;
+import com.actionbarsherlock.view.MenuItem;
 import com.xperia64.timidityae.FileBrowserDialog.FileBrowserDialogListener;
 import com.xperia64.timidityae.SoundfontDialog.SoundfontDialogListener;
 import com.xperia64.timidityae.R;
@@ -25,23 +28,30 @@ import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.Preference.OnPreferenceClickListener;
-import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
 import android.text.TextUtils;
-import android.view.KeyEvent;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.ViewGroup;
+import android.view.ViewParent;
 import android.widget.BaseAdapter;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.UriPermission;
 import android.media.AudioTrack;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-public class SettingsActivity extends PreferenceActivity implements FileBrowserDialogListener, SoundfontDialogListener {
+public class SettingsActivity extends SherlockPreferenceActivity implements FileBrowserDialogListener, SoundfontDialogListener {
 	
 	public static SettingsActivity mInstance = null;
 	private ArrayList<String> tmpSounds;
@@ -54,6 +64,7 @@ public class SettingsActivity extends PreferenceActivity implements FileBrowserD
 	private CheckBoxPreference showVids;
 	private Preference defaultFoldPreference;
 	private Preference reinstallSoundfont;
+	private Preference lolPref;
 	private EditTextPreference manHomeFolder;
 	// -- needs restart below -- 
 	private CheckBoxPreference manTcfg;
@@ -65,21 +76,23 @@ public class SettingsActivity extends PreferenceActivity implements FileBrowserD
 	private EditTextPreference bufferSize;
 	private Preference dataFoldPreference;
 	private EditTextPreference manDataFolder;
-	
 	//private PreferenceScreen ds;
 	private PreferenceScreen tplus;
 	// -- needs restart above -- 
 	private CheckBoxPreference nativeMidi;
+	private CheckBoxPreference keepWav;
 	private SharedPreferences prefs;
 	        @SuppressWarnings({ "deprecation", "unchecked" })
 			@Override
 	        protected void onCreate(Bundle savedInstanceState) {
 	        	mInstance = this;
 	        	// Themes are borked.
+	        	// TODO nix Sherlock
 	        	if (Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH){
 	    		   this.setTheme((Globals.theme==1)?android.R.style.Theme_Holo_Light_DarkActionBar:android.R.style.Theme_Holo);
 	    	   }
 	        	super.onCreate(savedInstanceState);
+	        	getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 	                addPreferencesFromResource(R.layout.settings);
 	                prefs = PreferenceManager
 	    	                .getDefaultSharedPreferences(getBaseContext());
@@ -99,12 +112,13 @@ public class SettingsActivity extends PreferenceActivity implements FileBrowserD
 	                rates = (ListPreference) findPreference("tplusRate");
 	                bufferSize = (EditTextPreference) findPreference("tplusBuff");
 	                //nativeMidi = (CheckBoxPreference) findPreference("nativeMidiSwitch");
-	                //ds = (PreferenceScreen) findPreference("dsKey");
+	               // ds = (PreferenceScreen) findPreference("dsKey");
 	                tplus = (PreferenceScreen) findPreference("tplusKey");
 	                nativeMidi = (CheckBoxPreference) findPreference("nativeMidiSwitch");
+	                keepWav = (CheckBoxPreference) findPreference("keepPartialWav");
 	                sfPref.setEnabled(!manTcfg.isChecked());
-	                
-	                
+	                lolPref = findPreference("lolWrite");
+
 	                hiddenFold.setOnPreferenceChangeListener(new OnPreferenceChangeListener(){
 
 						@Override
@@ -138,14 +152,42 @@ public class SettingsActivity extends PreferenceActivity implements FileBrowserD
 						}
 	                	
 	                });
+	                keepWav.setOnPreferenceChangeListener(new OnPreferenceChangeListener(){
+
+						@Override
+						public boolean onPreferenceChange(Preference arg0,
+								Object arg1) {
+								Globals.keepWav=(Boolean)arg1;
+							return true;
+						}
+	                	
+	                });
 	                defaultFoldPreference.setOnPreferenceClickListener(new OnPreferenceClickListener() {
 	                        public boolean onPreferenceClick(Preference preference) {
 	                            // dialog code here
 	                        	
-	                        	new FileBrowserDialog().create(3, null, SettingsActivity.this, SettingsActivity.this, SettingsActivity.this.getLayoutInflater(), true, prefs.getString("defaultPath", Environment.getExternalStorageDirectory().getAbsolutePath()));
+	                        	new FileBrowserDialog().create(3, null, SettingsActivity.this, SettingsActivity.this, SettingsActivity.this.getLayoutInflater(), true, prefs.getString("defaultPath", Environment.getExternalStorageDirectory().getAbsolutePath()), getResources().getString(R.string.fb_add));
 	                            return true;
 	                        }
 	                    });
+	                if(lolPref!=null)
+	                lolPref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+                        public boolean onPreferenceClick(Preference preference) {
+                            // dialog code here
+                        	List<UriPermission> permissions = getContentResolver().getPersistedUriPermissions();
+                			if(!(permissions==null||permissions.isEmpty()))
+                			{
+                				for(UriPermission p : permissions)
+                				{
+                					getContentResolver().releasePersistableUriPermission(p.getUri(), Intent.FLAG_GRANT_READ_URI_PERMISSION |
+                	    	                Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                				}
+                			}
+                        	Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+    					    startActivityForResult(intent, 42);
+                            return true;
+                        }
+                    });
 	                reinstallSoundfont.setOnPreferenceClickListener(new OnPreferenceClickListener(){
 
 						@Override
@@ -165,7 +207,11 @@ public class SettingsActivity extends PreferenceActivity implements FileBrowserD
 									
 								@Override
 								protected Void doInBackground(Void... arg0) {
-									Globals.extract8Rock(getAssets());
+									
+									if(Globals.extract8Rock(SettingsActivity.this)!=777)
+									{
+										Toast.makeText(SettingsActivity.this, "Could not extrct default soundfont", Toast.LENGTH_SHORT);
+									}
 									return null;
 								}
 								
@@ -188,7 +234,7 @@ public class SettingsActivity extends PreferenceActivity implements FileBrowserD
 	                        public boolean onPreferenceClick(Preference preference) {
 	                            // dialog code here
 	                        	needRestart=true;
-	                        	new FileBrowserDialog().create(4, null, SettingsActivity.this, SettingsActivity.this, SettingsActivity.this.getLayoutInflater(), true, prefs.getString("defaultPath", Environment.getExternalStorageDirectory().getAbsolutePath()));
+	                        	new FileBrowserDialog().create(4, null, SettingsActivity.this, SettingsActivity.this, SettingsActivity.this.getLayoutInflater(), true, prefs.getString("dataDir", Environment.getExternalStorageDirectory().getAbsolutePath()), getResources().getString(R.string.fb_add));
 	                            return true;
 	                        }
 	                    });
@@ -270,6 +316,8 @@ public class SettingsActivity extends PreferenceActivity implements FileBrowserD
 	                //System.out.println("Buffsize is: "+buffSize);
 	                Globals.updateBuffers(Globals.updateRates());
 	                int[] values = Globals.updateRates();
+	                if(values!=null)
+	                {
 	                CharSequence[] hz = new CharSequence[values.length];
 	                CharSequence[] hzItems = new CharSequence[values.length];
 	                for(int i = 0; i<values.length; i++)
@@ -281,6 +329,7 @@ public class SettingsActivity extends PreferenceActivity implements FileBrowserD
 	                rates.setEntryValues(hzItems);
 	                rates.setDefaultValue(Integer.toString(AudioTrack.getNativeOutputSampleRate(AudioTrack.MODE_STREAM)));
 	                rates.setValue(prefs.getString("tplusRate",Integer.toString(AudioTrack.getNativeOutputSampleRate(AudioTrack.MODE_STREAM))));
+	                }
 	                bufferSize.setOnPreferenceChangeListener(new OnPreferenceChangeListener(){
 
 						@Override
@@ -398,9 +447,72 @@ public class SettingsActivity extends PreferenceActivity implements FileBrowserD
 	                
 	        }
 	        
+	        @SuppressWarnings("deprecation")
 			@Override
-	    	public boolean onKeyDown(int KeyCode, KeyEvent event) {
-	    	    if(KeyCode == KeyEvent.KEYCODE_BACK){
+	        public boolean onPreferenceTreeClick(PreferenceScreen preferenceScreen, Preference preference) {
+	            super.onPreferenceTreeClick(preferenceScreen, preference);
+
+	            // If the user has clicked on a preference screen, set up the action bar
+	            if (Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH){
+		    		   
+		    	   
+	            if (preference instanceof PreferenceScreen) {
+	                initializeActionBar((PreferenceScreen) preference);
+	            }
+	            }
+	            return false;
+	        }
+	        public static void initializeActionBar(PreferenceScreen preferenceScreen) {
+	            final Dialog dialog = preferenceScreen.getDialog();
+
+	            if (dialog != null) {
+	                // Inialize the action bar
+	                dialog.getActionBar().setDisplayHomeAsUpEnabled(true);
+
+	                // Apply custom home button area click listener to close the PreferenceScreen because PreferenceScreens are dialogs which swallow
+	                // events instead of passing to the activity
+	                // Related Issue: https://code.google.com/p/android/issues/detail?id=4611
+	                View homeBtn = dialog.findViewById(android.R.id.home);
+
+	                if (homeBtn != null) {
+	                    OnClickListener dismissDialogClickListener = new OnClickListener() {
+	                        @Override
+	                        public void onClick(View v) {
+	                            dialog.dismiss();
+	                        }
+	                    };
+
+	                    // Prepare yourselves for some hacky programming
+	                    ViewParent homeBtnContainer = homeBtn.getParent();
+
+	                    // The home button is an ImageView inside a FrameLayout
+	                    if (homeBtnContainer instanceof FrameLayout) {
+	                        ViewGroup containerParent = (ViewGroup) homeBtnContainer.getParent();
+
+	                        if (containerParent instanceof LinearLayout) {
+	                            // This view also contains the title text, set the whole view as clickable
+	                            ((LinearLayout) containerParent).setOnClickListener(dismissDialogClickListener);
+	                        } else {
+	                            // Just set it on the home button
+	                            ((FrameLayout) homeBtnContainer).setOnClickListener(dismissDialogClickListener);
+	                        }
+	                    } else {
+	                        // The 'If all else fails' default case
+	                        homeBtn.setOnClickListener(dismissDialogClickListener);
+	                    }
+	                }    
+	            }
+	        }
+	        @Override
+	        public boolean onOptionsItemSelected(MenuItem item) {
+	            if (item.getItemId() == android.R.id.home) {
+	                onBackPressed();
+	                return true;
+	            }
+	            return false;
+	        }
+			@Override
+	    	public void onBackPressed() {
 	    	    	// Store the soundfonts
 	    	    	try {
 						prefs.edit().putString("tplusSoundfonts", ObjectSerializer.serialize(tmpSounds)).commit();
@@ -411,16 +523,17 @@ public class SettingsActivity extends PreferenceActivity implements FileBrowserD
 	    	    		Toast.makeText(this, getResources().getString(R.string.restart), Toast.LENGTH_SHORT).show();
 	    	    	
 	    	    	if(needUpdateSf)
-	    	    		Globals.writeCfg(Globals.dataFolder+"/timidity/timidity.cfg", tmpSounds);
+	    	    	{
+	    	    		Globals.writeCfg(SettingsActivity.this,Globals.dataFolder+"timidity/timidity.cfg", tmpSounds);
+	    	    	}
+	    	    		
 					//Globals.reloadSettings(getBaseContext());
 					Intent returnIntent = new Intent();
 					setResult(3, returnIntent);
     	    		this.finish();
-	    	    	return true;
-	    	    }
-	    	    	
-	    	    return super.onKeyDown(KeyCode, event);
-	    	    }
+
+
+	    	}
 
 			
 			@SuppressWarnings( "deprecation" )
@@ -452,7 +565,23 @@ public class SettingsActivity extends PreferenceActivity implements FileBrowserD
 				}	
 					Toast.makeText(this, getResources().getString(R.string.invalidfold), Toast.LENGTH_SHORT).show();
 			}
-
+			@Override
+			protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+			    // Check which request we're responding to
+			    if(requestCode==42)
+			    {
+			    	 if (resultCode == RESULT_OK) {
+			    	        Uri treeUri = data.getData();
+			    	        getContentResolver().takePersistableUriPermission(treeUri,
+			    	                Intent.FLAG_GRANT_READ_URI_PERMISSION |
+			    	                Intent.FLAG_GRANT_WRITE_URI_PERMISSION);  
+			    	        Globals.theFold = treeUri;
+			    	    }else{
+			    	    	Globals.theFold = null;
+			    	    }
+			    	 
+			    }
+			}
 			@Override
 			public void write() {}
 

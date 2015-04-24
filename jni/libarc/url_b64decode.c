@@ -33,7 +33,6 @@
 
 #define DECODEBUFSIZ 255 /* Must be power of 3 */
 
-extern int errno;
 typedef struct _URL_b64decode
 {
     char common[sizeof(struct _URL)];

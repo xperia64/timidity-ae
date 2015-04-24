@@ -41,8 +41,9 @@ public class FileBrowserDialog implements OnItemClickListener {
 	String extensions;
 	Activity context;
 	int type;
+	String msg;
 	FileBrowserDialogListener mCallback;
-
+	AlertDialog ddd;
 	public interface FileBrowserDialogListener {
 		public void setItem(String path, int type);
 
@@ -54,9 +55,10 @@ public class FileBrowserDialog implements OnItemClickListener {
 	boolean closeImmediate;
 
 	public void create(int t, String fileFilter, FileBrowserDialogListener pf,
-			Activity c, LayoutInflater f, boolean ci, String path)
+			Activity c, LayoutInflater f, boolean ci, String path, String ms) // This is disgusting. Sorry.
 	{
 		mCallback = pf;
+		msg=ms;
 		context = c;
 		extensions = fileFilter;
 		type = t; // A command for later reference. 0 is files, otherwise
@@ -101,7 +103,7 @@ public class FileBrowserDialog implements OnItemClickListener {
 					});
 		}
 		getDir(path);
-		final AlertDialog ddd = b.create();
+		ddd = b.create();
 		ddd.show();
 		Button theButton = ddd.getButton(DialogInterface.BUTTON_NEUTRAL);
 		if (theButton != null)
@@ -238,10 +240,11 @@ public class FileBrowserDialog implements OnItemClickListener {
 			{
 				Toast.makeText(
 						context,
-						context.getResources().getString(R.string.fb_add)
-								+ " '" + fname.get(arg2) + '\'',
+						msg+ " '" + fname.get(arg2) + '\'',
 						Toast.LENGTH_SHORT).show();
 				mCallback.setItem(file.getAbsolutePath(), type);
+				if(closeImmediate)
+					ddd.dismiss();
 			}
 		}
 

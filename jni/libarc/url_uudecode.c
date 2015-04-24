@@ -31,7 +31,6 @@
 #include "timidity.h"
 #include "url.h"
 
-extern int errno;
 typedef struct _URL_uudecode
 {
     char common[sizeof(struct _URL)];

@@ -97,7 +97,6 @@
 #include "rtsyn.h"
 #else
 extern char* getConfig2();
-int errno;
 #endif
 
 #ifdef __BORLANDC__

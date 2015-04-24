@@ -24,7 +24,7 @@
 /* optimizing mode */
 /* 0: none         */
 /* 1: x86 asm      */
-#define OPT_MODE 1
+#define OPT_MODE 1 // This needs to be defined because reverb.c, mix.c, effect.c
 
 /* PowerPC's AltiVec enhancement */
 /* 0: none                       */
@@ -62,7 +62,7 @@
 #endif
 #define _double2fixmagic 68719476736.0 * 1.5
 
-#if defined(__GNUC__) && defined(__i386__)
+/*#if defined(__GNUC__) && defined(__i386__)
 static inline int32 imuldiv8(int32 a, int32 b)
 {
     int32 result;
@@ -257,7 +257,7 @@ static inline int32 imuldiv28(int32 a, int32 b)
 #define imuldiv28(a, b) \
     (int32)(((int64)(a) * (int64)(b)) >> 28)
 
-#endif /* architectures */
+//#endif /* architectures */
 
 static inline int32 signlong(int32 a)
 {

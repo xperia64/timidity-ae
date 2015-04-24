@@ -14,52 +14,175 @@ package com.xperia64.timidityae;
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.Point;
+import android.os.Build;
+import android.view.Display;
+import android.view.WindowManager;
 import android.widget.RemoteViews;
 
 public class TimidityAEWidgetProvider extends AppWidgetProvider {
 
+	String currTitle="";
+	boolean paused=true;
+	boolean art=false;
+	boolean setdeath=false;
+	static double maxBitmap=-1;
+	
+	@Override 
+    public void onEnabled(Context context) {  
+          //Log.v("toggle_widget","Enabled is being called"); 
+
+          AppWidgetManager mgr = AppWidgetManager.getInstance(context); 
+          //retrieve a ref to the manager so we can pass a view update 
+
+          Intent i = new Intent(context, TimidityActivity.class);
+          //i.setClassName("com.xperia64.timidityae", "com.xperia64.timidityae.TimidityActivity"); 
+          PendingIntent myPI = PendingIntent.getActivity(context, 99, i, 0); 
+          //intent to start service 
+
+        // Get the layout for the App Widget 
+        RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget_layout); 
+
+        //attach the click listener for the service start command intent 
+        views.setOnClickPendingIntent(R.id.widget_container, myPI); 
+
+        //define the componenet for self  
+        ComponentName comp = new ComponentName(context.getPackageName(), TimidityAEWidgetProvider.class.getName());
+        //tell the manager to update all instances of the toggle widget with the click listener 
+        mgr.updateAppWidget(comp, views); 
+} 
+	
+	@Override
+	public void onReceive(Context context, Intent intent)
+	{
+		if(intent.getExtras()!=null)
+		{
+			paused=intent.getBooleanExtra("com.xperia64.timidityae.timidityaewidgetprovider.paused", true);
+			currTitle=intent.getStringExtra("com.xperia64.timidityae.timidityaewidgetprovider.title");
+			art=intent.getBooleanExtra("com.xperia64.timidityae.timidityaewidgetprovider.onlyart",false);
+			setdeath=intent.getBooleanExtra("com.xperia64.timidityae.timidityaewidgetprovider.death",false);
+			if(currTitle==null)
+				currTitle="";
+		}
+		super.onReceive(context, intent);
+	}
+	public static Bitmap scaleDownBitmap(Bitmap photo, Context context) {
+
+		int currSize=(Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB_MR1)?
+            photo.getRowBytes() * photo.getHeight():photo.getByteCount();
+         if(currSize>maxBitmap)
+         {
+		 //final float densityMultiplier = context.getResources().getDisplayMetrics().density;        
+		
+		 int h= (int) (Math.sqrt(maxBitmap))/(photo.getRowBytes()/photo.getWidth());
+		 
+		 int w= (int) (h * photo.getWidth()/((double) photo.getHeight()));
+		 //Bitmap p2 = ;
+		 //System.out.println(String.format("Height: %d Width: %d Size: %d",h,w,(Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB_MR1)?
+		           // p2.getRowBytes() * p2.getHeight():p2.getByteCount()));
+
+		 return Bitmap.createScaledBitmap(photo, w, h, true);
+		 }
+         else{
+        	 return photo;
+         }
+	}
+	
+	/*public void onAppWidgetOptionsChanged(Context context, AppWidgetManager appWidgetManager, int appWidgetId, Bundle newOptions)
+	{
+		System.out.println("I am resized");
+	}*/
+	@SuppressWarnings("deprecation")
+	private static Point getDisplaySize(final Display display) {
+	    final Point point = new Point();
+	    try {
+	        display.getSize(point);
+	    } catch (java.lang.NoSuchMethodError ignore) { // Older device
+	        point.x = display.getWidth();
+	        point.y = display.getHeight();
+	    }
+	    return point;
+	}
+	@Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
+		//System.out.println("Update was called");
+		if(maxBitmap==-1)
+		{
+			WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+			Display display = wm.getDefaultDisplay();
+			Point size=getDisplaySize(display);
+			maxBitmap=size.x*size.y*1.5;
+			if((Build.VERSION.SDK_INT > Build.VERSION_CODES.HONEYCOMB_MR1))
+				maxBitmap*=4;
+		}
         final int N = appWidgetIds.length;
-// TODO make this real
         // Perform this loop procedure for each App Widget that belongs to this provider
-        for (int i=0; i<N; i++) {
+       for (int i=0; i<N; i++) {
             int appWidgetId = appWidgetIds[i];
 
             // Create an Intent to launch ExampleActivity
-            //Intent intent = new Intent(context, TimidityActivity.class);
-            //PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, 0);
 
-            // Get the layout for the App Widget and attach an on-click listener
+             //Get the layout for the App Widget and attach an on-click listener
             // to the button
             RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget_layout);
-            //views.setOnClickPendingIntent(R.id.notPause_widget, pendingIntent);
+            views.setTextViewText(R.id.titley_widget, currTitle);
+            views.setImageViewResource(R.id.notPause_widget, (paused)?R.drawable.ic_media_play:R.drawable.ic_media_pause);
+            if(art)
+            if(Globals.currArt!=null)
+            {
+            	views.setImageViewBitmap(R.id.art_widget, scaleDownBitmap(Globals.currArt, context));
+            }
+            else
+            	views.setImageViewResource(R.id.art_widget, R.drawable.timidity);
+            else 
+            	views.setImageViewResource(R.id.art_widget, R.drawable.timidity);
+            
+            //retrieve a ref to the manager so we can pass a view update 
+
+            Intent configIntent = new Intent(context, TimidityActivity.class);
+
+            PendingIntent configPendingIntent = PendingIntent.getActivity(context, 99, configIntent, 0);
+
+            views.setOnClickPendingIntent(R.id.widget_container, configPendingIntent);
+            
+            
+            
             Intent new_intent = new Intent();
+            //new_intent.addFlags(Intent.FLAG_RECEIVER_FOREGROUND);
   	  	  new_intent.setAction(context.getResources().getString(R.string.msrv_rec));
   	  	  new_intent.putExtra(context.getResources().getString(R.string.msrv_cmd), 4);
-  	  	  PendingIntent pendingNotificationIntent = PendingIntent.getBroadcast(context, 0, new_intent, 0);
+  	  	  PendingIntent pendingNotificationIntent = PendingIntent.getBroadcast(context, 6, new_intent, 0);
   	  	  views.setOnClickPendingIntent(R.id.notPrev_widget, pendingNotificationIntent);
   	  	  // Play/Pause
   	  	  new_intent = new Intent();
+  	  	//new_intent.addFlags(Intent.FLAG_RECEIVER_FOREGROUND);
   	  	  new_intent.setAction(context.getResources().getString(R.string.msrv_rec));
-  	  	  new_intent.putExtra(context.getResources().getString(R.string.msrv_cmd), 2);
-  	  	  pendingNotificationIntent = PendingIntent.getBroadcast(context, 1, new_intent, 0);
+  	  	  new_intent.putExtra(context.getResources().getString(R.string.msrv_cmd), 13);
+  	  	  pendingNotificationIntent = PendingIntent.getBroadcast(context, 7, new_intent, 0);
   	  	  views.setOnClickPendingIntent(R.id.notPause_widget, pendingNotificationIntent);
   	  	  // Next
   	  	  new_intent = new Intent();
+  	  	//new_intent.addFlags(Intent.FLAG_RECEIVER_FOREGROUND);
   	  	  new_intent.setAction(context.getResources().getString(R.string.msrv_rec));
   	  	  new_intent.putExtra(context.getResources().getString(R.string.msrv_cmd), 3);
-  	  	  pendingNotificationIntent = PendingIntent.getBroadcast(context, 2, new_intent, 0);
+  	  	  pendingNotificationIntent = PendingIntent.getBroadcast(context, 8, new_intent, 0);
   	  	  views.setOnClickPendingIntent(R.id.notNext_widget, pendingNotificationIntent);
   	  	  // Stop
   	  	  new_intent = new Intent();
+  	  	//new_intent.addFlags(Intent.FLAG_RECEIVER_FOREGROUND);
   	  	  new_intent.setAction(context.getResources().getString(R.string.msrv_rec));
   	  	  new_intent.putExtra(context.getResources().getString(R.string.msrv_cmd), 5);
-  	  	  pendingNotificationIntent = PendingIntent.getBroadcast(context, 3, new_intent, 0);
+  	  	  pendingNotificationIntent = PendingIntent.getBroadcast(context, 9, new_intent, 0);
   	  	  views.setOnClickPendingIntent(R.id.notStop_widget, pendingNotificationIntent);
             // Tell the AppWidgetManager to perform an upd_widgetate on the current app widget
             appWidgetManager.updateAppWidget(appWidgetId, views);
         }
+       	if(setdeath)
+       		Globals.nukedWidgets=true;
+		super.onUpdate(context, appWidgetManager, appWidgetIds);
     }
 }

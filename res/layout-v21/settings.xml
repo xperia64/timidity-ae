@@ -95,7 +95,14 @@
                 android:defaultValue="/sdcard/TimidityAE/"
                 android:title="@string/sett_mandir"
                 android:key="dataDir" />
-                                
+                                <PreferenceScreen android:title="Request Lollipop Write Access"
+    		android:summary="Change the directory that Timidity has access to. The ROOT of the SD card must be chosen."
+    		android:key="lolWrite"/>
+                                <CheckBoxPreference
+                        android:title="Ask about external sdcard access on startup"
+                        android:defaultValue="true"
+                        android:summary="Ask for write access to the external sdcard if not found on startup"
+                        android:key="shouldLolNag" />
                 
                 </PreferenceCategory>
     		</PreferenceScreen>

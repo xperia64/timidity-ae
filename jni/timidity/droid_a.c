@@ -1,4 +1,3 @@
-#define HAVE_CONFIG_H
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif /* HAVE_CONFIG_H */
@@ -136,7 +135,7 @@ static int acntl(int request, void *arg)
 	case PM_REQ_PLAY_END:
 		position=0;
 		samples=0;
-		finishHim();
+		finishAE();
 		break;
 	}
 	return 0; // We do nothing

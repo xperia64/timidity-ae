@@ -117,7 +117,6 @@
 #include "explode.h"
 #include "zip.h"
 
-extern int errno;
 struct _ExplodeHandler
 {
     void *user_val;

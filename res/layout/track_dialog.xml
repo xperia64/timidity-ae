@@ -14,6 +14,7 @@ android:focusableInTouchMode="true" >
         android:id="@+id/instSpin"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
         android:layout_alignParentLeft="true"
         android:layout_below="@+id/defInstr" />
 
@@ -21,6 +22,7 @@ android:focusableInTouchMode="true" >
         android:id="@+id/defInstr"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/defVol"
         android:layout_alignLeft="@+id/defVol"
         android:layout_alignParentTop="true"
         android:checked="true"
@@ -30,9 +32,11 @@ android:focusableInTouchMode="true" >
         android:id="@+id/volSeek"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
         android:layout_alignParentLeft="true"
         android:layout_below="@+id/defVol"
-        android:layout_toLeftOf="@+id/txtVol" />
+        android:layout_toStartOf="@+id/txtVol" 
+        android:layout_toLeftOf="@+id/txtVol"/>
 
     <CheckBox
         android:id="@+id/defVol"
@@ -49,8 +53,10 @@ android:focusableInTouchMode="true" >
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
         android:layout_below="@+id/defVol"
         android:layout_toRightOf="@+id/defVol"
+        android:layout_toEndOf="@+id/defVol"
         android:ems="10"
         android:inputType="number"
         android:text="127" />
@@ -62,6 +68,7 @@ android:focusableInTouchMode="true" >
         android:layout_alignBaseline="@+id/defInstr"
         android:layout_alignBottom="@+id/defInstr"
         android:layout_toLeftOf="@+id/defInstr"
+        android:layout_toStartOf="@+id/defInstr"
         android:text="@string/trk_inst" />
 
     <TextView
@@ -69,6 +76,7 @@ android:focusableInTouchMode="true" >
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignLeft="@+id/instTxt"
+        android:layout_alignStart="@+id/instTxt"
         android:layout_below="@+id/instSpin"
         android:text="@string/trk_vol" />
 

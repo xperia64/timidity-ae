@@ -33,7 +33,6 @@
 
 #define DECODEBUFSIZ BUFSIZ
 
-extern int errno;
 typedef struct _URL_qsdecode
 {
     char common[sizeof(struct _URL)];

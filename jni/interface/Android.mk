@@ -1,9 +1,6 @@
 LOCAL_PATH := $(call my-dir)
 
 include $(CLEAR_VARS)
-
-DEFS = -DHAVE_CONFIG_H
-
 LOCAL_MODULE := interface
 
 LOCAL_C_INCLUDES := $(LOCAL_PATH)
@@ -14,8 +11,7 @@ LOCAL_C_INCLUDES += $(LOCAL_PATH)/../libarc
 
 EMACS = no
 
-CFLAGS = -fPIC -Ofast -DANOTHER_MAIN -DHAVE_CONFIG_H
-
+CFLAGS = -fPIC -Ofast -DANOTHER_MAIN
 LOCAL_CPP_EXTENSION := .cpp
 
 LOCAL_SRC_FILES:= droid_c.c

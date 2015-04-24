@@ -22,7 +22,6 @@
     Functions to output raw sound data to a file or stdout.
 
 */
-#define HAVE_CONFIG_H
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif /* HAVE_CONFIG_H */

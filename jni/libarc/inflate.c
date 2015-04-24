@@ -131,7 +131,6 @@
 #include "zip.h"
 #define local static
 
-extern int errno;
 /* Save to local */
 #define BITS_SAVE \
   ulg bit_buf = decoder->bit_buf; \

@@ -32,7 +32,6 @@
 #include "timidity.h"
 #include "memb.h"
 
-extern int errno;
 void init_memb(MemBuffer *b)
 {
     memset(b, 0, sizeof(MemBuffer));

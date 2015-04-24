@@ -11,6 +11,10 @@
  ******************************************************************************/
 package com.xperia64.timidityae;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -19,6 +23,8 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.FragmentManager;
@@ -77,8 +83,12 @@ public class PlayerFragment extends SherlockFragment {
 	boolean ffrw=false;
 	boolean enabledControls=false;
 	boolean canEnablePlay=true;
+	boolean updaterPlacid = false;
 	//
 	AlertDialog ddd;
+	TextView tempo;
+	TextView pitch;
+	TextView voices;
 	//
 	public static PlayerFragment create() {
 		PlayerFragment fragment = new PlayerFragment();
@@ -115,7 +125,7 @@ public class PlayerFragment extends SherlockFragment {
 		seekHandler.postDelayed(lyricUpdater,10);
 	}
 	public void seekUpdation() {
-		if(Globals.isPlaying==0)
+		if(Globals.isPlaying==0&&isAdded())
 		{
 			if(!JNIHandler.type)
 			{
@@ -155,6 +165,15 @@ public class PlayerFragment extends SherlockFragment {
 			{
 				tracky.updateList();
 			}
+			if(ddd!=null&&ddd.isShowing())
+			{
+				if(tempo!=null)
+					tempo.setText(String.format(getResources().getString(R.string.mop_tempo),JNIHandler.ttr, (int) (500000 / (double) JNIHandler.tt * 120 * (double) JNIHandler.ttr / 100 + 0.5)));
+				if(pitch!=null)
+					pitch.setText(String.format(getResources().getString(R.string.mop_pitch),((JNIHandler.koffset>0)?"+":"")+Integer.toString(JNIHandler.koffset)));
+				if(voices!=null)
+					voices.setText(String.format(getResources().getString(R.string.mop_voice), JNIHandler.voice, JNIHandler.maxvoice));
+			}
 			try { //NOPE
     			if(JNIHandler.mMediaPlayer!=null&&JNIHandler.type&&JNIHandler.mMediaPlayer.isPlaying()) // Are these evaluated in order? I hope so
     			{
@@ -162,6 +181,7 @@ public class PlayerFragment extends SherlockFragment {
     			}}catch (Exception e) {}
 			if(getActivity()!=null&&!sliding)
 			{
+				updaterPlacid=false;
 				totalMinutes = 0;
     			totalSeconds = JNIHandler.maxTime;
 				currMinutes = 0;
@@ -188,6 +208,8 @@ public class PlayerFragment extends SherlockFragment {
 	    		}
 	    	});
 			seekHandler.postDelayed(seekbarUpdater, 500);
+			}else{
+				updaterPlacid=true;
 			}
 		}
 	}
@@ -286,14 +308,41 @@ public class PlayerFragment extends SherlockFragment {
 		});
 		rewindButton.setOnLongClickListener(new OnLongClickListener(){
 
+			private Handler mHandler = new Handler();
+			int count;
+			int mult;
 			@Override
 			public boolean onLongClick(View arg0) {
+				count=0;
+				mult=1;
 				ffrw=true;
-				int to = trackBar.getProgress()-(JNIHandler.type?8000:8);
-				to=(to>trackBar.getMax()?trackBar.getMax():to<0?0:to);
-				trackBar.setProgress(to);
+				mHandler.post(mAction);
 				return true;
 			}
+			Runnable mAction = new Runnable() {
+		        @Override public void run() {
+		        	sliding=true;
+		        	int to = trackBar.getProgress()-(3*mult*(JNIHandler.type?1000:1));
+					to=(to>trackBar.getMax()?trackBar.getMax():to<0?0:to);
+					trackBar.setProgress(to);
+					if(rewindButton.isPressed())
+					{	
+						if(count++>5)
+						{
+							count=0;
+							mult++;
+						}
+						mHandler.postDelayed(this, 500);
+					}
+					else
+					{
+						sliding=false; 
+						if(!JNIHandler.type) 
+							mActivity.seek(trackBar.getProgress()); 
+						seekUpdation();
+					}
+		        }
+		    };
 			
 		});
 		playButton.setEnabled(false); // >
@@ -323,14 +372,41 @@ public class PlayerFragment extends SherlockFragment {
 		});
 		fastForwardButton.setOnLongClickListener(new OnLongClickListener(){
 
+			private Handler mHandler = new Handler();
+			int count;
+			int mult;
 			@Override
 			public boolean onLongClick(View arg0) {
+				count = 0;
+				mult = 1;
 				ffrw=true;
-				int to = trackBar.getProgress()+(JNIHandler.type?8000:8);
-				to=(to>trackBar.getMax()?trackBar.getMax():to<0?0:to);
-				trackBar.setProgress(to);
+				mHandler.post(mAction);
 				return true;
 			}
+			Runnable mAction = new Runnable() {
+		        @Override public void run() {
+		        	sliding=true;
+		        	int to = trackBar.getProgress()+(3*mult*(JNIHandler.type?1000:1));
+					to=(to>trackBar.getMax()?trackBar.getMax():to<0?0:to);
+					trackBar.setProgress(to);
+					if(fastForwardButton.isPressed())
+					{	
+						if(count++>5)
+						{
+							count=0;
+							mult++;
+						}
+						mHandler.postDelayed(this, 500);
+					}
+					else
+					{
+						sliding=false; 
+						if(!JNIHandler.type) 
+							mActivity.seek(trackBar.getProgress()); 
+						seekUpdation();
+					}
+		        }
+		    };
 			
 		});
 		nextButton.setOnClickListener(new OnClickListener(){
@@ -396,7 +472,8 @@ public class PlayerFragment extends SherlockFragment {
 					{
 						mActivity.seek(arg1);
 					}
-					ffrw=false;
+					if(!fastForwardButton.isPressed()&&!rewindButton.isPressed())
+						ffrw=false;
 					totalMinutes = 0;
 	    			totalSeconds = arg0.getMax();
 					currMinutes = 0;
@@ -422,7 +499,12 @@ public class PlayerFragment extends SherlockFragment {
 				}
 			}
 			@Override public void onStartTrackingTouch(SeekBar arg0) {sliding=true; }
-			@Override public void onStopTrackingTouch(SeekBar arg0) {sliding=false; if(!JNIHandler.type) mActivity.seek(arg0.getProgress()); seekUpdation();}
+			@Override public void onStopTrackingTouch(SeekBar arg0) {
+				
+				sliding=false; 
+			if(!JNIHandler.type) 
+				mActivity.seek(arg0.getProgress()); 
+			if(updaterPlacid) seekUpdation();}
 			
 		});
 		
@@ -534,7 +616,7 @@ public class PlayerFragment extends SherlockFragment {
         FragmentTransaction ft = fm.beginTransaction();
 
         fm.beginTransaction();
-		if(!JNIHandler.type)
+		if((!JNIHandler.type)&&Globals.isPlaying==0)
 		{
 			if(++fragMode>2)
 				fragMode=0;
@@ -560,6 +642,41 @@ public class PlayerFragment extends SherlockFragment {
             break;
 		}
 	}
+	public void setInterface(int which) {
+		FragmentManager fm = getFragmentManager();
+        FragmentTransaction ft = fm.beginTransaction();
+        fragMode=which;
+        fm.beginTransaction();
+		if((!JNIHandler.type)&&Globals.isPlaying==0)
+		{
+			if(fragMode>2)
+				fragMode=0;
+		}else{
+			fragMode=0;
+		}
+		switch(fragMode)
+		{
+		case 0:
+			artsy = new ArtFragment();
+			ft.replace(R.id.midiContainer, artsy);
+            ft.commitAllowingStateLoss();
+			break;
+		case 1:
+			tracky = new TrackFragment();
+			ft.replace(R.id.midiContainer, tracky);
+            ft.commitAllowingStateLoss();
+			break;
+		case 2:
+			lyrical = new LyricFragment();
+			ft.replace(R.id.midiContainer, lyrical);
+            ft.commitAllowingStateLoss();
+            break;
+		}
+	}
+	public void updateMidiDialog(boolean which[], int t, int tr, int voices)
+	{
+		
+	}
 	public void showMidiDialog() {
 		AlertDialog.Builder b = new AlertDialog.Builder(getActivity());
 		View v = getActivity().getLayoutInflater().inflate(R.layout.midi_options, null);
@@ -569,11 +686,26 @@ public class PlayerFragment extends SherlockFragment {
 		Button keyDown = (Button) v.findViewById(R.id.keyDown);
 		Button vplus = (Button) v.findViewById(R.id.vplus);
 		Button vminus = (Button) v.findViewById(R.id.vminus);
+		Button export = (Button) v.findViewById(R.id.exportButton);
+		Button saveCfg = (Button) v.findViewById(R.id.saveCfg);
+		Button loadCfg = (Button) v.findViewById(R.id.loadCfg);
+		Button savedefCfg = (Button) v.findViewById(R.id.savedefCfg);
+		final Button deldefCfg = (Button) v.findViewById(R.id.deldefCfg);
+		deldefCfg.setEnabled(new File( mActivity.currSongName+".def.tcf").exists());
+		tempo = (TextView) v.findViewById(R.id.tempoText);
+		pitch = (TextView) v.findViewById(R.id.pitchText);
+		voices = (TextView) v.findViewById(R.id.voiceText);
+		
+		tempo.setText(String.format(getResources().getString(R.string.mop_tempo),JNIHandler.ttr, (int) (500000 / (double) JNIHandler.tt * 120 * (double) JNIHandler.ttr / 100 + 0.5)));
+		pitch.setText(String.format(getResources().getString(R.string.mop_pitch),((JNIHandler.koffset>0)?"+":"")+Integer.toString(JNIHandler.koffset)));
+		voices.setText(String.format(getResources().getString(R.string.mop_voice), JNIHandler.voice, JNIHandler.maxvoice));
 		speedUp.setOnClickListener(new OnClickListener(){
 
 			@Override
 			public void onClick(View arg0) {
 				JNIHandler.controlTimidity(17,1);
+				JNIHandler.waitUntilReady();
+				JNIHandler.tb++;
 			}
 			
 		});
@@ -582,6 +714,8 @@ public class PlayerFragment extends SherlockFragment {
 			@Override
 			public void onClick(View arg0) {
 				JNIHandler.controlTimidity(18,1);
+				JNIHandler.waitUntilReady();
+				JNIHandler.tb--;
 			}
 			
 		});
@@ -590,6 +724,7 @@ public class PlayerFragment extends SherlockFragment {
 			@Override
 			public void onClick(View arg0) {
 				JNIHandler.controlTimidity(15,1);
+				JNIHandler.waitUntilReady();
 			}
 			
 		});
@@ -598,6 +733,7 @@ public class PlayerFragment extends SherlockFragment {
 			@Override
 			public void onClick(View arg0) {
 				JNIHandler.controlTimidity(16,-1);
+				JNIHandler.waitUntilReady();
 			}
 			
 		});
@@ -606,6 +742,7 @@ public class PlayerFragment extends SherlockFragment {
 			@Override
 			public void onClick(View arg0) {
 				JNIHandler.controlTimidity(19,5);
+				JNIHandler.waitUntilReady();
 			}
 			
 		});
@@ -614,9 +751,170 @@ public class PlayerFragment extends SherlockFragment {
 			@Override
 			public void onClick(View arg0) {
 				JNIHandler.controlTimidity(20,5);
+				JNIHandler.waitUntilReady();
 			}
 			
 		});
+		export.setOnClickListener(new OnClickListener(){
+
+			@Override
+			public void onClick(View arg0) {
+				mActivity.dynExport();
+			}
+			
+		});
+		saveCfg.setOnClickListener(new OnClickListener(){
+
+			@Override
+			public void onClick(View arg0) {
+				mActivity.saveCfg();
+			}
+			
+		});
+		loadCfg.setOnClickListener(new OnClickListener(){
+
+			@Override
+			public void onClick(View arg0) {
+				mActivity.loadCfg();
+			}
+			
+		});
+		savedefCfg.setOnClickListener(new OnClickListener(){
+
+			@Override
+			public void onClick(View arg0) {
+				
+				String value;
+				boolean alreadyExists = new File(mActivity.currSongName+".def.tcf").exists();
+				boolean canWrite=true;
+				  String needRename = null;
+				  String probablyTheRoot = "";
+				  String probablyTheDirectory = "";
+				  try{
+				        new FileOutputStream(mActivity.currSongName+".def.tcf",true).close();
+				  }catch(FileNotFoundException e)
+				  {
+					canWrite=false;  
+				  } catch (IOException e)
+				{
+					e.printStackTrace();
+				}
+				  if(!alreadyExists&&canWrite)
+					  new File(mActivity.currSongName+".def.tcf").delete();
+				  
+				  if(canWrite&&new File(mActivity.currSongName).canWrite())
+				  {
+					  value=mActivity.currSongName+".def.tcf";
+				  }else if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.LOLLIPOP&& Globals.theFold!=null)
+				  {
+					  //TODO
+					  // Write the file to getExternalFilesDir, then move it with the Uri
+					  // We need to tell JNIHandler that movement is needed.
+					  // This is pretty much done now?
+					  String[] tmp = Globals.getDocFilePaths(getActivity(),mActivity.currSongName);
+					  probablyTheDirectory = tmp[0];
+					  probablyTheRoot = tmp[1];
+					if(probablyTheDirectory.length()>1)
+					{
+						needRename = (mActivity.currSongName).substring(mActivity.currSongName.indexOf(probablyTheRoot)+probablyTheRoot.length())+".def.tcf";
+						value = probablyTheDirectory+mActivity.currSongName.substring(mActivity.currSongName.lastIndexOf('/'))+".def.tcf";
+					}else{
+						Toast.makeText(getActivity(), "Could not write config file. Did you give Timidity write access to the root of your external sd card?" , Toast.LENGTH_SHORT).show();
+						return;
+					}
+				  }else{
+					  if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.LOLLIPOP)
+					  {
+						  Toast.makeText(getActivity(), "Could not write config file. Did you give Timidity write access to the root of your external sd card?" , Toast.LENGTH_SHORT).show();
+					  }else{
+						  Toast.makeText(getActivity(), "Could not write config file. Permission denied." , Toast.LENGTH_SHORT).show();
+					  }
+					  return;
+				  }
+				  final String finalval = value;
+				  final String needToRename = needRename;
+				  final String probRoot = probablyTheRoot;
+				if(new File( mActivity.currSongName+".def.tcf").exists())
+				{
+					AlertDialog dialog = new AlertDialog.Builder(mActivity).create();
+				    dialog.setTitle("Warning");
+				    dialog.setMessage("Overwrite default config file?");
+				    dialog.setCancelable(false);
+				    dialog.setButton(DialogInterface.BUTTON_POSITIVE, getResources().getString(android.R.string.yes), new DialogInterface.OnClickListener() {
+				        public void onClick(DialogInterface dialog, int buttonId) {
+				        	if(needToRename!=null)
+				        	{
+				        		Globals.tryToDeleteFile(getActivity(), probRoot+needToRename);
+				        		Globals.tryToDeleteFile(getActivity(), finalval);
+				        	}else{
+				        		Globals.tryToDeleteFile(getActivity(), finalval);
+				        	}
+				        	mActivity.localfinished=false;
+				        	mActivity.saveCfgPart2(finalval, needToRename);
+				        	deldefCfg.setEnabled(true);
+				        	/*Intent new_intent = new Intent();
+					    	new_intent.setAction(getResources().getString(R.string.msrv_rec));
+					    	new_intent.putExtra(getResources().getString(R.string.msrv_cmd), 16);
+					    	new_intent.putExtra(getResources().getString(R.string.msrv_outfile), mActivity.currSongName+".def.tcf");
+					    	getActivity().sendBroadcast(new_intent);
+					    	deldefCfg.setEnabled(true);*/
+				        }
+				    });
+				    dialog.setButton(DialogInterface.BUTTON_NEGATIVE, getResources().getString(android.R.string.no), new DialogInterface.OnClickListener() {
+				        public void onClick(DialogInterface dialog, int buttonId) {
+				          
+				          
+				        }
+				    });
+				    dialog.show();
+					
+				}else{
+					/*Intent new_intent = new Intent();
+			    	new_intent.setAction(getResources().getString(R.string.msrv_rec));
+			    	new_intent.putExtra(getResources().getString(R.string.msrv_cmd), 16);
+			    	new_intent.putExtra(getResources().getString(R.string.msrv_outfile), mActivity.currSongName+".def.tcf");
+			    	getActivity().sendBroadcast(new_intent);
+			    	deldefCfg.setEnabled(true);*/
+					mActivity.localfinished=false;
+					mActivity.saveCfgPart2(finalval, needToRename);
+					deldefCfg.setEnabled(true);
+				}
+			}
+			
+			
+		});
+		
+		deldefCfg.setOnClickListener(new OnClickListener(){
+
+			@Override
+			public void onClick(View arg0) {
+				
+				if(new File( mActivity.currSongName+".def.tcf").exists())
+				{
+					AlertDialog dialog = new AlertDialog.Builder(mActivity).create();
+				    dialog.setTitle("Warning");
+				    dialog.setMessage("Really delete default config file?");
+				    dialog.setCancelable(false);
+				    dialog.setButton(DialogInterface.BUTTON_POSITIVE, getResources().getString(android.R.string.yes), new DialogInterface.OnClickListener() {
+				        public void onClick(DialogInterface dialog, int buttonId) {
+				        	
+				        	Globals.tryToDeleteFile(getActivity(), mActivity.currSongName+".def.tcf");
+				        	deldefCfg.setEnabled(false);
+				        }
+				    });
+				    dialog.setButton(DialogInterface.BUTTON_NEGATIVE, getResources().getString(android.R.string.no), new DialogInterface.OnClickListener() {
+				        public void onClick(DialogInterface dialog, int buttonId) {
+				          
+				          
+				        }
+				    });
+				    dialog.show();
+					
+				}
+			}
+			
+		});
+		
 		final Spinner x = (Spinner) v.findViewById(R.id.resampSpinner);
 		List<String> arrayAdapter = new ArrayList<String>();
 		for(String yyy : Globals.sampls)
@@ -646,6 +944,9 @@ public class PlayerFragment extends SherlockFragment {
 			
 		});
 		x.setSelection(JNIHandler.currsamp);
+		if (Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH)
+			v.setBackgroundColor(Globals.theme==1?Color.WHITE:Color.BLACK);
+		
 		b.setView(v);
 		b.setPositiveButton("OK", new DialogInterface.OnClickListener()
 		{

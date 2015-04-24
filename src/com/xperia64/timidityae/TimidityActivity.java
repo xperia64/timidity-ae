@@ -12,25 +12,38 @@
 package com.xperia64.timidityae;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
+import android.app.ActivityManager;
+import android.app.ActivityManager.RunningServiceInfo;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.UriPermission;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 //import com.actionbarsherlock.app.SherlockFragment;
 
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
+import android.text.InputFilter;
+import android.text.Spanned;
 import android.util.Log;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import com.actionbarsherlock.app.SherlockFragmentActivity;
@@ -39,7 +52,7 @@ import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
 import com.xperia64.timidityae.R;
 
-public class TimidityActivity extends SherlockFragmentActivity implements FileBrowserFragment.ActionFileBackListener, PlaylistFragment.ActionPlaylistBackListener {
+public class TimidityActivity extends SherlockFragmentActivity implements FileBrowserFragment.ActionFileBackListener, PlaylistFragment.ActionPlaylistBackListener, FileBrowserDialog.FileBrowserDialogListener {
 	//public static TimidityActivity staticthis;
 	private MenuItem menuButton;
 	private MenuItem menuButton2;
@@ -54,7 +67,11 @@ public class TimidityActivity extends SherlockFragmentActivity implements FileBr
 	boolean needService=true;
 	String currSongName;
 	boolean needInit=false;
+	boolean fromIntent=false;
+	boolean deadlyDeath=false;
+	public boolean localfinished;
 	int oldTheme;
+	AlertDialog alerty;
 	private BroadcastReceiver activityReceiver = new BroadcastReceiver() {
 
         @Override
@@ -68,31 +85,48 @@ public class TimidityActivity extends SherlockFragmentActivity implements FileBr
         		currSongName=intent.getStringExtra(getResources().getString(R.string.ta_filename));
         		if(viewPager.getCurrentItem()==1)
         		{
-        			menuButton.setVisible(!JNIHandler.type);
-        			menuButton.setEnabled(!JNIHandler.type);
-        			menuButton2.setVisible(!JNIHandler.type);
-        			menuButton2.setEnabled(!JNIHandler.type);
+	        		menuButton.setIcon(R.drawable.ic_menu_agenda);
+	        		menuButton.setTitle(getResources().getString(R.string.view));
+	        		menuButton.setTitleCondensed(getResources().getString(R.string.viewcon));
+	        		menuButton.setVisible((!JNIHandler.type)&&Globals.isPlaying==0);
+	            	menuButton.setEnabled((!JNIHandler.type)&&Globals.isPlaying==0);
+	        		menuButton2.setIcon(R.drawable.ic_menu_info_details);
+	        		menuButton2.setTitle(getResources().getString(R.string.playback));
+	        		menuButton2.setTitleCondensed(getResources().getString(R.string.playbackcon));
+	        		menuButton2.setVisible((!JNIHandler.type)&&Globals.isPlaying==0);
+	            	menuButton2.setEnabled((!JNIHandler.type)&&Globals.isPlaying==0);
         		}
         		playFrag.play(intent.getIntExtra(getResources().getString(R.string.ta_startt),0), intent.getStringExtra(getResources().getString(R.string.ta_songttl)));
         		break;
         	case 1:
         		break;
-        	case 2: 
-        		fileFrag.getDir(intent.getStringExtra(getResources().getString(R.string.ta_currpath)));
+        	case 2:
+        		try{
+        			fileFrag.getDir(intent.getStringExtra(getResources().getString(R.string.ta_currpath)));
+        		}catch(IllegalStateException e){
+        			
+        		}
+        		
         		//System.out.println(integExtrnt.getStrina(getResources().getString(R.string.ta_currpath)));
         		break;
         	case 3:
         		//System.out.println("case 3");
-        		intent.getStringExtra(getResources().getString(R.string.ta_filename));
+        		currSongName=intent.getStringExtra(getResources().getString(R.string.ta_filename));
         		if(viewPager.getCurrentItem()==1)
         		{
-        			menuButton.setVisible(!JNIHandler.type);
-        			menuButton.setEnabled(!JNIHandler.type);
-        			menuButton2.setVisible(!JNIHandler.type);
-        			menuButton2.setEnabled(!JNIHandler.type);
+        			menuButton.setIcon(R.drawable.ic_menu_agenda);
+	        		menuButton.setTitle(getResources().getString(R.string.view));
+	        		menuButton.setTitleCondensed(getResources().getString(R.string.viewcon));
+	        		menuButton.setVisible((!JNIHandler.type)&&Globals.isPlaying==0);
+	            	menuButton.setEnabled((!JNIHandler.type)&&Globals.isPlaying==0);
+	        		menuButton2.setIcon(R.drawable.ic_menu_info_details);
+	        		menuButton2.setTitle(getResources().getString(R.string.playback));
+	        		menuButton2.setTitleCondensed(getResources().getString(R.string.playbackcon));
+	        		menuButton2.setVisible((!JNIHandler.type)&&Globals.isPlaying==0);
+	            	menuButton2.setEnabled((!JNIHandler.type)&&Globals.isPlaying==0);
         		}
         		playFrag.play(intent.getIntExtra(getResources().getString(R.string.ta_startt),0), 
-        				currSongName=intent.getStringExtra(getResources().getString(R.string.ta_songttl)), 
+        				intent.getStringExtra(getResources().getString(R.string.ta_songttl)), 
         				intent.getBooleanExtra(getResources().getString(R.string.ta_shufmode), false), 
         				intent.getIntExtra(getResources().getString(R.string.ta_loopmode),1));
         		break;
@@ -101,12 +135,57 @@ public class TimidityActivity extends SherlockFragmentActivity implements FileBr
         		Globals.plist=null;
         		break;
         	case 5: // Notifiy pause/stop
+        		if(!intent.getBooleanExtra(getResources().getString(R.string.ta_pause), false)&&Globals.hardStop)
+        		{
+        			Globals.hardStop=false;
+        			if(viewPager.getCurrentItem()==1)
+            		{
+            			menuButton.setIcon(R.drawable.ic_menu_agenda);
+    	        		menuButton.setTitle(getResources().getString(R.string.view));
+    	        		menuButton.setTitleCondensed(getResources().getString(R.string.viewcon));
+    	        		menuButton.setVisible(false);
+    	            	menuButton.setEnabled(false);
+    	        		menuButton2.setIcon(R.drawable.ic_menu_info_details);
+    	        		menuButton2.setTitle(getResources().getString(R.string.playback));
+    	        		menuButton2.setTitleCondensed(getResources().getString(R.string.playbackcon));
+    	        		menuButton2.setVisible(false);
+    	            	menuButton2.setEnabled(false);
+            		}
+        			playFrag.setInterface(0);
+        			TimidityActivity.this.runOnUiThread(new Runnable() {
+				        public void run() {
+        			if(playFrag.ddd!=null)
+        			{
+        				if(playFrag.ddd.isShowing())
+        				{
+        					playFrag.ddd.dismiss();
+        					playFrag.ddd=null;
+        				}
+        			}
+        			if(alerty!=null)
+        			{
+        				if(alerty.isShowing())
+        				{
+        					alerty.dismiss();
+        					alerty=null;
+        				}
+        			}
+				        }
+        		});
+        		}
         		playFrag.pauseStop(intent.getBooleanExtra(getResources().getString(R.string.ta_pause), false), 
         				intent.getBooleanExtra(getResources().getString(R.string.ta_pausea),false));
         		break;
         	case 6: // notify art
         		//currSongName = intent.getStringExtra(getResources().getString(R.string.ta_filename));
-        		playFrag.setArt();
+        		if(playFrag!=null)
+        			playFrag.setArt();
+        		break;
+        	case 7:
+        		fileFrag.localfinished=true;
+        		break;
+        	case 8:
+        		localfinished=true;
         		break;
 
         		
@@ -120,13 +199,16 @@ public class TimidityActivity extends SherlockFragmentActivity implements FileBr
     	
     }
     
-    @Override
+    */@Override
     protected void onResume()
     {
-    	
-    }*/
+    	deadlyDeath=false;
+    	Log.i("Timidity","Resumed");
+    	super.onResume();
+    }
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
+		deadlyDeath=false;
 		if(savedInstanceState==null)
 		{
 			Globals.reloadSettings(this, getAssets());
@@ -140,7 +222,7 @@ public class TimidityActivity extends SherlockFragmentActivity implements FileBr
     		System.loadLibrary("timidityhelper");   
     	}
         catch( UnsatisfiedLinkError e) {
-        	Log.e("Bad:","Cannot grab timidity");
+        	Log.i("Bad:","Cannot grab timidity");
         	Globals.nativeMidi = Globals.onlyNative=true;
         }
 		oldTheme = Globals.theme;
@@ -152,13 +234,37 @@ public class TimidityActivity extends SherlockFragmentActivity implements FileBr
 	super.onCreate(savedInstanceState);
 	if(savedInstanceState==null)
 	{
-		needInit=Globals.initialize(getAssets(), this);
+		Log.i("Timidity","Initializing");
+		needInit=Globals.initialize(TimidityActivity.this);
 	}else{
-		if(!savedInstanceState.getBoolean("justtheme", false))
+		Log.i("Timidity","Resuming...");
+		needService=!isMyServiceRunning(MusicService.class);
+		Fragment tmp = getSupportFragmentManager().getFragment(savedInstanceState,"playfrag");
+		if(tmp!=null)
+			playFrag = (PlayerFragment) tmp;
+		tmp = getSupportFragmentManager().getFragment(savedInstanceState,"plfrag");
+		if(tmp!=null)
+			plistFrag = (PlaylistFragment) tmp;
+		tmp = getSupportFragmentManager().getFragment(savedInstanceState,"fffrag");
+		if(tmp!=null)
+			fileFrag = (FileBrowserFragment) tmp;
+		if(!isMyServiceRunning(MusicService.class))
 		{
 			Globals.reloadSettings(this, getAssets());
+			initCallback2();
+			if(viewPager!=null)
+			{
+				if(viewPager.getCurrentItem()==1)
+				{
+					viewPager.setCurrentItem(0);
+				}
+			}
 		}
-		needService=savedInstanceState.getBoolean("needservice", true);
+		/*if(!savedInstanceState.getBoolean("justtheme", false))
+		{
+			Globals.reloadSettings(this, getAssets());
+		}*/
+		
 	}
 	/*IntentFilter filter = new IntentFilter();
 	filter.addAction("com.xperia64.timidityae20.ACTION_STOP");
@@ -181,6 +287,8 @@ public class TimidityActivity extends SherlockFragmentActivity implements FileBr
 		        if(needService)
 		        {
 		        	needService=false;
+		        	Globals.probablyFresh=0;
+		        	//System.out.println("Starting service");
 		        	startService(new Intent(this, MusicService.class));
 		        }
 		        
@@ -192,7 +300,7 @@ public class TimidityActivity extends SherlockFragmentActivity implements FileBr
         public void onPageSelected(int index) {
         	mode=index;
         	switch(index)
-        	{
+        	{       	
         	case 0:
         		fromPlaylist=false;
         		if(getSupportActionBar()!=null)
@@ -230,16 +338,16 @@ public class TimidityActivity extends SherlockFragmentActivity implements FileBr
         				menuButton.setIcon(R.drawable.ic_menu_agenda);
         				menuButton.setTitle(getResources().getString(R.string.view));
         				menuButton.setTitleCondensed(getResources().getString(R.string.viewcon));
-        				menuButton.setVisible(!JNIHandler.type);
-            			menuButton.setEnabled(!JNIHandler.type);
+        				menuButton.setVisible((!JNIHandler.type)&&Globals.isPlaying==0);
+            			menuButton.setEnabled((!JNIHandler.type)&&Globals.isPlaying==0);
         			}
         			if(menuButton2!=null)
         			{
         				menuButton2.setIcon(R.drawable.ic_menu_info_details);
         				menuButton2.setTitle(getResources().getString(R.string.playback));
         				menuButton2.setTitleCondensed(getResources().getString(R.string.playbackcon));
-        				menuButton2.setVisible(!JNIHandler.type);
-            			menuButton2.setEnabled(!JNIHandler.type);
+        				menuButton2.setVisible((!JNIHandler.type)&&Globals.isPlaying==0);
+            			menuButton2.setEnabled((!JNIHandler.type)&&Globals.isPlaying==0);
         			}
         			getSupportActionBar().setDisplayHomeAsUpEnabled(false);
         			getSupportActionBar().setHomeButtonEnabled(false);
@@ -297,7 +405,61 @@ public class TimidityActivity extends SherlockFragmentActivity implements FileBr
 	}
 	public void initCallback()
 	{
-		int x = JNIHandler.init(Globals.dataFolder+"/timidity/","timidity.cfg", Globals.mono, Globals.defSamp, getApplicationContext(), Globals.sixteen, Globals.buff, Globals.aRate, false);
+		if(Build.VERSION.SDK_INT>=android.os.Build.VERSION_CODES.LOLLIPOP)
+		{
+			List<UriPermission> permissions = getContentResolver().getPersistedUriPermissions();
+			int trueExt=0;
+			for(File f : getExternalFilesDirs(null))
+			{
+				if(f!=null)
+					trueExt++;
+			}
+			if((permissions==null||permissions.isEmpty())&&Globals.shouldLolNag&&trueExt>1)
+			{
+				new AlertDialog.Builder(this).setTitle("SD Card Access").setCancelable(false)
+				.setMessage("Would you like to give Timidity AE write access to your external sd card? This is recommended if you're converting files or would like to place Timidity AE's data directory there. Problems may occur if a directory other than the root of your SD card is selected.")
+				.setPositiveButton("Yes", new OnClickListener(){
+
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+					    startActivityForResult(intent, 42);
+					}
+					
+				})
+				.setNegativeButton("No, do not ask again", new OnClickListener(){
+
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						Globals.prefs.edit().putBoolean("shouldLolNag", Globals.shouldLolNag=false).commit();
+						initCallback2();
+					}
+					
+				}).setNeutralButton("No", new OnClickListener(){
+
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						initCallback2();
+					}
+				}).show();
+			}else{
+				for(UriPermission permission : permissions)
+				{
+					if(permission.isReadPermission()&&permission.isWritePermission())
+					{
+						Globals.theFold=permission.getUri();
+					}
+				}
+				
+				initCallback2();
+			}
+		}else{
+			initCallback2();
+		}
+	}
+	public void initCallback2()
+	{
+		int x = JNIHandler.init(Globals.dataFolder+"timidity/","timidity.cfg", Globals.mono, Globals.defSamp, Globals.sixteen, Globals.buff, Globals.aRate, false);
 		if(x!=0&&x!=-99)
 		{
 			Globals.nativeMidi=true;
@@ -323,24 +485,23 @@ public class TimidityActivity extends SherlockFragmentActivity implements FileBr
 								int goodCounter=0;
 								for(File ff: f.listFiles())
 								{
-									if(ff!=null)
+									if(ff!=null&&ff.isFile())
 									{
-										if(ff.isFile())
+										int dotPosition = ff.getName().lastIndexOf('.');
+										String extension="";
+										if (dotPosition != -1) 
 										{
-											int dotPosition = ff.getName().lastIndexOf('.');
-											String extension="";
-											if (dotPosition != -1) {
-												extension = (ff.getName().substring(dotPosition)).toLowerCase(Locale.US);
-													if(extension!=null){
-														if((Globals.showVideos?Globals.musicVideoFiles:Globals.musicFiles).contains("*"+extension+"*"))
-														{
+											extension = (ff.getName().substring(dotPosition)).toLowerCase(Locale.US);
+											if(extension!=null)
+											{
+												if((Globals.showVideos?Globals.musicVideoFiles:Globals.musicFiles).contains("*"+extension+"*"))
+												{
 															
-															files.add(ff.getPath());
-															if(ff.getPath().equals(data))
-																position=goodCounter;
-															goodCounter++;
-														}
-													}
+													files.add(ff.getPath());
+													if(ff.getPath().equals(data))
+														position=goodCounter;
+													goodCounter++;
+												}
 											}
 										}
 									}
@@ -356,8 +517,41 @@ public class TimidityActivity extends SherlockFragmentActivity implements FileBr
 					}else{
 						Toast.makeText(this, getResources().getString(R.string.srv_fnf),Toast.LENGTH_SHORT).show();
 					}
+				}else if(getIntent().getData().getScheme().equals("http")){
+					if(!data.endsWith("/"))
+					{
+						if(!getExternalCacheDir().exists())
+						{
+							getExternalCacheDir().mkdirs();
+						}
+						data=getIntent().getData().toString();
+						final Globals.DownloadTask downloadTask = new Globals.DownloadTask(this);
+						downloadTask.execute(data);
+						
+					}else{Toast.makeText(this, "This is a directory, not a file",Toast.LENGTH_SHORT).show();}
 				}else{
 					Toast.makeText(this, getResources().getString(R.string.intErr2),Toast.LENGTH_SHORT).show();
+				}
+			}
+		}
+	}
+	public void downloadFinished(String data)
+	{
+		ArrayList<String> files = new ArrayList<String>();
+		String name = getExternalCacheDir().getAbsolutePath()+'/'+data.substring(data.lastIndexOf("/")+1);
+		int dotPosition = name.lastIndexOf('.');
+		String extension="";
+		if (dotPosition != -1) 
+		{
+			extension = (name.substring(dotPosition)).toLowerCase(Locale.US);
+			if(extension!=null)
+			{
+				if((Globals.showVideos?Globals.musicVideoFiles:Globals.musicFiles).contains("*"+extension+"*"))
+				{
+							
+					files.add(name);
+					selectedSong(files,0,true,false);
+					fileFrag.getDir(name.substring(0,name.lastIndexOf('/')+1));
 				}
 			}
 		}
@@ -365,14 +559,35 @@ public class TimidityActivity extends SherlockFragmentActivity implements FileBr
 	@Override
 	public void onDestroy()
 	{
+		try{
 		unregisterReceiver(activityReceiver);
+		}catch(IllegalArgumentException e)
+		{
+			
+		}
 		super.onDestroy();
+		//if(deadlyDeath)
+			//System.exit(0);
+	}
+	private boolean isMyServiceRunning(Class<?> serviceClass) {
+	    ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+	    for (RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+	        if (serviceClass.getName().equals(service.service.getClassName())) {
+	            return true;
+	        }
+	    }
+	    return false;
 	}
 	@Override
 	protected void onSaveInstanceState(Bundle icicle) {
 		  super.onSaveInstanceState(icicle);
 		  icicle.putBoolean("justtheme", true);
-		  icicle.putBoolean("needservice", false);
+		  if(playFrag!=null)
+			  getSupportFragmentManager().putFragment(icicle,"playfrag",playFrag);
+		  if(plistFrag!=null)
+			  getSupportFragmentManager().putFragment(icicle,"plfrag",plistFrag);
+		  if(fileFrag!=null)
+			  getSupportFragmentManager().putFragment(icicle,"fffrag",fileFrag);
 		}
 	@Override
 	  public boolean onCreateOptionsMenu(Menu menu) {
@@ -391,7 +606,6 @@ public class TimidityActivity extends SherlockFragmentActivity implements FileBr
 			switch(mode)
 			{
 			case 0:
-				//System.out.println("Hello90145");
 				fileFrag.getDir(fileFrag.currPath);
 				break;
 			case 1:
@@ -411,13 +625,13 @@ public class TimidityActivity extends SherlockFragmentActivity implements FileBr
 			switch(mode)
 			{
 			case 0:
-				//System.out.println("Hello90145");
-				fileFrag.getDir(Globals.defaultFolder);
+				if(fileFrag!=null)
+					fileFrag.getDir(Globals.defaultFolder);
 				break;
 			case 1:
 				if(playFrag!=null)
 				{
-					if(!JNIHandler.type)
+					if((!JNIHandler.type)&&Globals.isPlaying==0)
 					{
 					playFrag.showMidiDialog();
 					}/*else{
@@ -432,15 +646,18 @@ public class TimidityActivity extends SherlockFragmentActivity implements FileBr
 			}
 		}else if(item.getItemId()==android.R.id.home)
 		{
-			//System.out.println("home");
 			 onBackPressed();
 		}else if(item.getItemId()==R.id.quit)
 		{
-			//System.out.println("quit");
+			deadlyDeath=true;
+			Intent new_intent = new Intent();
+		    new_intent.setAction(getResources().getString(R.string.msrv_rec));
+		    new_intent.putExtra(getResources().getString(R.string.msrv_cmd), 5);
+		    sendBroadcast(new_intent);
 			stopService(new Intent(this, MusicService.class));
-			unregisterReceiver(activityReceiver);
-			this.finish();
-			System.exit(0);
+		    unregisterReceiver(activityReceiver);
+		    android.os.Process.killProcess(android.os.Process.myPid());
+			//System.exit(0);
 		}else if(item.getItemId()==R.id.asettings)
 		{
 			Intent mainact = new Intent(this, SettingsActivity.class);
@@ -453,13 +670,12 @@ public class TimidityActivity extends SherlockFragmentActivity implements FileBr
 
 				@Override
 				public void onClick(DialogInterface dialog, int which) {
-					// TODO Auto-generated method stub
 					
 				}
 				
 			}).show();
 		}
-		return true;
+		return super.onMenuItemSelected(featureId, item);
 	}
 	@Override
 	public void onBackPressed()
@@ -530,7 +746,7 @@ public class TimidityActivity extends SherlockFragmentActivity implements FileBr
 			return playFrag;
 		case 2:
 			//System.out.println("creationist");
-			plistFrag = PlaylistFragment.create(Globals.dataFolder+"/playlists/");
+			plistFrag = PlaylistFragment.create(Globals.dataFolder+"playlists/");
 			return plistFrag;
 		default:
 			return null;//PageFragment.create(position + 1);
@@ -684,6 +900,15 @@ public class TimidityActivity extends SherlockFragmentActivity implements FileBr
 	    new_intent.putExtra(getResources().getString(R.string.msrv_seektime), time);
 	    sendBroadcast(new_intent);
 	}
+	public void writeFile(String input, String output)
+	{
+		Intent new_intent = new Intent();
+	    new_intent.setAction(getResources().getString(R.string.msrv_rec));
+	    new_intent.putExtra(getResources().getString(R.string.msrv_cmd), 14);
+	    new_intent.putExtra(getResources().getString(R.string.msrv_infile), input);
+	    new_intent.putExtra(getResources().getString(R.string.msrv_outfile), output);
+	    sendBroadcast(new_intent);
+	}
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 	    // Check which request we're responding to
@@ -697,10 +922,410 @@ public class TimidityActivity extends SherlockFragmentActivity implements FileBr
 	            startActivity(intent);	
 	        }
 	       
+	    }else if(requestCode==42)
+	    {
+	    	 if (resultCode == RESULT_OK) {
+	    	        Uri treeUri = data.getData();
+	    	        getContentResolver().takePersistableUriPermission(treeUri,
+	    	                Intent.FLAG_GRANT_READ_URI_PERMISSION |
+	    	                Intent.FLAG_GRANT_WRITE_URI_PERMISSION);  
+	    	    }
+	    	 initCallback2();
 	    }
 	}
 	public void readyForInit() {
 		if(needInit)
 			initCallback();
+	}
+	public void dynExport()
+	{
+	    localfinished=false;
+		if(Globals.isMidi(currSongName)&&Globals.isPlaying==0)
+		{
+			
+		
+		AlertDialog.Builder alert = new AlertDialog.Builder(this);
+
+		alert.setTitle("Convert to WAV File");
+		alert.setMessage("Exports the MIDI/MOD file to WAV.\nNative Midi must be disabled in settings.\nWarning: WAV files are large.");
+		InputFilter filter = new InputFilter() { 
+	        public CharSequence filter(CharSequence source, int start, int end, 
+	Spanned dest, int dstart, int dend) { 
+	                for (int i = start; i < end; i++) { 
+	                	String IC = "*/*\n*\r*\t*\0*\f*`*?***\\*<*>*|*\"*:*";
+	                        if (IC.contains("*"+source.charAt(i)+"*")) { 
+	                                return ""; 
+	                        } 
+	                } 
+	                return null; 
+	        } 
+		};
+		// Set an EditText view to get user input 
+		final EditText input = new EditText(this);
+		input.setFilters(new InputFilter[]{filter});
+		alert.setView(input);
+
+		alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+		public void onClick(DialogInterface dialog, int whichButton) {
+		  String value = input.getText().toString();
+		  if(!value.toLowerCase(Locale.US).endsWith(".wav"))
+			  value+=".wav";
+		  String parent=currSongName.substring(0,currSongName.lastIndexOf('/')+1);
+		  boolean alreadyExists = new File(parent+value).exists();
+		  boolean canWrite=true;
+		  String needRename = null;
+		  String probablyTheRoot = "";
+		  String probablyTheDirectory = "";
+		  try{
+		        new FileOutputStream(parent+value,true).close();
+		  }catch(FileNotFoundException e)
+		  {
+			canWrite=false;  
+		  } catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+		  if(canWrite&&!alreadyExists)
+			  new File(parent+value).delete();
+		  if(canWrite&&new File(parent).canWrite())
+		  {
+			  value=parent+value;
+		  }else if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.LOLLIPOP&& Globals.theFold!=null)
+		  {
+			  //TODO
+			  // Write the file to getExternalFilesDir, then move it with the Uri
+			  // We need to tell JNIHandler that movement is needed.
+			  
+			  String[] tmp = Globals.getDocFilePaths(TimidityActivity.this,parent);
+			  probablyTheDirectory = tmp[0];
+			  probablyTheRoot = tmp[1];
+			if(probablyTheDirectory.length()>1)
+			{
+				needRename = parent.substring(parent.indexOf(probablyTheRoot)+probablyTheRoot.length())+value;
+				value = probablyTheDirectory+'/'+value;
+			}else{
+				value=Environment.getExternalStorageDirectory().getAbsolutePath()+'/'+value;
+			}
+		  }else{
+			  value=Environment.getExternalStorageDirectory().getAbsolutePath()+'/'+value;
+		  }
+		  final String finalval = value;
+		  final String needToRename = needRename;
+		  final String probRoot = probablyTheRoot;
+		  if(new File(finalval).exists()||(new File(probRoot+needRename).exists()&&needToRename!=null))
+		  {
+			  AlertDialog dialog2 = new AlertDialog.Builder(TimidityActivity.this).create();
+			    dialog2.setTitle("Warning");
+			    dialog2.setMessage("Overwrite WAV file?");
+			    dialog2.setCancelable(false);
+			    dialog2.setButton(DialogInterface.BUTTON_POSITIVE, getResources().getString(android.R.string.yes), new DialogInterface.OnClickListener() {
+			        public void onClick(DialogInterface dialog, int buttonId) {
+			        	if(needToRename!=null)
+			        	{
+			        		Globals.tryToDeleteFile(TimidityActivity.this, probRoot+needToRename);
+			        		Globals.tryToDeleteFile(TimidityActivity.this, finalval);
+			        	}else{
+			        		Globals.tryToDeleteFile(TimidityActivity.this, finalval);
+			        	}
+			        		
+				        	saveWavPart2(finalval, needToRename);
+			        	
+			        }
+
+					
+			    });
+			    dialog2.setButton(DialogInterface.BUTTON_NEGATIVE, getResources().getString(android.R.string.no), new DialogInterface.OnClickListener() {
+			        public void onClick(DialogInterface dialog, int buttonId) {
+			          
+			        }
+			    });
+			    dialog2.show();
+		  }else{
+		     saveWavPart2(finalval, needToRename);
+		  }
+		  
+		}
+		});
+
+		alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+		  public void onClick(DialogInterface dialog, int whichButton) {
+		    // Canceled.
+		  }
+		});
+
+
+		alerty = alert.show();
+		
+	}
+	}
+	
+	public void saveCfg()
+	{
+		localfinished=false;
+		if(Globals.isMidi(currSongName)&&Globals.isPlaying==0)
+		{
+			
+		
+		AlertDialog.Builder alert = new AlertDialog.Builder(this);
+
+		alert.setTitle("Save Cfg");
+		alert.setMessage("Save a MIDI configuration file");
+		InputFilter filter = new InputFilter() { 
+	        public CharSequence filter(CharSequence source, int start, int end, 
+	Spanned dest, int dstart, int dend) { 
+	                for (int i = start; i < end; i++) { 
+	                	String IC = "*/*\n*\r*\t*\0*\f*`*?***\\*<*>*|*\"*:*";
+	                        if (IC.contains("*"+source.charAt(i)+"*")) { 
+	                                return ""; 
+	                        } 
+	                } 
+	                return null; 
+	        } 
+		};
+		// Set an EditText view to get user input 
+		final EditText input = new EditText(this);
+		input.setFilters(new InputFilter[]{filter});
+		alert.setView(input);
+
+		alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+		public void onClick(DialogInterface dialog, int whichButton) {
+		  String value = input.getText().toString();
+		  if(!value.toLowerCase(Locale.US).endsWith(".tcf"))
+			  value+=".tcf";
+		  String parent=currSongName.substring(0,currSongName.lastIndexOf('/')+1);
+		  boolean canWrite=true;
+		  boolean alreadyExists = new File(parent+value).exists();
+		  String needRename = null;
+		  String probablyTheRoot = "";
+		  String probablyTheDirectory = "";
+		  try{
+		        new FileOutputStream(parent+value,true).close();
+		  }catch(FileNotFoundException e)
+		  {
+			canWrite=false;  
+		  } catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+		  if(!alreadyExists&&canWrite)
+			  new File(parent+value).delete();
+		  if(canWrite&&new File(parent).canWrite())
+		  {
+			  value=parent+value;
+		  }else if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.LOLLIPOP&& Globals.theFold!=null)
+		  {
+			  //TODO
+			  // Write the file to getExternalFilesDir, then move it with the Uri
+			  // We need to tell JNIHandler that movement is needed.
+			  
+			  String[] tmp = Globals.getDocFilePaths(TimidityActivity.this,parent);
+			  probablyTheDirectory = tmp[0];
+			  probablyTheRoot = tmp[1];
+			if(probablyTheDirectory.length()>1)
+			{
+				needRename = parent.substring(parent.indexOf(probablyTheRoot)+probablyTheRoot.length())+value;
+				value = probablyTheDirectory+'/'+value;
+			}else{
+				value=Environment.getExternalStorageDirectory().getAbsolutePath()+'/'+value;
+				return;
+			}
+		  }else{
+			  value=Environment.getExternalStorageDirectory().getAbsolutePath()+'/'+value;
+		  }
+		  final String finalval = value;
+		  final String needToRename = needRename;
+		  final String probRoot = probablyTheRoot;
+		  if(new File(finalval).exists()||(new File(probRoot+needRename).exists()&&needToRename!=null))
+		  {
+			  AlertDialog dialog2 = new AlertDialog.Builder(TimidityActivity.this).create();
+			    dialog2.setTitle("Warning");
+			    dialog2.setMessage("Overwrite config file?");
+			    dialog2.setCancelable(false);
+			    dialog2.setButton(DialogInterface.BUTTON_POSITIVE, getResources().getString(android.R.string.yes), new DialogInterface.OnClickListener() {
+			        public void onClick(DialogInterface dialog, int buttonId) {
+			        	if(needToRename!=null)
+			        	{
+			        		Globals.tryToDeleteFile(TimidityActivity.this, probRoot+needToRename);
+			        		Globals.tryToDeleteFile(TimidityActivity.this, finalval);
+			        	}else{
+			        		Globals.tryToDeleteFile(TimidityActivity.this, finalval);
+			        	}
+			        	saveCfgPart2(finalval, needToRename);
+			        }
+			    });
+			    dialog2.setButton(DialogInterface.BUTTON_NEGATIVE, getResources().getString(android.R.string.no), new DialogInterface.OnClickListener() {
+			        public void onClick(DialogInterface dialog, int buttonId) {
+			          
+			        }
+			    });
+			    dialog2.show();
+		  }else{
+			  saveCfgPart2(finalval, needToRename);
+		  }
+		}
+		});
+
+		alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+		  public void onClick(DialogInterface dialog, int whichButton) {
+		    // Canceled.
+		  }
+		});
+
+		alerty = alert.show();
+		}
+	}
+	public void saveCfgPart2(final String finalval, final String needToRename)
+	{
+		Intent new_intent = new Intent();
+	    new_intent.setAction(getResources().getString(R.string.msrv_rec));
+	    new_intent.putExtra(getResources().getString(R.string.msrv_cmd), 16);
+	    new_intent.putExtra(getResources().getString(R.string.msrv_outfile), finalval);
+	    sendBroadcast(new_intent);
+		//JNIHandler.setupOutputFile("/sdcard/whya.wav");
+		//System.out.println(path.get(position));
+		//System.out.println(JNIHandler.play(path.get(position)));
+	  final ProgressDialog prog;
+	  prog = new ProgressDialog(TimidityActivity.this);
+	  prog.setButton(DialogInterface.BUTTON_NEGATIVE, "Cancel", new DialogInterface.OnClickListener() {
+		    @Override
+		    public void onClick(DialogInterface dialog, int which) {
+		    	
+		        dialog.dismiss();
+		    }
+		});
+	  prog.setTitle("Saving CFG");
+	  prog.setMessage("Saving...");       
+	  prog.setIndeterminate(true);
+	  prog.setCancelable(false);
+	  prog.show();
+        new Thread(new Runnable() {                 
+			@Override
+			public void run() {
+			    while(!localfinished&&prog.isShowing()){
+			    	try {
+			    		
+			    	Thread.sleep(25);
+			    	} catch (InterruptedException e){}}
+			    
+			    TimidityActivity.this.runOnUiThread(new Runnable() {
+			        public void run() {
+			        	String trueName = finalval;
+			        	if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.LOLLIPOP&& Globals.theFold!=null&&needToRename!=null)
+			        	{
+			        		if(Globals.renameDocumentFile(TimidityActivity.this, finalval, needToRename))
+			        		{
+			        			trueName=needToRename;
+			        		}else{
+			        			trueName="Error";
+			        		}
+			        	}
+			        	Toast.makeText( TimidityActivity.this, "Wrote "+trueName, Toast.LENGTH_SHORT).show();
+			        	prog.dismiss();
+			        	fileFrag.getDir(fileFrag.currPath);
+			        }
+			    });
+			    
+			}
+        }).start();
+	}
+	public void saveWavPart2(final String finalval, final String needToRename)
+	{
+		Intent new_intent = new Intent();
+	    new_intent.setAction(getResources().getString(R.string.msrv_rec));
+	    new_intent.putExtra(getResources().getString(R.string.msrv_cmd), 15);
+	    new_intent.putExtra(getResources().getString(R.string.msrv_outfile), finalval);
+	    sendBroadcast(new_intent);
+		//JNIHandler.setupOutputFile("/sdcard/whya.wav");
+		//System.out.println(path.get(position));
+		//System.out.println(JNIHandler.play(path.get(position)));
+	  final ProgressDialog prog;
+	  prog = new ProgressDialog(TimidityActivity.this);
+	  prog.setButton(DialogInterface.BUTTON_NEGATIVE, "Cancel", new DialogInterface.OnClickListener() {
+		    @Override
+		    public void onClick(DialogInterface dialog, int which) {
+		    	
+		        dialog.dismiss();
+		    }
+		});
+	  prog.setTitle("Converting to WAV");
+	  prog.setMessage("Converting...");       
+	  prog.setIndeterminate(false);
+	  prog.setCancelable(false);
+	  prog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+	  prog.show();
+        new Thread(new Runnable() {                 
+			@Override
+			public void run() {
+			    while(!localfinished&&prog.isShowing()){
+			    	prog.setMax(JNIHandler.maxTime);
+		    		prog.setProgress(JNIHandler.currTime);
+			    	try {
+			    		
+			    	Thread.sleep(25);
+			    	} catch (InterruptedException e){}}
+			    if(!localfinished)
+			    {
+			    	JNIHandler.stop();
+			    	 TimidityActivity.this.runOnUiThread(new Runnable() {
+					        public void run() {
+			    	Toast.makeText( TimidityActivity.this, "Conversion canceled", Toast.LENGTH_SHORT).show();
+			    	if(!Globals.keepWav)
+			    	{
+			    		if(new File(finalval).exists())
+			    			new File(finalval).delete();
+			    	}else{
+			    		fileFrag.getDir(fileFrag.currPath);
+			    	}
+					        }
+			    	 });
+			    	 
+			    }else{
+			    TimidityActivity.this.runOnUiThread(new Runnable() {
+			        public void run() {
+			        	String trueName = finalval;
+			        	if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.LOLLIPOP&& Globals.theFold!=null&&needToRename!=null)
+			        	{
+			        		if(Globals.renameDocumentFile(TimidityActivity.this, finalval, needToRename))
+			        		{
+			        			trueName=needToRename;
+			        		}else{
+			        			trueName="Error";
+			        		}
+			        	}
+			        	Toast.makeText( TimidityActivity.this, "Wrote "+trueName, Toast.LENGTH_SHORT).show();
+			        	prog.dismiss();
+			        	fileFrag.getDir(fileFrag.currPath);
+			        }
+			    });
+			    }
+			}
+        }).start();
+	}
+	public void loadCfg()
+	{
+		new FileBrowserDialog().create( 0, Globals.configFiles, this, this, getLayoutInflater(), true, currSongName.substring(0,currSongName.lastIndexOf('/')), "Loaded");
+	}
+	public void loadCfg(String path)
+	{
+		 Intent new_intent = new Intent();
+		    new_intent.setAction(getResources().getString(R.string.msrv_rec));
+		    new_intent.putExtra(getResources().getString(R.string.msrv_cmd), 17);
+		    new_intent.putExtra(getResources().getString(R.string.msrv_infile), path);
+		    sendBroadcast(new_intent);
+	}
+	@Override
+	public void setItem(String path, int type)
+	{
+		loadCfg(path);
+	}
+	@Override
+	public void write()
+	{
+		
+	}
+	@Override
+	public void ignore()
+	{
+		
 	}
 }

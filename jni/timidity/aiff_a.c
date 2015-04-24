@@ -20,7 +20,6 @@
     aiff_a.c - Functions to output AIFF audio file (*.aiff).
 				Written by Masanao Izumo <mo@goice.co.jp>
 */
-#define HAVE_CONFIG_H
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif /* HAVE_CONFIG_H */

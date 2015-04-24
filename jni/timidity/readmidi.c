@@ -52,7 +52,7 @@
 #include <math.h>
 
 //#include "android/log.h"
-extern int errno;
+
 /* rcp.c */
 int read_rcp_file(struct timidity_file *tf, char *magic0, char *fn);
 

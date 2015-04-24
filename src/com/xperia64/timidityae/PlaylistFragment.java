@@ -15,6 +15,8 @@ import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -121,7 +123,25 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 							public void onClick(DialogInterface dialog, int which) {
 								File f = new File(path.get(pos));
 								if(f.exists())
-									f.delete();
+								{
+									 String[] x = null;
+									  try{
+									        new FileOutputStream(path.get(pos),true).close();
+									  }catch(FileNotFoundException e)
+									  {
+										x=Globals.getDocFilePaths(getActivity(), f.getAbsolutePath()); 
+									  } catch (IOException e)
+									{
+										e.printStackTrace();
+									}
+									  
+									  if(x!=null)
+									  {
+										  Globals.tryToDeleteFile(getActivity(), path.get(pos));
+									  }else{
+										  f.delete();
+									  }
+								}
 								getPlaylists(null);
 								dialog.dismiss();
 								} 
@@ -155,7 +175,25 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 							  {
 								  Toast.makeText(getActivity(), getResources().getString(R.string.plist_ex), Toast.LENGTH_SHORT).show();
 							  }else{
-								  f.renameTo(f2);
+								  String[] x = null;
+								  try{
+								        new FileOutputStream(f.getAbsolutePath(),true).close();
+								  }catch(FileNotFoundException e)
+								  {
+									x=Globals.getDocFilePaths(getActivity(), f.getAbsolutePath()); 
+								  } catch (IOException e)
+								{
+									e.printStackTrace();
+								} 
+								  
+								  if(x!=null)
+								  {
+									  Globals.renameDocumentFile(getActivity(), f.getAbsolutePath(), f2.getAbsolutePath().substring(f2.getAbsolutePath().indexOf(x[1])+x[1].length()));
+								  }else{
+									  f.renameTo(f2);
+								  }
+								  
+								  
 							  }
 						  }else
 							  Toast.makeText(getActivity(), getResources().getString(R.string.plist_pnf), Toast.LENGTH_SHORT).show();
@@ -241,22 +279,18 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 	                            	}
 	                            	break;
 	                            case 2:
-	                            	new FileBrowserDialog().create( 0, (Globals.showVideos?Globals.musicVideoFiles:Globals.musicFiles), PlaylistFragment.this, getActivity(), getActivity().getLayoutInflater(), false, Globals.defaultFolder);
+	                            	new FileBrowserDialog().create( 0, (Globals.showVideos?Globals.musicVideoFiles:Globals.musicFiles), PlaylistFragment.this, getActivity(), getActivity().getLayoutInflater(), false, Globals.defaultFolder, getActivity().getResources().getString(R.string.fb_add));
 	                            	break;
 	                            case 3:
-	                            	new FileBrowserDialog().create( 1, null, PlaylistFragment.this, getActivity(), getActivity().getLayoutInflater(), false, Globals.defaultFolder);
+	                            	new FileBrowserDialog().create( 1, null, PlaylistFragment.this, getActivity(), getActivity().getLayoutInflater(), false, Globals.defaultFolder, getActivity().getResources().getString(R.string.fb_add));
 	                            	break;
 	                            case 4:
-	                            	new FileBrowserDialog().create( 2, null, PlaylistFragment.this,getActivity(), getActivity().getLayoutInflater(), false, Globals.defaultFolder);
+	                            	new FileBrowserDialog().create( 2, null, PlaylistFragment.this,getActivity(), getActivity().getLayoutInflater(), false, Globals.defaultFolder, getActivity().getResources().getString(R.string.fb_add));
 	                            	break;
 	                            }
 	                        }
 	                    });
 	            builderSingle.show();
-	        	
-	        	
-	        	
-	        	
 	        	return true;
 	        }
 				return true;
@@ -406,9 +440,11 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 							{
 								int dotPosition = ff.getName().lastIndexOf('.');
 								String extension="";
-								if (dotPosition != -1) {
+								if (dotPosition != -1) 
+								{
 									extension = (ff.getName().substring(dotPosition)).toLowerCase(Locale.US);
-										if(extension!=null){
+										if(extension!=null)
+										{
 											if((Globals.showVideos?Globals.musicVideoFiles:Globals.musicFiles).contains("*"+extension+"*"))
 											{
 												vola.add(loki++, ff.getAbsolutePath());
@@ -486,13 +522,13 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
                             	write();
                             	break;
                             case 1:
-                            	new FileBrowserDialog().create( 0, (Globals.musicFiles+((Globals.showVideos)?".mp4*.3gp*":"")), PlaylistFragment.this, getActivity(), getActivity().getLayoutInflater(), false, Globals.defaultFolder);
+                            	new FileBrowserDialog().create( 0, (((Globals.showVideos)?Globals.musicVideoFiles:Globals.musicFiles)), PlaylistFragment.this, getActivity(), getActivity().getLayoutInflater(), false, Globals.defaultFolder, getActivity().getResources().getString(R.string.fb_add));
                             	break;
                             case 2:
-                            	new FileBrowserDialog().create( 1, null, PlaylistFragment.this, getActivity(), getActivity().getLayoutInflater(), false, Globals.defaultFolder);
+                            	new FileBrowserDialog().create( 1, null, PlaylistFragment.this, getActivity(), getActivity().getLayoutInflater(), false, Globals.defaultFolder, getActivity().getResources().getString(R.string.fb_add));
                             	break;
                             case 3:
-                            	new FileBrowserDialog().create( 2, null, PlaylistFragment.this,getActivity(), getActivity().getLayoutInflater(), false, Globals.defaultFolder);
+                            	new FileBrowserDialog().create( 2, null, PlaylistFragment.this,getActivity(), getActivity().getLayoutInflater(), false, Globals.defaultFolder, getActivity().getResources().getString(R.string.fb_add));
                             	break;
                             }
                         }
@@ -502,8 +538,7 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 			AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
 
 			alert.setTitle(getResources().getString(R.string.plist_crea));
-
-			// Set an EditText view to get user input 
+ 
 			final EditText input = new EditText(getActivity());
 			alert.setView(input);
 
@@ -517,18 +552,37 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 			alert.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int whichButton) {
 			  String value = input.getText().toString();
-			  File f = new File(playlistDir+"/"+value+".tpl");
+			  File f = new File(playlistDir+value+".tpl");
 			 
 			  if(!f.exists())
-				try {
-					f.createNewFile();
-				} catch (IOException e) {
+			  {
+				  String[] needLol = null;
+					try{
+				        new FileOutputStream(playlistDir+value+".tpl").close();
+				  }catch(FileNotFoundException e)
+				  {
+					needLol=Globals.getDocFilePaths(getActivity(), playlistDir); 
+				  } catch (IOException e)
+				{
 					e.printStackTrace();
-				}
+				} 
+					if(needLol!=null)
+					{
+						Globals.tryToCreateFile(getActivity(), playlistDir+value+".tpl");
+					}else{
+						new File(playlistDir+value+".tpl").delete();
+						try
+						{
+							f.createNewFile();
+						} catch (IOException e)
+						{
+							e.printStackTrace();
+						}
+					}
+			  }
 			  
 			  getPlaylists(null);
 			  dialog.dismiss();
-			  // Do something with value!
 			  }
 			
 			});
@@ -557,28 +611,77 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 	 }
 	 public void write()
 	 {
-		 FileWriter writer = null;
-		 if(new File(tmpName).exists())
-		 {
-			 new File(tmpName).delete();
-		 }
-		try {
-			writer = new FileWriter(tmpName);
-		} catch (IOException e1) {
-			e1.printStackTrace();
+		 String[] needLol = null;
+		 
+			try{
+		        new FileOutputStream(tmpName,true).close();
+		  }catch(FileNotFoundException e)
+		  {
+			needLol=Globals.getDocFilePaths(getActivity(), tmpName); 
+		  } catch (IOException e)
+		{
+			e.printStackTrace();
 		} 
-		 for(String str: vola) {
-		   try {
-			writer.write(str+"\n");
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		 }
-		 try {
-			writer.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+
+			if(needLol!=null)
+			{
+				
+				FileWriter writer = null;
+				 if(new File(tmpName).exists())
+					 Globals.tryToDeleteFile(getActivity(), tmpName);
+				 
+				 String probablyTheDirectory = needLol[0];
+				    String probablyTheRoot = needLol[1];
+				    String needRename = null;
+				    String value = null;
+				    if(probablyTheDirectory.length()>1)
+					{
+						needRename = tmpName.substring(tmpName.indexOf(probablyTheRoot)+probablyTheRoot.length());
+						value = probablyTheDirectory+tmpName.substring(tmpName.lastIndexOf('/'));
+					}else{
+						return;
+					}
+				try {
+					writer = new FileWriter(value);
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				} 
+				 for(String str: vola) {
+				   try {
+					writer.write(str+"\n");
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				 }
+				 try {
+					writer.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				 Globals.renameDocumentFile(getActivity(), value, needRename);
+			}else{
+				FileWriter writer = null;
+				 if(new File(tmpName).exists())
+					 Globals.tryToCreateFile(getActivity(), tmpName);
+				try {
+					writer = new FileWriter(tmpName);
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				} 
+				 for(String str: vola) {
+				   try {
+					writer.write(str+"\n");
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				 }
+				 try {
+					writer.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		 
 		 getPlaylists(plistName);
 	 }
 	

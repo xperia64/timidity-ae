@@ -37,7 +37,7 @@
 #include "common.h"
 #include "tables.h"
 #include "controls.h"
-extern int errno;
+
 int load_table(char *file)
 {
 	FILE *fp;

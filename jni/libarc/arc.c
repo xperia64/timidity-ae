@@ -35,7 +35,7 @@
 #include "zip.h"
 #include "unlzh.h"
 #include "explode.h"
-extern int errno;
+
 char *arc_lib_version = ARC_LIB_VERSION;
 
 #define GZIP_ASCIIFLAG		(1u<<0)
