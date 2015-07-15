@@ -95,19 +95,23 @@
                 android:defaultValue="/sdcard/TimidityAE/"
                 android:title="@string/sett_mandir"
                 android:key="dataDir" />
-                                <PreferenceScreen android:title="Request Lollipop Write Access"
-    		android:summary="Change the directory that Timidity has access to. The ROOT of the SD card must be chosen."
+                                <PreferenceScreen android:title="@string/sett_lolrw"
+    		android:summary="@string/sett_lolrw_sum"
     		android:key="lolWrite"/>
                                 <CheckBoxPreference
-                        android:title="Ask about external sdcard access on startup"
+                        android:title="@string/sett_lolnag"
                         android:defaultValue="true"
-                        android:summary="Ask for write access to the external sdcard if not found on startup"
+                        android:summary="@string/sett_lolnag_sum"
                         android:key="shouldLolNag" />
                 
                 </PreferenceCategory>
     		</PreferenceScreen>
     		<PreferenceCategory android:title="@string/sett_other">
-    		    
+    		     <CheckBoxPreference
+                        android:title="@string/sett_reshuff"
+                        android:defaultValue="false"
+                        android:summary="@string/sett_reshuff_sum"
+                        android:key="reShuffle" />
                 <CheckBoxPreference
                         android:title="@string/sett_nm"
                         android:defaultValue="false"
@@ -118,5 +122,15 @@
                         android:defaultValue="false"
                         android:summary="@string/sett_kpw_sum"
                         android:key="keepPartialWav" />
+                 <CheckBoxPreference
+                        android:title="@string/sett_defback"
+                        android:defaultValue="false"
+                        android:summary="@string/sett_defback_sum"
+                        android:key="useDefBack" />
+                 <CheckBoxPreference
+                        android:title="@string/sett_compcfg"
+                        android:defaultValue="true"
+                        android:summary="@string/sett_compcfg_sum"
+                        android:key="compressCfg" />
         </PreferenceCategory>
 </PreferenceScreen>

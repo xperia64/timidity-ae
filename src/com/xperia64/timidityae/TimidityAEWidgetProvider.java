@@ -11,6 +11,7 @@
  ******************************************************************************/
 package com.xperia64.timidityae;
 
+import android.annotation.SuppressLint;
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
@@ -70,6 +71,7 @@ public class TimidityAEWidgetProvider extends AppWidgetProvider {
 		}
 		super.onReceive(context, intent);
 	}
+	@SuppressLint("NewApi")
 	public static Bitmap scaleDownBitmap(Bitmap photo, Context context) {
 
 		int currSize=(Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB_MR1)?
@@ -96,6 +98,7 @@ public class TimidityAEWidgetProvider extends AppWidgetProvider {
 	{
 		System.out.println("I am resized");
 	}*/
+	@SuppressLint("NewApi")
 	@SuppressWarnings("deprecation")
 	private static Point getDisplaySize(final Display display) {
 	    final Point point = new Point();

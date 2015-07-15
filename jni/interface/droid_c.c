@@ -59,7 +59,7 @@ static void ctl_program(int ch, int prog, char *comm, unsigned int banks);
 static int ctl_pass_playing_list(int number_of_files, char *list_of_files[]);
 static char lyric_buf[300]={0};
 static int lyric_col = 2;
-char *curr_list_of_files[];
+char *curr_list_of_files[1];
 int curr_number_of_files;
 int droid_rc=0;
 int droid_arg=0;

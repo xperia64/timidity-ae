@@ -18,7 +18,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -48,11 +48,12 @@ import android.widget.SeekBar.OnSeekBarChangeListener;
 import com.actionbarsherlock.app.SherlockFragment;
 import com.xperia64.timidityae.R;
 
+@SuppressLint("Recycle")
 public class PlayerFragment extends SherlockFragment {
 	
 	public boolean shouldAdvance=true;
 	public int loopMode=1;
-	public boolean shuffleMode=false;
+	public int shuffleMode=0;
 	boolean firstSelection;
 	boolean sliding=false;
 	//
@@ -275,6 +276,7 @@ public class PlayerFragment extends SherlockFragment {
 	    	});
 		}
 	}
+	@SuppressLint("Recycle")
 	@Override
 	public void onViewCreated(View view, Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
@@ -421,8 +423,22 @@ public class PlayerFragment extends SherlockFragment {
 		shuffleButton.setOnClickListener(new OnClickListener(){
 			@Override
 			public void onClick(View arg0) {
-				shuffleMode=!shuffleMode;
-				((ImageButton) arg0).setImageResource(shuffleMode?R.drawable.ic_menu_revert:R.drawable.ic_menu_forward);
+				if(++shuffleMode>2)
+					shuffleMode=0;
+				int shufRes = R.drawable.ic_menu_forward;
+				switch(shuffleMode)
+				{
+				case 0:
+					shufRes = R.drawable.ic_menu_forward;
+					break;
+				case 1:
+					shufRes = R.drawable.ic_menu_shuffle;
+					break;
+				case 2:
+					shufRes = R.drawable.ic_menu_revert;
+					break;
+				}
+				((ImageButton) arg0).setImageResource(shufRes);
 				mActivity.shuffle(shuffleMode);
 			}
 		});
@@ -512,7 +528,7 @@ public class PlayerFragment extends SherlockFragment {
 		((TimidityActivity)getActivity()).readyForInit();
 	}
 	
-	public void play(final int seekBarTime, final String title, final boolean shuffleMode, final int loopMode)
+	public void play(final int seekBarTime, final String title, final int shuffleMode, final int loopMode)
 	{
 		enabledControls=false;
 		canEnablePlay=false;
@@ -554,7 +570,20 @@ public class PlayerFragment extends SherlockFragment {
 	    				loopButton.setImageResource(R.drawable.ic_menu_rotate);
 					break;
 	    			}
-					shuffleButton.setImageResource(shuffleMode?R.drawable.ic_menu_revert:R.drawable.ic_menu_forward);
+	    	      int shufRes = R.drawable.ic_menu_forward;
+					switch(shuffleMode)
+					{
+					case 0:
+						shufRes = R.drawable.ic_menu_forward;
+						break;
+					case 1:
+						shufRes = R.drawable.ic_menu_shuffle;
+						break;
+					case 2:
+						shufRes = R.drawable.ic_menu_revert;
+						break;
+					}
+					shuffleButton.setImageResource(shufRes);
     		}
     	});
 		if(JNIHandler.type&&fragMode!=0)
@@ -673,10 +702,11 @@ public class PlayerFragment extends SherlockFragment {
             break;
 		}
 	}
-	public void updateMidiDialog(boolean which[], int t, int tr, int voices)
+	/*public void updateMidiDialog(boolean which[], int t, int tr, int voices)
 	{
 		
-	}
+	}*/
+	@SuppressLint("InflateParams")
 	public void showMidiDialog() {
 		AlertDialog.Builder b = new AlertDialog.Builder(getActivity());
 		View v = getActivity().getLayoutInflater().inflate(R.layout.midi_options, null);
@@ -691,7 +721,7 @@ public class PlayerFragment extends SherlockFragment {
 		Button loadCfg = (Button) v.findViewById(R.id.loadCfg);
 		Button savedefCfg = (Button) v.findViewById(R.id.savedefCfg);
 		final Button deldefCfg = (Button) v.findViewById(R.id.deldefCfg);
-		deldefCfg.setEnabled(new File( mActivity.currSongName+".def.tcf").exists());
+		deldefCfg.setEnabled(new File( mActivity.currSongName+".def.tcf").exists()||new File( mActivity.currSongName+".def.tzf").exists());
 		tempo = (TextView) v.findViewById(R.id.tempoText);
 		pitch = (TextView) v.findViewById(R.id.pitchText);
 		voices = (TextView) v.findViewById(R.id.voiceText);
@@ -784,27 +814,37 @@ public class PlayerFragment extends SherlockFragment {
 			@Override
 			public void onClick(View arg0) {
 				
-				String value;
-				boolean alreadyExists = new File(mActivity.currSongName+".def.tcf").exists();
-				boolean canWrite=true;
-				  String needRename = null;
+				String value1;
+				String value2;
+				boolean alreadyExists = (new File(mActivity.currSongName+".def.tcf").exists()||new File(mActivity.currSongName+".def.tzf").exists());
+				boolean aWrite=true;
+				  String needRename1 = null;
+				  String needRename2 = null;
 				  String probablyTheRoot = "";
 				  String probablyTheDirectory = "";
 				  try{
-				        new FileOutputStream(mActivity.currSongName+".def.tcf",true).close();
+				        if(Globals.compressCfg)
+				        	new FileOutputStream(mActivity.currSongName+".def.tzf",true).close();
+				        else
+				        	new FileOutputStream(mActivity.currSongName+".def.tcf",true).close();
 				  }catch(FileNotFoundException e)
 				  {
-					canWrite=false;  
+					aWrite=false;  
 				  } catch (IOException e)
 				{
 					e.printStackTrace();
 				}
+				  final boolean canWrite = aWrite;
 				  if(!alreadyExists&&canWrite)
+				  {
 					  new File(mActivity.currSongName+".def.tcf").delete();
+					  new File(mActivity.currSongName+".def.tzf").delete();
+				  }
 				  
 				  if(canWrite&&new File(mActivity.currSongName).canWrite())
 				  {
-					  value=mActivity.currSongName+".def.tcf";
+					  value1=mActivity.currSongName+(Globals.compressCfg?".def.tzf":".def.tcf");
+					  value2=mActivity.currSongName+(Globals.compressCfg?".def.tcf":".def.tzf");
 				  }else if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.LOLLIPOP&& Globals.theFold!=null)
 				  {
 					  //TODO
@@ -816,8 +856,10 @@ public class PlayerFragment extends SherlockFragment {
 					  probablyTheRoot = tmp[1];
 					if(probablyTheDirectory.length()>1)
 					{
-						needRename = (mActivity.currSongName).substring(mActivity.currSongName.indexOf(probablyTheRoot)+probablyTheRoot.length())+".def.tcf";
-						value = probablyTheDirectory+mActivity.currSongName.substring(mActivity.currSongName.lastIndexOf('/'))+".def.tcf";
+						needRename1 = (mActivity.currSongName).substring(mActivity.currSongName.indexOf(probablyTheRoot)+probablyTheRoot.length())+(Globals.compressCfg?".def.tzf":".def.tcf");
+						needRename2 = (mActivity.currSongName).substring(mActivity.currSongName.indexOf(probablyTheRoot)+probablyTheRoot.length())+(Globals.compressCfg?".def.tcf":".def.tzf");
+						value1 = probablyTheDirectory+mActivity.currSongName.substring(mActivity.currSongName.lastIndexOf('/'))+(Globals.compressCfg?".def.tzf":".def.tcf");
+						value2 = probablyTheDirectory+mActivity.currSongName.substring(mActivity.currSongName.lastIndexOf('/'))+(Globals.compressCfg?".def.tcf":".def.tzf");
 					}else{
 						Toast.makeText(getActivity(), "Could not write config file. Did you give Timidity write access to the root of your external sd card?" , Toast.LENGTH_SHORT).show();
 						return;
@@ -831,10 +873,12 @@ public class PlayerFragment extends SherlockFragment {
 					  }
 					  return;
 				  }
-				  final String finalval = value;
-				  final String needToRename = needRename;
+				  final String finalval1 = value1;
+				  final String finalval2 = value2;
+				  final String needToRename1 = needRename1;
+				  final String needToRename2 = needRename2;
 				  final String probRoot = probablyTheRoot;
-				if(new File( mActivity.currSongName+".def.tcf").exists())
+				if(alreadyExists)
 				{
 					AlertDialog dialog = new AlertDialog.Builder(mActivity).create();
 				    dialog.setTitle("Warning");
@@ -842,15 +886,24 @@ public class PlayerFragment extends SherlockFragment {
 				    dialog.setCancelable(false);
 				    dialog.setButton(DialogInterface.BUTTON_POSITIVE, getResources().getString(android.R.string.yes), new DialogInterface.OnClickListener() {
 				        public void onClick(DialogInterface dialog, int buttonId) {
-				        	if(needToRename!=null)
+				        	if(!canWrite&&Build.VERSION.SDK_INT>=Build.VERSION_CODES.LOLLIPOP)
 				        	{
-				        		Globals.tryToDeleteFile(getActivity(), probRoot+needToRename);
-				        		Globals.tryToDeleteFile(getActivity(), finalval);
+				        		if(needToRename1!=null)
+				        		{
+				        			Globals.tryToDeleteFile(getActivity(), probRoot+needToRename1);
+				        			Globals.tryToDeleteFile(getActivity(), finalval1);
+				        			Globals.tryToDeleteFile(getActivity(), probRoot+needToRename2);
+				        			Globals.tryToDeleteFile(getActivity(), finalval2);
+				        		}else{
+				        			Globals.tryToDeleteFile(getActivity(), finalval1);
+				        			Globals.tryToDeleteFile(getActivity(), finalval2);
+				        		}
 				        	}else{
-				        		Globals.tryToDeleteFile(getActivity(), finalval);
+				        		new File(mActivity.currSongName+".def.tcf").delete();
+								  new File(mActivity.currSongName+".def.tzf").delete();
 				        	}
 				        	mActivity.localfinished=false;
-				        	mActivity.saveCfgPart2(finalval, needToRename);
+				        	mActivity.saveCfgPart2(finalval1, needToRename1);
 				        	deldefCfg.setEnabled(true);
 				        	/*Intent new_intent = new Intent();
 					    	new_intent.setAction(getResources().getString(R.string.msrv_rec));
@@ -876,7 +929,7 @@ public class PlayerFragment extends SherlockFragment {
 			    	getActivity().sendBroadcast(new_intent);
 			    	deldefCfg.setEnabled(true);*/
 					mActivity.localfinished=false;
-					mActivity.saveCfgPart2(finalval, needToRename);
+					mActivity.saveCfgPart2(finalval1, needToRename1);
 					deldefCfg.setEnabled(true);
 				}
 			}
@@ -889,8 +942,22 @@ public class PlayerFragment extends SherlockFragment {
 			@Override
 			public void onClick(View arg0) {
 				
-				if(new File( mActivity.currSongName+".def.tcf").exists())
+				if(new File( mActivity.currSongName+".def.tcf").exists() || new File(mActivity.currSongName+".def.tzf").exists())
 				{
+					boolean aWrite=true;
+					  try{
+					        if(Globals.compressCfg)
+					        	new FileOutputStream(mActivity.currSongName+".def.tzf",true).close();
+					        else
+					        	new FileOutputStream(mActivity.currSongName+".def.tcf",true).close();
+					  }catch(FileNotFoundException e)
+					  {
+						aWrite=false;  
+					  } catch (IOException e)
+					{
+						e.printStackTrace();
+					}
+					  final boolean canWrite = aWrite;
 					AlertDialog dialog = new AlertDialog.Builder(mActivity).create();
 				    dialog.setTitle("Warning");
 				    dialog.setMessage("Really delete default config file?");
@@ -898,7 +965,14 @@ public class PlayerFragment extends SherlockFragment {
 				    dialog.setButton(DialogInterface.BUTTON_POSITIVE, getResources().getString(android.R.string.yes), new DialogInterface.OnClickListener() {
 				        public void onClick(DialogInterface dialog, int buttonId) {
 				        	
-				        	Globals.tryToDeleteFile(getActivity(), mActivity.currSongName+".def.tcf");
+				        	if(!canWrite&&Build.VERSION.SDK_INT>=Build.VERSION_CODES.LOLLIPOP)
+				        	{
+				        		Globals.tryToDeleteFile(getActivity(), mActivity.currSongName+".def.tzf");
+				        		Globals.tryToDeleteFile(getActivity(), mActivity.currSongName+".def.tcf");
+				        	}else{
+				        		new File(mActivity.currSongName+".def.tcf").delete();
+								new File(mActivity.currSongName+".def.tzf").delete();
+				        	}
 				        	deldefCfg.setEnabled(false);
 				        }
 				    });

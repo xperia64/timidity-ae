@@ -70,7 +70,9 @@ public class FileBrowserFragment extends ListFragment {
 		if (getArguments() != null)
 			currPath = getArguments().getString(Globals.currFoldKey);
 		if (currPath == null)
-			currPath = "/";
+			currPath = Environment.getExternalStorageDirectory().getAbsolutePath();
+		else if(!new File(currPath).exists())
+			currPath = Environment.getExternalStorageDirectory().getAbsolutePath();
 	}
 
 	@Override
@@ -231,7 +233,7 @@ public class FileBrowserFragment extends ListFragment {
 						  if(!value.toLowerCase(Locale.US).endsWith(".wav"))
 							  value+=".wav";
 						  String parent=path.get(position).substring(0,path.get(position).lastIndexOf('/')+1);
-						  boolean canWrite=true;
+						  boolean aWrite=true;
 						  boolean alreadyExists = new File(parent+value).exists();
 						  String needRename = null;
 						  String probablyTheRoot = "";
@@ -240,15 +242,15 @@ public class FileBrowserFragment extends ListFragment {
 						        new FileOutputStream(parent+value,true).close();
 						  }catch(FileNotFoundException e)
 						  {
-							canWrite=false;  
+							aWrite=false;  
 						  } catch (IOException e)
 						{
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
-						  if(!alreadyExists&&canWrite)
+						  if(!alreadyExists&&aWrite)
 							  new File(parent+value).delete();
-						  if(canWrite&&new File(parent).canWrite())
+						  if(aWrite&&new File(parent).canWrite())
 						  {
 							  value=parent+value;
 						  }else if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.LOLLIPOP&& Globals.theFold!=null)
@@ -270,6 +272,7 @@ public class FileBrowserFragment extends ListFragment {
 						  }else{
 							  value=Environment.getExternalStorageDirectory().getAbsolutePath()+'/'+value;
 						  }
+						  final boolean canWrite = aWrite;
 						  final String finalval = value;
 						  final String needToRename = needRename;
 						  final String probRoot = probablyTheRoot;
@@ -281,12 +284,17 @@ public class FileBrowserFragment extends ListFragment {
 							    dialog2.setCancelable(false);
 							    dialog2.setButton(DialogInterface.BUTTON_POSITIVE, getResources().getString(android.R.string.yes), new DialogInterface.OnClickListener() {
 							        public void onClick(DialogInterface dialog, int buttonId) {
-							        	if(needToRename!=null)
+							        	if(!canWrite&&Build.VERSION.SDK_INT>=Build.VERSION_CODES.LOLLIPOP)
 							        	{
-							        		Globals.tryToDeleteFile(getActivity(), probRoot+needToRename);
-							        		Globals.tryToDeleteFile(getActivity(), finalval);
+							        		if(needToRename!=null)
+							        		{
+							        			Globals.tryToDeleteFile(getActivity(), probRoot+needToRename);
+							        			Globals.tryToDeleteFile(getActivity(), finalval);
+							        		}else{
+							        			Globals.tryToDeleteFile(getActivity(), finalval);
+							        		}
 							        	}else{
-							        		Globals.tryToDeleteFile(getActivity(), finalval);
+							        		new File(finalval).delete();
 							        	}
 							        		
 								        	saveWavPart2(position, finalval, needToRename);
@@ -447,7 +455,7 @@ public class FileBrowserFragment extends ListFragment {
 					}
 				}
 				((TimidityActivity) getActivity()).selectedSong(files, position
-						- firstFile, true, false);
+						- firstFile, true, false, false);
 			}
 		}
 	}

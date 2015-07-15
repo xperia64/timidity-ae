@@ -23,13 +23,17 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Locale;
+
+import javax.net.ssl.HttpsURLConnection;
 
 import com.xperia64.timidityae.R;
 
+import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -48,11 +52,13 @@ import android.os.PowerManager;
 import android.preference.PreferenceManager;
 import android.support.v4.provider.DocumentFile;
 import android.util.Log;
+import android.util.SparseIntArray;
 import android.widget.Toast;
 
 public class Globals {
 public static int isPlaying = 1; // Active low.
 public static ArrayList<String> plist; // Because arguments don't like big things.
+public static ArrayList<String> tmpplist; // I'm lazy. 
 public static Bitmap currArt;
 public static boolean hardStop=false;
 
@@ -68,10 +74,21 @@ public static String[] sampls = {"Cubic Spline","Lagrange","Gaussian","Newton","
 public static String musicFiles = "*.mid*.smf*.kar*.mod*.xm*.s3m*.it*.669*.amf*.dsm*.far*.gdm*.imf*.med*.mtm*.stm*.stx*.ult*.uni*.mp3*.m4a*.wav*.ogg*.flac*";
 public static String musicVideoFiles = musicFiles+".mp4*.3gp*";
 public static String playlistFiles = "*.tpl*";
-public static String configFiles = "*.tcf*";
+public static String configFiles = "*.tcf*.tzf*";
 public static String fontFiles = "*.sf2*.sfark*";
 public static ArrayList<String> knownWritablePaths = new ArrayList<String>();
 public static ArrayList<String> knownUnwritablePaths = new ArrayList<String>();
+
+@SuppressLint({ "NewApi", "SdCardPath" })
+public static File getExternalCacheDir(Context c)
+{
+	if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.FROYO)
+	{
+		return c.getExternalCacheDir();
+	}else{
+		return new File("/sdcard/Android/data/com.xperia64.timidityae/cache/");
+	}
+}
 
 public static int[] validRates(boolean stereo, boolean sixteen)
 {
@@ -131,14 +148,20 @@ public static int[] validRates(boolean stereo, boolean sixteen)
 {
 	return false;
 }*/
-public static HashMap<Integer, Integer> validBuffers(int[] rates, boolean stereo, boolean sixteen)
+public static SparseIntArray validBuffers(int[] rates, boolean stereo, boolean sixteen)
 {
-	HashMap<Integer, Integer> buffers = new HashMap<Integer, Integer>();
+	SparseIntArray buffers = new SparseIntArray();
 	for(int rate : rates)
 	{
 		buffers.put(rate, AudioTrack.getMinBufferSize(rate, (stereo)?AudioFormat.CHANNEL_OUT_STEREO:AudioFormat.CHANNEL_OUT_MONO, (sixteen)?AudioFormat.ENCODING_PCM_16BIT:AudioFormat.ENCODING_PCM_8BIT));
 	}
 	return buffers;
+	/*HashMap<Integer, Integer> buffers = new HashMap<Integer, Integer>();
+	for(int rate : rates)
+	{
+		buffers.put(rate, AudioTrack.getMinBufferSize(rate, (stereo)?AudioFormat.CHANNEL_OUT_STEREO:AudioFormat.CHANNEL_OUT_MONO, (sixteen)?AudioFormat.ENCODING_PCM_16BIT:AudioFormat.ENCODING_PCM_8BIT));
+	}
+	return buffers;*/
 }
 
 public static int probablyFresh=0;
@@ -161,9 +184,14 @@ public static boolean nativeMidi;
 public static boolean keepWav;
 public static boolean onlyNative=false;
 public static boolean showVideos;
+public static boolean useDefaultBack=false;
+public static boolean compressCfg = true;
 //public static AssetManager assets;
 public static boolean nukedWidgets=false;
 public static Uri theFold=null;
+public static boolean reShuffle = false;
+
+
 public static void reloadSettings(Activity c, AssetManager assets)
 {
 	
@@ -183,6 +211,9 @@ public static void reloadSettings(Activity c, AssetManager assets)
 	showVideos=prefs.getBoolean("videoSwitch", true);
 	shouldLolNag=prefs.getBoolean("shouldLolNag", true);
 	keepWav=prefs.getBoolean("keepPartialWav",false);
+	useDefaultBack=prefs.getBoolean("useDefBack", false);
+	compressCfg=prefs.getBoolean("compressCfg", true);
+	reShuffle=prefs.getBoolean("reShuffle",false);
 	if(!onlyNative)
 		nativeMidi = prefs.getBoolean("nativeMidiSwitch", false);
 	else
@@ -318,7 +349,7 @@ public static boolean initialize(final Activity a)
 					
 					if(extract8Rock(a)!=777)
 					{
-						Toast.makeText(a, "Could not extrct default soundfont", Toast.LENGTH_SHORT);
+						Toast.makeText(a, "Could not extrct default soundfont", Toast.LENGTH_SHORT).show();
 					}
 					return null;
 				}
@@ -384,7 +415,20 @@ public static void migrateFrom1X(File newData)
 }
 public static void writeCfg(Context c, String path, ArrayList<String> soundfonts)
 {
-	path = path.replace("//", "/");
+	if(path==null)
+	{
+		Toast.makeText(c, "Configuration path null (3)", Toast.LENGTH_LONG).show();
+		return;
+	}
+	if(soundfonts==null)
+	{
+		Toast.makeText(c, "Soundfonts null (4)", Toast.LENGTH_LONG).show();
+		return;
+	}
+	if(path.contains("//"))
+	{
+		path = path.replace("//", "/");
+	}
 	if(!manConfig)
 	{
 		String[] needLol = null;
@@ -398,20 +442,10 @@ public static void writeCfg(Context c, String path, ArrayList<String> soundfonts
 		e.printStackTrace();
 	}
 
-		if(needLol!=null)
+		if(needLol!=null&&Build.VERSION.SDK_INT>=Build.VERSION_CODES.LOLLIPOP)
 		{
 			if(theFold!=null)
 			{
-				if(new File(path).exists())
-				{
-					//System.out.println("path exists: "+path);
-					if(cfgIsAuto(path))
-					{
-						Globals.tryToDeleteFile(c, path);
-					}else{
-						renameDocumentFile(c, path, path+".manualTimidityCfg."+Long.toString(System.currentTimeMillis()));
-					}
-				}
 				String probablyTheDirectory = needLol[0];
 			    String probablyTheRoot = needLol[1];
 			    String needRename = null;
@@ -423,6 +457,18 @@ public static void writeCfg(Context c, String path, ArrayList<String> soundfonts
 				}else{
 					return;
 				}
+				if(new File(path).exists())
+				{
+					//System.out.println("path exists: "+path);
+					if(cfgIsAuto(path)||new File(path).length()<=0)
+					{
+						Globals.tryToDeleteFile(c, path);
+					}else{
+						Toast.makeText(c, "Renaming manually edited cfg... (7)", Toast.LENGTH_LONG).show();
+						renameDocumentFile(c, path, needRename+".manualTimidityCfg."+Long.toString(System.currentTimeMillis()));
+					}
+				}
+				
 				FileWriter fw = null;
 				//System.out.println(value);
 				try {
@@ -451,24 +497,26 @@ public static void writeCfg(Context c, String path, ArrayList<String> soundfonts
 					} 
 				Globals.renameDocumentFile(c, value, needRename);
 			}else{
-				Toast.makeText(c, "Could not write configuration file. Does Timidity AE have write access to the data folder?", Toast.LENGTH_LONG).show();
+				Toast.makeText(c, "Could not write configuration file. Does Timidity AE have write access to the data folder? (1)", Toast.LENGTH_LONG).show();
 			}
 			
 			
 		}else{
 			
-		if(!new File(path).canWrite())
+		File theConfig = new File(path);
+		if(theConfig.exists()) // It should exist if we got here.
 		{
-			Toast.makeText(c, "Could not write configuration file. Does Timidity AE have write access to the data folder?", Toast.LENGTH_LONG).show();
-			return;
-		}
-		if(new File(path).exists())
-		{
-			if(cfgIsAuto(path))
+			if(!theConfig.canWrite())
 			{
-					new File(path).delete(); // Auto config, safe to delete
+				Toast.makeText(c, "Could not write configuration file. Does Timidity AE have write access to the data folder? (2)", Toast.LENGTH_LONG).show();
+				return;
+			}
+			if(cfgIsAuto(path)||theConfig.length()<=0) // Negative file length? Who knows.
+			{
+					theConfig.delete(); // Auto config, safe to delete
 			}else{
-					new File(path).renameTo(new File(path+".manualTimidityCfg."+Long.toString(System.currentTimeMillis()))); // manual config, rename for later
+					Toast.makeText(c, "Renaming manually edited cfg... (6)", Toast.LENGTH_LONG).show();
+					theConfig.renameTo(new File(path+".manualTimidityCfg."+Long.toString(System.currentTimeMillis()))); // manual config, rename for later
 			}
 		}
 		FileWriter fw = null;
@@ -486,6 +534,8 @@ public static void writeCfg(Context c, String path, ArrayList<String> soundfonts
 		
 		for(String s : soundfonts)
 		{
+			if(s==null)
+				continue;
 			try {
 				fw.write((s.startsWith("#")?"#":"")+"soundfont \""+s+"\"\n");
 			} catch (IOException e) {
@@ -500,6 +550,7 @@ public static void writeCfg(Context c, String path, ArrayList<String> soundfonts
 		}
 	}
 }
+@SuppressLint("NewApi")
 public static String[] getDocFilePaths(Context c, String parent)
 {
 	if(Build.VERSION.SDK_INT<Build.VERSION_CODES.LOLLIPOP)
@@ -550,7 +601,11 @@ public static String[] getDocFilePaths(Context c, String parent)
 
 public static boolean renameDocumentFile(Context c, String from, String subTo)
 {
-	
+	// From is the full path
+	// subTo is the path without the device prefix. 
+	// So /storage/sdcard1/folder/file.mid should be folder/file.mid
+	if(theFold==null)
+		return false;
 	from = from.replace("//", "/");
 	subTo = subTo.replace("//", "/");
 	DocumentFile df = DocumentFile.fromTreeUri(c, theFold);
@@ -716,7 +771,7 @@ public static boolean updateBuffers(int[] rata)
 {
 	if(rata!=null)
 	{
-	HashMap<Integer, Integer> buffMap = Globals.validBuffers(rata, prefs.getString("sdlChanValue","2").equals("2"), prefs.getString("tplusBits", "16").equals("16"));
+	SparseIntArray buffMap = Globals.validBuffers(rata, prefs.getString("sdlChanValue","2").equals("2"), prefs.getString("tplusBits", "16").equals("16"));
 	int realMin = buffMap.get(Integer.parseInt(prefs.getString("tplusRate", Integer.toString(AudioTrack.getNativeOutputSampleRate(AudioTrack.MODE_STREAM)))));
 	if(buff<realMin)
 	{
@@ -836,12 +891,14 @@ public static int extract8Rock(Context c)
     return 777;
     
 }
+@TargetApi(Build.VERSION_CODES.FROYO)
 public static class DownloadTask extends AsyncTask<String, Integer, String> {
 
     private Context context;
     private PowerManager.WakeLock mWakeLock;
     private ProgressDialog prog;
     private String theUrl="";
+    private String theFilename="";
     public DownloadTask(Context context) {
         this.context = context;
     }
@@ -891,16 +948,30 @@ public static class DownloadTask extends AsyncTask<String, Integer, String> {
         if (result != null)
             Toast.makeText(context,"Download error: "+result, Toast.LENGTH_LONG).show();
         else
-        	((TimidityActivity)context).downloadFinished(theUrl);
+        	((TimidityActivity)context).downloadFinished(theUrl, theFilename);
     }
-    @Override
+    @SuppressWarnings("resource")
+	@TargetApi(Build.VERSION_CODES.FROYO)
+	@Override
     protected String doInBackground(String... sUrl) {
         InputStream input = null;
         OutputStream output = null;
+        URL url = null;
+		try
+		{
+			url = new URL(sUrl[0]);
+		} catch (MalformedURLException e1)
+		{
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+        theUrl=sUrl[0];
+        theFilename=sUrl[1];
+        if(theUrl.startsWith("http"))
+        {
         HttpURLConnection connection = null;
         try {
-            URL url = new URL(sUrl[0]);
-            theUrl=sUrl[0];
+            
             connection = (HttpURLConnection) url.openConnection();
             connection.connect();
 
@@ -917,7 +988,7 @@ public static class DownloadTask extends AsyncTask<String, Integer, String> {
 
             // download the file
             input = connection.getInputStream();
-            output = new FileOutputStream(context.getExternalCacheDir().getAbsolutePath()+'/'+sUrl[0].substring(sUrl[0].lastIndexOf("/")+1));
+            output = new FileOutputStream(Globals.getExternalCacheDir(context).getAbsolutePath()+'/'+theFilename);
 
             byte[] data = new byte[4096];
             long total = 0;
@@ -925,6 +996,7 @@ public static class DownloadTask extends AsyncTask<String, Integer, String> {
             while ((count = input.read(data)) != -1) {
                 // allow canceling with back button
                 if (isCancelled()) {
+                	output.close();
                     input.close();
                     return null;
                 }
@@ -949,6 +1021,60 @@ public static class DownloadTask extends AsyncTask<String, Integer, String> {
                 connection.disconnect();
         }
         return null;
+        }else{
+        	 HttpsURLConnection connection = null;
+             try {
+                 
+                 connection = (HttpsURLConnection) url.openConnection();
+                 connection.connect();
+
+                 // expect HTTP 200 OK, so we don't mistakenly save error report
+                 // instead of the file
+                 if (connection.getResponseCode() != HttpsURLConnection.HTTP_OK) {
+                     return "Server returned HTTPS " + connection.getResponseCode()
+                             + " " + connection.getResponseMessage();
+                 }
+
+                 // this will be useful to display download percentage
+                 // might be -1: server did not report the length
+                 int fileLength = connection.getContentLength();
+
+                 // download the file
+                 input = connection.getInputStream();
+                 output = new FileOutputStream(Globals.getExternalCacheDir(context).getAbsolutePath()+'/'+theFilename);
+
+                 byte[] data = new byte[4096];
+                 long total = 0;
+                 int count;
+                 while ((count = input.read(data)) != -1) {
+                     // allow canceling with back button
+                     if (isCancelled()) {
+                    	 input.close();
+                    	 output.close();
+                         return null;
+                     }
+                     total += count;
+                     // publishing the progress....
+                     if (fileLength > 0) // only if total length is known
+                         publishProgress((int) (total * 100 / fileLength));
+                     output.write(data, 0, count);
+                 }
+             } catch (Exception e) {
+                 return e.toString();
+             } finally {
+                 try {
+                     if (output != null)
+                         output.close();
+                     if (input != null)
+                         input.close();
+                 } catch (IOException ignored) {
+                 }
+
+                 if (connection != null)
+                     connection.disconnect();
+             }
+             return null;
+        }
     }
    
 }

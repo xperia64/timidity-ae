@@ -53,7 +53,7 @@ public class JNIHandler {
 	public static native int setResampleTimidity(int jcustResamp);
 
 	public static native int decompressSFArk(String from, String to);
-public static DataOutputStream outFile;
+	public static DataOutputStream outFile;
 	public static AudioTrack mAudioTrack;
 	public static MediaPlayer mMediaPlayer;
 	public static int maxTime = 0;
@@ -83,7 +83,6 @@ public static DataOutputStream outFile;
 	public static int voice;
 	public static int maxvoice=256;
 	public static int koffset=0;
-	public static boolean isTimidityPaused=false;
 	// file output things
 	public static boolean writeToFile = false;
 	public static long filesize=0;

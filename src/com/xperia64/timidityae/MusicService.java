@@ -12,17 +12,25 @@
 package com.xperia64.timidityae;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
+import java.io.InputStream;
+import java.io.OutputStreamWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Random;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 import com.xperia64.timidityae.R;
 
+import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.Service;
@@ -46,22 +54,28 @@ import android.support.v4.app.NotificationCompat;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
+import android.util.SparseIntArray;
 //import android.util.Log;
 import android.view.KeyEvent;
 import android.widget.RemoteViews;
 import android.widget.Toast;
+
 public class MusicService extends Service{
 
 	public ArrayList<String> playList;
+	public SparseIntArray shuffledIndices;
+	public SparseIntArray reverseShuffledIndices;
 	public int currSongNumber=-1;
+	public int realSongNumber=-1;
 	public boolean shouldStart;
 	public boolean shouldAdvance=true;
 	public String currFold;
 	public int loopMode=1;
-	public boolean shuffleMode=false;
+	public int shuffleMode=0;
 	public boolean paused;
 	public boolean fullStop=false;
 	public boolean foreground=false;
+	public boolean fixedShuffle = true;
 	boolean death=false;
 	boolean phonepause=false;
 	PowerManager.WakeLock wl;
@@ -78,7 +92,7 @@ public class MusicService extends Service{
 	public IBinder onBind(Intent arg0) {
 		return musicBind;
 	}
-
+	
 	public class MusicBinder extends Binder {
 		  MusicService getService() {
 		    return MusicService.this;
@@ -124,10 +138,26 @@ public class MusicService extends Service{
      };
 	 
 	// onHandleIntent ...
-	
+	public void genShuffledPlist()
+	{
+		shuffledIndices = new SparseIntArray();
+		reverseShuffledIndices = new SparseIntArray();
+		ArrayList<Integer> tmp = new ArrayList<Integer>();
+		for(int i = 0; i<playList.size(); i++)
+		{
+			tmp.add(i);
+		}
+		Collections.shuffle(tmp);
+		
+		for(int i = 0; i<playList.size(); i++)
+		{
+			shuffledIndices.put(i, tmp.get(i));
+			reverseShuffledIndices.put(tmp.get(i), i);
+		}
+	}
 	 private BroadcastReceiver serviceReceiver = new BroadcastReceiver() {
 
-	        @SuppressWarnings("unchecked")
+			@SuppressWarnings("unchecked")
 			@Override
 	        public void onReceive(Context context, Intent intent) {
 	        	if (Intent.ACTION_MEDIA_BUTTON.equals(intent.getAction())) {
@@ -166,7 +196,10 @@ public class MusicService extends Service{
 	            	if (intent.hasExtra("state")){
 	                    if (intent.getIntExtra("state", 0) == 0){
 	                        if (Globals.isPlaying==0){
-	                           pause();
+	                        	if(!JNIHandler.paused)
+	                        	{
+	                        		pause();
+	                        	}
 	                        }
 	                    }
 	                }
@@ -179,18 +212,45 @@ public class MusicService extends Service{
 	        	{
 	        	case 0: // We have a new playlist. Load it and the immediate song to load.
 	        		death=true;
-	        		ArrayList<String> tmpList = Globals.plist;//intent.getStringArrayListExtra("com.xperia64.timidityae.MusicService_PList");
+	        		ArrayList<String> tmpList = Globals.plist;
 	        		if(tmpList==null)
 	        			break;
 	        		int tmpNum = intent.getIntExtra(getResources().getString(R.string.msrv_songnum), -1);
 	        		if(tmpNum<=-1)
 	        			break;
-	        		currSongNumber=tmpNum;
-	        		playList=tmpList;
+	        		boolean shouldNotLoadPlist = intent.getBooleanExtra(getResources().getString(R.string.msrv_dlplist), false);
+	        		
+	        		if(!shouldNotLoadPlist) // mmm. Double negatives.
+	        		{	
+	        			currSongNumber=realSongNumber=tmpNum;
+	        			playList=tmpList;
+	        			genShuffledPlist();
+	        			
+	        		}else{
+	        			currSongNumber = tmpNum;
+	        			if(shuffleMode == 1)
+	        				realSongNumber = shuffledIndices.get(tmpNum);
+	        		}
 	        		Globals.plist=null;
 	        		tmpList=null;
 	        		currFold=intent.getStringExtra(getResources().getString(R.string.msrv_currfold));
-	        		//System.out.println("saf: "+playList.get(currSongNumber));
+	        		
+	        		if(shuffleMode == 1 && !shouldNotLoadPlist)
+	        			currSongNumber = reverseShuffledIndices.get(realSongNumber);
+	        		Intent new_intent20 = new Intent(); // I should name these properly at some point. I could use a more global intent variable I guess.
+	                new_intent20.setAction(getResources().getString(R.string.ta_rec));
+	                new_intent20.putExtra(getResources().getString(R.string.ta_cmd), 4);
+	                if(shuffleMode == 1)
+	                {
+	                	Globals.tmpplist=new ArrayList<String>();
+	                	for(int i = 0; i<playList.size(); i++)
+	                	{
+	                		Globals.tmpplist.add(playList.get(shuffledIndices.get(i)));
+	                	}
+	                }else{
+	                	Globals.tmpplist=playList;
+	                }
+	                sendBroadcast(new_intent20);
 	        		//if(shouldStart=intent.getBooleanExtra(getResources().getString(R.string.msrv_begin),false)||true)
 	        	//	{
 	        			play();
@@ -223,7 +283,37 @@ public class MusicService extends Service{
 	        		loopMode=tmpMode;
 	        		break;
 	        	case 7: // Shuffle mode
-	        		shuffleMode = intent.getBooleanExtra(getResources().getString(R.string.msrv_shufmode), false);
+	        		shuffleMode = intent.getIntExtra(getResources().getString(R.string.msrv_shufmode), 0);
+	        		if(shuffleMode == 1)
+	        		{
+	        			fixedShuffle = false;
+	        			if(Globals.reShuffle)
+	        			{	
+	        				genShuffledPlist();
+	        				
+	        			}
+	        			currSongNumber = reverseShuffledIndices.get(currSongNumber);
+	        		}else{
+	        			if(!fixedShuffle)
+	        			{
+	        				currSongNumber = realSongNumber;
+	        				fixedShuffle = true;
+	        			}
+	        		}
+	        		Intent new_intent19 = new Intent();
+	                new_intent19.setAction(getResources().getString(R.string.ta_rec));
+	                new_intent19.putExtra(getResources().getString(R.string.ta_cmd), 4);
+	                if(shuffleMode == 1)
+	                {
+	                	Globals.tmpplist=new ArrayList<String>();
+	                	for(int i = 0; i<playList.size(); i++)
+	                	{
+	                		Globals.tmpplist.add(playList.get(shuffledIndices.get(i)));
+	                	}
+	                }else{
+	                	Globals.tmpplist=playList;
+	                }
+	                sendBroadcast(new_intent19);
 	        		break;
 	        	case 8: // Request seekBar times
 	        		break;
@@ -246,18 +336,32 @@ public class MusicService extends Service{
 	                new_intent11.putExtra(getResources().getString(R.string.ta_shufmode), shuffleMode);
 	                new_intent11.putExtra(getResources().getString(R.string.ta_loopmode), loopMode);
 	                new_intent11.putExtra(getResources().getString(R.string.ta_songttl),currTitle);
-	                new_intent11.putExtra(getResources().getString(R.string.ta_filename),playList.get(currSongNumber));
+	                if(shuffleMode == 1)
+	                {
+	                	new_intent11.putExtra(getResources().getString(R.string.ta_filename),playList.get(shuffledIndices.get(currSongNumber)));
+	                }else{
+	                	new_intent11.putExtra(getResources().getString(R.string.ta_filename),playList.get(currSongNumber));
+	                }
+	                
 	                sendBroadcast(new_intent11);
 	        		break;
 	        	case 12: // Request player info
 	        		Intent new_intent12 = new Intent();
 	                new_intent12.setAction(getResources().getString(R.string.ta_rec));
 	                new_intent12.putExtra(getResources().getString(R.string.ta_cmd), 4);
-	                Globals.plist=playList;
+	                if(shuffleMode == 1)
+	                {
+	                	Globals.tmpplist=new ArrayList<String>();
+	                	for(int i = 0; i<playList.size(); i++)
+	                	{
+	                		Globals.tmpplist.add(playList.get(shuffledIndices.get(i)));
+	                	}
+	                }else{
+	                	Globals.tmpplist=playList;
+	                }
 	                sendBroadcast(new_intent12);
 	        		break;
 	        	case 13:
-	        		//System.out.println("13 is called");
 	        		if(Globals.isPlaying==0)
     				{
     					pause();
@@ -296,9 +400,17 @@ public class MusicService extends Service{
 								if(JNIHandler.alternativeCheck==555555)
 				    				  death=true;
 				      			  try {Thread.sleep(10);} catch (InterruptedException e){}}
-							 if(new File(input+".def.tcf").exists())
+							 if(new File(input+".def.tcf").exists() || new File(input+".def.tzf").exists())
 			           		  {
-								 //System.out.println("Shouldn't play yet");
+								 String suffix;
+								 if(new File(input+".def.tcf").exists() && new File(input+".def.tzf").exists())
+				           		  {
+				           		  	suffix = (Globals.compressCfg?".def.tzf":".def.tcf");
+				           		  }else if(new File(input+".def.tcf").exists()){
+				           			  suffix = ".def.tcf";
+				           		  }else{
+				           			  suffix = ".def.tzf";
+				           		  }
 			           			  JNIHandler.shouldPlayNow=false;
 			           			  JNIHandler.currTime=0;
 			           			  while(Globals.isPlaying==0&&!death&&!JNIHandler.dataWritten)
@@ -314,7 +426,7 @@ public class MusicService extends Service{
 			           		  Intent new_intent = new Intent(); // silly, but should be done async. I think.
 			         	        new_intent.setAction(getResources().getString(R.string.msrv_rec));
 			         	        new_intent.putExtra(getResources().getString(R.string.msrv_cmd), 17);
-			         	        new_intent.putExtra(getResources().getString(R.string.msrv_infile),input+".def.tcf");
+			         	        new_intent.putExtra(getResources().getString(R.string.msrv_infile),input+suffix);
 			         	        new_intent.putExtra(getResources().getString(R.string.msrv_reset),true);
 			         	        sendBroadcast(new_intent);
 			           		  }
@@ -379,7 +491,7 @@ public class MusicService extends Service{
 	        		numbers[0] = JNIHandler.tb;
 	        		numbers[1] = JNIHandler.koffset;
 	        		numbers[2] = JNIHandler.maxvoice;
-	        		String[] serializedSettings=new String[5];
+	        		String[] serializedSettings=new String[5]; // I'm sorry. I'm sorry.
 	        		try
 					{
 						serializedSettings[0]=ObjectSerializer.serialize(JNIHandler.custInst);
@@ -391,6 +503,34 @@ public class MusicService extends Service{
 					{
 						e.printStackTrace();
 					}
+	        		
+	        		if(Globals.compressCfg)
+	        		{
+	        			   BufferedWriter writer = null;
+	        			    try
+	        			    {
+	        			        GZIPOutputStream zip = new GZIPOutputStream(new FileOutputStream(new File(output3)));
+
+	        			        writer = new BufferedWriter(new OutputStreamWriter(zip, "US-ASCII"));
+
+	        			        for(String s : serializedSettings)
+	    	        			{
+	    	        				writer.append(s);
+	    	        				writer.newLine();
+	    	        			}
+	        			    } catch (IOException e) {
+								e.printStackTrace();
+							}
+	        			    finally
+	        			    {           
+	        			        if(writer != null)
+									try {
+										writer.close();
+									} catch (IOException e) {
+										e.printStackTrace();
+									}
+	        			    }
+	        		}else{
 	        		FileWriter fw = null;
 	        		try {
 	        			fw = new FileWriter(output3,false);
@@ -401,7 +541,7 @@ public class MusicService extends Service{
 	        			fw.close();
 	        		} catch (IOException e) {
 	        			e.printStackTrace();
-	        		}
+	        		}}
 	        		if(!wasPaused)
 	        		{
 	        			JNIHandler.pause();
@@ -427,14 +567,26 @@ public class MusicService extends Service{
 	        		FileInputStream fstream;
 					try
 					{
+						BufferedReader br;
+						if(input2.endsWith(".tzf"))
+						{
+							InputStream fileStream = new FileInputStream(input2);
+							@SuppressWarnings("resource")
+							InputStream gzipStream = new GZIPInputStream(fileStream);
+							InputStreamReader decoder = new InputStreamReader(gzipStream, "US-ASCII");
+							br = new BufferedReader(decoder);
+						}else{
+							
 						fstream = new FileInputStream(input2);
 						 DataInputStream in = new DataInputStream(fstream);
-		        	  	  BufferedReader br = new BufferedReader(new InputStreamReader(in));
+		        	  	  br = new BufferedReader(new InputStreamReader(in));
+						}
 		        	  	  mscustInst=(ArrayList<Boolean>) ObjectSerializer.deserialize(br.readLine());
 		        	  	mscustVol=(ArrayList<Boolean>) ObjectSerializer.deserialize(br.readLine());
 		        	  	msprograms=(ArrayList<Integer>) ObjectSerializer.deserialize(br.readLine());
 		        	  	msvolumes=(ArrayList<Integer>) ObjectSerializer.deserialize(br.readLine());
 		        	  	newnumbers = (int[]) ObjectSerializer.deserialize(br.readLine());
+		        	  	br.close();
 					} catch (IOException e)
 					{
 						e.printStackTrace();
@@ -546,6 +698,7 @@ public class MusicService extends Service{
         super.onDestroy();
         unregisterReceiver(serviceReceiver);
     }
+	@SuppressLint("NewApi")
 	public void play()
 	{
 		if(playList!=null&&currSongNumber>=0)
@@ -570,20 +723,27 @@ public class MusicService extends Service{
 		MediaMetadataRetriever mmr = new MediaMetadataRetriever();
 		String tmpTitle;
 		Globals.currArt=null;
+		final int songIndex;
+		if(shuffleMode == 1)
+		{
+			songIndex = realSongNumber = shuffledIndices.get(currSongNumber);
+		}else{
+			songIndex = realSongNumber = currSongNumber;
+		}
 		try{
-		mmr.setDataSource(playList.get(currSongNumber));
+		mmr.setDataSource(playList.get(songIndex));
 		tmpTitle = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
 		if(tmpTitle!=null)
 		{
 			if(TextUtils.isEmpty(tmpTitle))
-				tmpTitle=playList.get(currSongNumber).substring(playList.get(currSongNumber).lastIndexOf('/')+1);
+				tmpTitle=playList.get(songIndex).substring(playList.get(songIndex).lastIndexOf('/')+1);
 		}else{
-			tmpTitle=playList.get(currSongNumber).substring(playList.get(currSongNumber).lastIndexOf('/')+1);
+			tmpTitle=playList.get(songIndex).substring(playList.get(songIndex).lastIndexOf('/')+1);
 		}
 		
 		}catch (RuntimeException e)
 		{
-			tmpTitle=playList.get(currSongNumber).substring(playList.get(currSongNumber).lastIndexOf('/')+1);
+			tmpTitle=playList.get(songIndex).substring(playList.get(songIndex).lastIndexOf('/')+1);
 		}
 		boolean goodart=false;
 		if(Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.GINGERBREAD_MR1) // Please work
@@ -600,7 +760,7 @@ public class MusicService extends Service{
 		}
 		if(!goodart)
 		{
-			String goodPath=playList.get(currSongNumber).substring(0,playList.get(currSongNumber).lastIndexOf('/')+1)+"folder.jpg";
+			String goodPath=playList.get(songIndex).substring(0,playList.get(songIndex).lastIndexOf('/')+1)+"folder.jpg";
 			if(new File(goodPath).exists())
 			{
 				try{
@@ -608,7 +768,7 @@ public class MusicService extends Service{
 				}catch (RuntimeException e){}
 			}else{
 				// Try albumart.jpg
-				goodPath=playList.get(currSongNumber).substring(0,playList.get(currSongNumber).lastIndexOf('/')+1)+"AlbumArt.jpg";
+				goodPath=playList.get(songIndex).substring(0,playList.get(songIndex).lastIndexOf('/')+1)+"AlbumArt.jpg";
 				if(new File(goodPath).exists())
 				{
 					try{
@@ -622,15 +782,15 @@ public class MusicService extends Service{
 		}
 		if(shouldDoWidget)
 		{
-		Intent intent = new Intent(this,TimidityAEWidgetProvider.class);
-		intent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
-		// Use an array and EXTRA_APPWIDGET_IDS instead of AppWidgetManager.EXTRA_APPWIDGET_ID,
-		// since it seems the onUpdate() is only fired on that:
-		ids = AppWidgetManager.getInstance(getApplication()).getAppWidgetIds(new ComponentName(getApplication(), TimidityAEWidgetProvider.class));
+			Intent intent = new Intent(this,TimidityAEWidgetProvider.class);
+			intent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
+			// Use an array and EXTRA_APPWIDGET_IDS instead of AppWidgetManager.EXTRA_APPWIDGET_ID,
+			// since it seems the onUpdate() is only fired on that:
+			ids = AppWidgetManager.getInstance(getApplication()).getAppWidgetIds(new ComponentName(getApplication(), TimidityAEWidgetProvider.class));
 		
-		//intent.addFlags(Intent.FLAG_RECEIVER_FOREGROUND);
-		intent.putExtra("com.xperia64.timidityae.timidityaewidgetprovider.onlyart", true);
-		sendBroadcast(intent);
+			//intent.addFlags(Intent.FLAG_RECEIVER_FOREGROUND);
+			intent.putExtra("com.xperia64.timidityae.timidityaewidgetprovider.onlyart", true);
+			sendBroadcast(intent);
 		}
 		Intent new_intent = new Intent();
         new_intent.setAction(getResources().getString(R.string.ta_rec));
@@ -640,7 +800,8 @@ public class MusicService extends Service{
 		currTitle=tmpTitle;
 		shouldAdvance=true;
 		paused=false;
-      final int x=JNIHandler.play(playList.get(currSongNumber));
+		
+      final int x=JNIHandler.play(playList.get(songIndex));
       if(x!=0)
       {
     	  switch(x)
@@ -704,11 +865,21 @@ public class MusicService extends Service{
     	        new_intent.putExtra(getResources().getString(R.string.ta_cmd), 0);
     	        new_intent.putExtra(getResources().getString(R.string.ta_startt),JNIHandler.maxTime);
     	        new_intent.putExtra(getResources().getString(R.string.ta_songttl),currTitle);
-    	        new_intent.putExtra(getResources().getString(R.string.ta_filename),playList.get(currSongNumber));
+    	        new_intent.putExtra(getResources().getString(R.string.ta_filename),playList.get(songIndex));
     	        sendBroadcast(new_intent);
     		  }
-    		  if(new File(playList.get(currSongNumber)+".def.tcf").exists())
+    		  if(new File(playList.get(songIndex)+".def.tcf").exists()||new File(playList.get(songIndex)+".def.tzf").exists())
     		  {
+    			  String suffix;
+    			  if(new File(playList.get(songIndex)+".def.tcf").exists()&&new File(playList.get(songIndex)+".def.tzf").exists())
+    			  {
+    				  suffix = (Globals.compressCfg?".def.tzf":".def.tcf");
+    			  }else if(new File(playList.get(songIndex)+".def.tcf").exists())
+    			  {
+    				  suffix = ".def.tcf";
+    			  }else{
+    				  suffix = ".def.tzf";
+    			  }
     			  JNIHandler.shouldPlayNow=false;
     			  JNIHandler.currTime=0;
     			  while(Globals.isPlaying==0&&!death&&shouldAdvance&&!JNIHandler.dataWritten)
@@ -724,7 +895,7 @@ public class MusicService extends Service{
     		  Intent new_intent = new Intent(); // silly, but should be done async. I think.
   	        new_intent.setAction(getResources().getString(R.string.msrv_rec));
   	        new_intent.putExtra(getResources().getString(R.string.msrv_cmd), 17);
-  	        new_intent.putExtra(getResources().getString(R.string.msrv_infile),playList.get(currSongNumber)+".def.tcf");
+  	        new_intent.putExtra(getResources().getString(R.string.msrv_infile),playList.get(songIndex)+suffix);
   	        new_intent.putExtra(getResources().getString(R.string.msrv_reset),true);
   	        sendBroadcast(new_intent);
     		  }
@@ -736,7 +907,7 @@ public class MusicService extends Service{
     	    	  new Thread(new Runnable(){
     	        	  public void run()
     	        	  {
-    	    	  if(playList.size()>1&&(((currSongNumber+1<playList.size()&&loopMode==0))||loopMode==1)){next();}
+    	    	  if(playList.size()>1&&(((songIndex+1<playList.size()&&loopMode==0))||loopMode==1)){next();}
         	      else if(loopMode==2||playList.size()==1){play();}else if(loopMode==0){Globals.hardStop=true; Intent new_intent = new Intent();
                   new_intent.setAction(getResources().getString(R.string.ta_rec));
                   new_intent.putExtra(getResources().getString(R.string.ta_cmd), 5);
@@ -781,26 +952,25 @@ public class MusicService extends Service{
 			
 			if(playList.size()>1)
 			{
-			if(!shuffleMode)
-			{
-		if(++currSongNumber>=playList.size())
-		{
-			currSongNumber=0;
-		}
-		}else{
-			int tmpNum=currSongNumber;
-			while(tmpNum==currSongNumber)
-			{
-				try {
-					Thread.sleep(10); // Don't hog CPU. Please.
-				} catch (InterruptedException e) {
-					e.printStackTrace();
+				if(shuffleMode==2){
+					int tmpNum=currSongNumber;
+					while(tmpNum==currSongNumber)
+					{
+						try {
+							Thread.sleep(10); // Don't hog CPU. Please.
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
+						tmpNum=random.nextInt(playList.size());
+					}
+					currSongNumber=tmpNum;
+				}else{
+					if(++currSongNumber>=playList.size())
+					{
+						currSongNumber=0;
+					}
 				}
-				tmpNum=random.nextInt(playList.size());
 			}
-			
-			currSongNumber=tmpNum;
-		}}
 		play();
 		}
 	}
@@ -885,7 +1055,6 @@ public class MusicService extends Service{
 				new_intent.setAction(getResources().getString(R.string.msrv_rec));
 				new_intent.putExtra(getResources().getString(R.string.msrv_cmd), 2);
 				pendingNotificationIntent = PendingIntent.getBroadcast(this, 2, new_intent, 0);
-				//System.out.println("notpause id: "+R.id.notPause);
 				remoteViews.setOnClickPendingIntent(R.id.notPause, pendingNotificationIntent);
 				// Next
 				new_intent = new Intent();

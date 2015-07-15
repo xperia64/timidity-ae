@@ -223,10 +223,20 @@ public class SoundfontDialog implements OnItemLongClickListener, FileBrowserDial
 	@Override
 	public void setEnabled(int position, boolean yes) {
 		String pos = sfList.get(position);
-		if(pos.startsWith("#")&&yes)
+		
+ 		if(pos.startsWith("#")&&yes)
+		{
+			pos = pos.substring(1);
+			sfList.set(position, pos);
+		}else if(!pos.startsWith("#")&&!yes)
+		{
+			sfList.set(position, "#"+pos);
+		}
+		
+		/*if(pos.startsWith("#")&&yes)
 			sfList.set(position, pos.substring(1));
 		else if(!pos.startsWith("#")&&!yes)
-			sfList.set(position, "#"+pos);
+			sfList.set(position, "#"+pos);*/
 	}
 	
 	

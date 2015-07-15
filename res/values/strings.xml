@@ -45,7 +45,16 @@
 	<string name = "sett_other">Other Settings</string>
 	<string name = "sett_kpw">Keep Partial Conversions</string>
 	<string name = "sett_kpw_sum">Keep partially converted WAV files instead of deleting them</string>
-	
+	<string name = "sett_defback">Use Default Back Button</string>
+	<string name = "sett_defback_sum">Use Android\'s default behavior when the back button is pressed</string>
+	<string name = "sett_compcfg">Compress Configuration Files</string>
+	<string name = "sett_compcfg_sum">Compresses custom midi configuration files</string>
+	<string name = "sett_lolrw">Request Lollipop Write Access</string>
+	<string name = "sett_lolrw_sum">Change the directory that Timidity has access to\nThe ROOT of the SD card must be chosen</string>
+	<string name = "sett_lolnag">Ask for external sdcard access on startup</string>
+	<string name = "sett_lolnag_sum">Ask for write access to the external sdcard if not found on startup</string>
+	<string name = "sett_reshuff">Reshuffle playlist</string>
+	<string name = "sett_reshuff_sum">Reshuffle the current playlist when switching shuffle modes</string>
 	<string name = "intErr1">File not found/unsupported format</string>
 	<string name = "intErr2">Unsupported protocol; Timidity AE does not support streaming</string>
 	<string name = "refreshfld">Refresh Folder</string>
@@ -90,7 +99,7 @@
 	<string name = "fb_fold">This Folder</string>
 	<string name = "fb_cread">Cannot be read!</string>
 	<string name = "fb_add">Added</string>
-	<string name = "plist_save2">Save Playlist As...</string>
+	<string name = "plist_save2">Save Playlist As…</string>
 	<string name = "plist_save">Save</string>
 	<string name = "plist_mod">Modify Playlist</string>
 	<string name = "plist_del">Delete</string>
@@ -100,20 +109,20 @@
 	<string name = "plist_ex">Playlist already exists</string>
 	<string name = "plist_pnf">Playlist not found</string>
 	<string name = "plist_modit">Modify Playlist Item</string>
-	<string name = "plist_addcs">Add current song..</string>
-	<string name = "plist_adds">Add song...</string>
-	<string name = "plist_addf">Add folder...</string>
-	<string name = "plist_addft">Add folder tree...</string>
+	<string name = "plist_addcs">Add current song…</string>
+	<string name = "plist_adds">Add song…</string>
+	<string name = "plist_addf">Add folder…</string>
+	<string name = "plist_addft">Add folder tree…</string>
 	<string name = "plist_ds">Remove from playlist</string>
-	<string name = "plist_addcsh">Add current song here..</string>
-	<string name = "plist_addsh">Add song here...</string>
-	<string name = "plist_addfh">Add folder here...</string>
-	<string name = "plist_addfth">Add folder tree here...</string>
+	<string name = "plist_addcsh">Add current song here…</string>
+	<string name = "plist_addsh">Add song here…</string>
+	<string name = "plist_addfh">Add folder here…</string>
+	<string name = "plist_addfth">Add folder tree here…</string>
 	<string name = "plist_addto">Add To Playlist</string>
 	<string name = "plist_curr">Current Playlist</string>
 	<string name = "plist_crea">Create New Playlist</string>
-	<string name = "extract">Extracting...</string>
-	<string name = "extract_sum">Extracting 8Rock11e.sf2...</string>
+	<string name = "extract">Extracting…</string>
+	<string name = "extract_sum">Extracting 8Rock11e.sf2…</string>
 	<string name = "extract_def">To use 8Rock11e.sf2, please re-add it to the config via the \'Choose Soundfonts\' button above</string>
 	<string name = "invalidbuff">Invalid buffer size, reverting to minimum</string>
 	<string name = "invalidfold">Invalid folder</string>
@@ -172,6 +181,7 @@
 <string name = "msrv_infile" translatable="false">com.xperia64.timidityae.MusicService_InputFile</string>
 <string name = "msrv_outfile" translatable="false">com.xperia64.timidityae.MusicService_OutputFile</string>
 <string name = "msrv_reset" translatable="false">com.xperia64.timidityae.MusicService_Reset</string>
+<string name = "msrv_dlplist" translatable="false">com.xperia64.timidityae.MusicService_DontLoadPlist</string>
 <!-- TimidityActivity Commands (DO NOT TRANSLATE) -->
 <string name = "ta_rec" translatable="false">com.xperia64.timidityae.TimidityActivity_RECEIVER</string>
 <string name = "ta_cmd" translatable="false">com.xperia64.timidityae.TimidityActivity_CMD</string>

@@ -58,6 +58,7 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 	String tmpName;
 	int loki=-1;
 	boolean mode=false;
+	boolean dontReloadPlist = false;
 	public interface ActionPlaylistBackListener{
 		public void needPlaylistBackCallback(boolean yes, boolean current);
 	}
@@ -307,8 +308,7 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
             throw new ClassCastException(activity.toString()
                     + " must implement ActionPlaylistBackListener");
         }
-		currPlist=Globals.plist;
-		if(Globals.shouldRestore)
+		if(Globals.shouldRestore&&(Globals.plist==null||Globals.plist.size()==0))
     	{
     		Intent new_intent = new Intent();
     		new_intent.setAction(getActivity().getResources().getString(R.string.msrv_rec));
@@ -367,6 +367,7 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 				{
 					if(currPlist.size()>0)
 					{
+						dontReloadPlist = true;
 						for(String xx:currPlist)
 						{
 							path.add(xx);
@@ -375,6 +376,7 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 					}
 				}
 			}else{ // Another playlist
+				dontReloadPlist = false;
 				vola = path=parsePlist(which);
 				for(String name : path)
 				{
@@ -411,7 +413,7 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 	public void onListItemClick(ListView l, View v, int position, long id) {
 		if(mode)
 		{
-			((TimidityActivity)getActivity()).selectedSong(path, position, true, true);
+			((TimidityActivity)getActivity()).selectedSong(path, position, true, true, dontReloadPlist);
 		}else{
 			getPlaylists(plistName=path.get(position));
 		}
@@ -430,9 +432,12 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 			break;
 		case 1:
 			File f = new File(path);
+			
 			if(f.exists()&&f.isDirectory())
 			{
-					for(File ff : f.listFiles())
+				File[] files = f.listFiles();
+				Arrays.sort(files, new FileComparator());
+					for(File ff : files)
 					{
 						if(ff!=null)
 						{

@@ -100,7 +100,11 @@
                 </PreferenceCategory>
     		</PreferenceScreen>
     		<PreferenceCategory android:title="@string/sett_other">
-    		    
+    		    <CheckBoxPreference
+                        android:title="@string/sett_reshuff"
+                        android:defaultValue="false"
+                        android:summary="@string/sett_reshuff_sum"
+                        android:key="reShuffle" />
                 <CheckBoxPreference
                         android:title="@string/sett_nm"
                         android:defaultValue="false"
@@ -111,5 +115,16 @@
                         android:defaultValue="false"
                         android:summary="@string/sett_kpw_sum"
                         android:key="keepPartialWav" />
+                <CheckBoxPreference
+                        android:title="@string/sett_defback"
+                        android:defaultValue="false"
+                        android:summary="@string/sett_defback_sum"
+                        android:key="useDefBack" />
+                <CheckBoxPreference
+                        android:title="@string/sett_compcfg"
+                        android:defaultValue="true"
+                        android:summary="@string/sett_compcfg_sum"
+                        android:key="compressCfg" />
+                
         </PreferenceCategory>
 </PreferenceScreen>

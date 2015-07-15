@@ -15,12 +15,12 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Locale;
-
 import com.xperia64.timidityae.R;
-
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.os.Environment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
@@ -54,6 +54,7 @@ public class FileBrowserDialog implements OnItemClickListener {
 
 	boolean closeImmediate;
 
+	@SuppressLint("InflateParams")
 	public void create(int t, String fileFilter, FileBrowserDialogListener pf,
 			Activity c, LayoutInflater f, boolean ci, String path, String ms) // This is disgusting. Sorry.
 	{
@@ -102,6 +103,10 @@ public class FileBrowserDialog implements OnItemClickListener {
 						}
 					});
 		}
+		if(path==null)
+			path = Environment.getExternalStorageDirectory().getAbsolutePath();
+		else if(!new File(path).exists())
+			path = Environment.getExternalStorageDirectory().getAbsolutePath();
 		getDir(path);
 		ddd = b.create();
 		ddd.show();

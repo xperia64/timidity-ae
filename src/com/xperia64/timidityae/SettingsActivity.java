@@ -13,15 +13,12 @@ package com.xperia64.timidityae;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-
 import com.actionbarsherlock.app.SherlockPreferenceActivity;
 import com.actionbarsherlock.view.MenuItem;
 import com.xperia64.timidityae.FileBrowserDialog.FileBrowserDialogListener;
 import com.xperia64.timidityae.SoundfontDialog.SoundfontDialogListener;
 import com.xperia64.timidityae.R;
-
 import android.preference.CheckBoxPreference;
 import android.preference.EditTextPreference;
 import android.preference.ListPreference;
@@ -31,6 +28,7 @@ import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
 import android.text.TextUtils;
+import android.util.SparseIntArray;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -39,7 +37,7 @@ import android.widget.BaseAdapter;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.Toast;
-
+import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Intent;
@@ -82,7 +80,8 @@ public class SettingsActivity extends SherlockPreferenceActivity implements File
 	private CheckBoxPreference nativeMidi;
 	private CheckBoxPreference keepWav;
 	private SharedPreferences prefs;
-	        @SuppressWarnings({ "deprecation", "unchecked" })
+	        @SuppressLint("InlinedApi")
+			@SuppressWarnings({ "deprecation", "unchecked" })
 			@Override
 	        protected void onCreate(Bundle savedInstanceState) {
 	        	mInstance = this;
@@ -172,7 +171,8 @@ public class SettingsActivity extends SherlockPreferenceActivity implements File
 	                    });
 	                if(lolPref!=null)
 	                lolPref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
-                        public boolean onPreferenceClick(Preference preference) {
+                        @SuppressLint("NewApi")
+						public boolean onPreferenceClick(Preference preference) {
                             // dialog code here
                         	List<UriPermission> permissions = getContentResolver().getPersistedUriPermissions();
                 			if(!(permissions==null||permissions.isEmpty()))
@@ -192,12 +192,12 @@ public class SettingsActivity extends SherlockPreferenceActivity implements File
 
 						@Override
 						public boolean onPreferenceClick(Preference arg0) {
-							AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
+							AsyncTask<Void, Void, Integer> task = new AsyncTask<Void, Void, Integer>() {
 								
 								ProgressDialog pd;
 								@Override
 								protected void onPreExecute() {
-									 pd = new ProgressDialog(SettingsActivity.this);
+									pd = new ProgressDialog(SettingsActivity.this);
 									pd.setTitle(getResources().getString(R.string.extract));
 									pd.setMessage(getResources().getString(R.string.extract_sum));
 									pd.setCancelable(false);
@@ -206,20 +206,22 @@ public class SettingsActivity extends SherlockPreferenceActivity implements File
 								}
 									
 								@Override
-								protected Void doInBackground(Void... arg0) {
+								protected Integer doInBackground(Void... arg0) {
 									
-									if(Globals.extract8Rock(SettingsActivity.this)!=777)
-									{
-										Toast.makeText(SettingsActivity.this, "Could not extrct default soundfont", Toast.LENGTH_SHORT);
-									}
-									return null;
+									return Globals.extract8Rock(SettingsActivity.this);
 								}
 								
 								@Override
-								protected void onPostExecute(Void result) {
+								protected void onPostExecute(Integer result) {
+									
 									if (pd!=null) {
 										pd.dismiss();
-										Toast.makeText(SettingsActivity.this,getResources().getString(R.string.extract_def),Toast.LENGTH_LONG).show();
+										if(result!=777)
+										{
+											Toast.makeText(SettingsActivity.this, "Could not extrct default soundfont", Toast.LENGTH_SHORT).show();
+										}else{
+											Toast.makeText(SettingsActivity.this,getResources().getString(R.string.extract_def),Toast.LENGTH_LONG).show();
+										}
 										//b.setEnabled(true);
 									}
 								}
@@ -241,6 +243,11 @@ public class SettingsActivity extends SherlockPreferenceActivity implements File
 	                
 	                try {
 						tmpSounds = (ArrayList<String>) ObjectSerializer.deserialize(prefs.getString("tplusSoundfonts", ObjectSerializer.serialize(new ArrayList<String>())));
+						for(int i = 0; i<tmpSounds.size();i++)
+						{
+							if(tmpSounds.get(i)==null)
+								tmpSounds.remove(i);
+						}
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
@@ -255,7 +262,7 @@ public class SettingsActivity extends SherlockPreferenceActivity implements File
 							String sixteen = bitMode.getValue();
 							boolean sb=(stereo!=null)?stereo.equals("2"):true;
 							boolean sxb=(sixteen!=null)?sixteen.equals("16"):true;
-							HashMap<Integer, Integer> mmm = Globals.validBuffers(Globals.validRates(sb,sxb),sb,sxb);
+							SparseIntArray mmm = Globals.validBuffers(Globals.validRates(sb,sxb),sb,sxb);
 							if(mmm!=null)
 							{
 								
@@ -290,7 +297,8 @@ public class SettingsActivity extends SherlockPreferenceActivity implements File
 
 						@Override
 						public boolean onPreferenceClick(Preference preference) {
-							new SoundfontDialog().create(tmpSounds, SettingsActivity.this, SettingsActivity.this, getLayoutInflater(), prefs.getString("defaultPath", "/sdcard/"));
+							new SoundfontDialog().create(tmpSounds, SettingsActivity.this, SettingsActivity.this, getLayoutInflater(), prefs.getString("defaultPath", 
+									Environment.getExternalStorageDirectory().getPath()));
 							return true;
 						}
 	                	
@@ -346,7 +354,7 @@ public class SettingsActivity extends SherlockPreferenceActivity implements File
 									String sixteen = bitMode.getValue();
 									boolean sb=(stereo!=null)?stereo.equals("2"):true;
 									boolean sxb=(sixteen!=null)?sixteen.equals("16"):true;
-									HashMap<Integer, Integer> mmm = Globals.validBuffers(Globals.validRates(sb,sxb),sb,sxb);
+									SparseIntArray mmm = Globals.validBuffers(Globals.validRates(sb,sxb),sb,sxb);
 									if(mmm!=null)
 									{
 										
@@ -383,7 +391,7 @@ public class SettingsActivity extends SherlockPreferenceActivity implements File
 							String sixteen = bitMode.getValue();
 							boolean sb=(stereo!=null)?stereo.equals("2"):true;
 							boolean sxb=(sixteen!=null)?sixteen.equals("16"):true;
-							HashMap<Integer, Integer> mmm = Globals.validBuffers(Globals.validRates(sb,sxb),sb,sxb);
+							SparseIntArray mmm = Globals.validBuffers(Globals.validRates(sb,sxb),sb,sxb);
 							if(mmm!=null)
 							{
 								
@@ -412,7 +420,7 @@ public class SettingsActivity extends SherlockPreferenceActivity implements File
 							String sixteen = (String) newValue;
 							boolean sb=(stereo!=null)?stereo.equals("2"):true;
 							boolean sxb=(sixteen!=null)?sixteen.equals("16"):true;
-							HashMap<Integer, Integer> mmm = Globals.validBuffers(Globals.validRates(sb,sxb),sb,sxb);
+							SparseIntArray mmm = Globals.validBuffers(Globals.validRates(sb,sxb),sb,sxb);
 							if(mmm!=null)
 							{
 								
@@ -462,7 +470,8 @@ public class SettingsActivity extends SherlockPreferenceActivity implements File
 	            }
 	            return false;
 	        }
-	        public static void initializeActionBar(PreferenceScreen preferenceScreen) {
+	        @SuppressLint("NewApi")
+			public static void initializeActionBar(PreferenceScreen preferenceScreen) {
 	            final Dialog dialog = preferenceScreen.getDialog();
 
 	            if (dialog != null) {
@@ -524,10 +533,10 @@ public class SettingsActivity extends SherlockPreferenceActivity implements File
 	    	    	
 	    	    	if(needUpdateSf)
 	    	    	{
-	    	    		Globals.writeCfg(SettingsActivity.this,Globals.dataFolder+"timidity/timidity.cfg", tmpSounds);
+	    	    		Globals.writeCfg(SettingsActivity.this,Globals.dataFolder+"/timidity/timidity.cfg", tmpSounds); // TODO ??
 	    	    	}
 	    	    		
-					//Globals.reloadSettings(getBaseContext());
+					Globals.reloadSettings(this, this.getAssets());
 					Intent returnIntent = new Intent();
 					setResult(3, returnIntent);
     	    		this.finish();
@@ -565,6 +574,7 @@ public class SettingsActivity extends SherlockPreferenceActivity implements File
 				}	
 					Toast.makeText(this, getResources().getString(R.string.invalidfold), Toast.LENGTH_SHORT).show();
 			}
+			@SuppressLint("NewApi")
 			@Override
 			protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 			    // Check which request we're responding to
@@ -592,7 +602,7 @@ public class SettingsActivity extends SherlockPreferenceActivity implements File
 			public void writeSoundfonts(ArrayList<String> l) {
 				needRestart=true;
 				needUpdateSf=true;
-				tmpSounds = new ArrayList<String>(l.size());
+				tmpSounds = new ArrayList<String>();
 
 				for (String foo: l) {
 				  tmpSounds.add(foo);

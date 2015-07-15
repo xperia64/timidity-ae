@@ -15,10 +15,13 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import android.annotation.SuppressLint;
 import android.app.ActivityManager;
 import android.app.ActivityManager.RunningServiceInfo;
 import android.app.AlertDialog;
@@ -30,10 +33,12 @@ import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.UriPermission;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.provider.OpenableColumns;
 //import com.actionbarsherlock.app.SherlockFragment;
 
 import android.support.v4.app.Fragment;
@@ -127,12 +132,13 @@ public class TimidityActivity extends SherlockFragmentActivity implements FileBr
         		}
         		playFrag.play(intent.getIntExtra(getResources().getString(R.string.ta_startt),0), 
         				intent.getStringExtra(getResources().getString(R.string.ta_songttl)), 
-        				intent.getBooleanExtra(getResources().getString(R.string.ta_shufmode), false), 
+        				intent.getIntExtra(getResources().getString(R.string.ta_shufmode), 0), 
         				intent.getIntExtra(getResources().getString(R.string.ta_loopmode),1));
         		break;
         	case 4:
-        		plistFrag.currPlist=Globals.plist;
-        		Globals.plist=null;
+        		plistFrag.currPlist=Globals.tmpplist;
+        		plistFrag.getPlaylists(plistFrag.mode?plistFrag.plistName:null);
+        		Globals.tmpplist=null;
         		break;
         	case 5: // Notifiy pause/stop
         		if(!intent.getBooleanExtra(getResources().getString(R.string.ta_pause), false)&&Globals.hardStop)
@@ -203,9 +209,14 @@ public class TimidityActivity extends SherlockFragmentActivity implements FileBr
     protected void onResume()
     {
     	deadlyDeath=false;
-    	Log.i("Timidity","Resumed");
     	super.onResume();
     }
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        handleIntentData(intent);
+    }
+	@SuppressLint("InlinedApi")
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		deadlyDeath=false;
@@ -242,6 +253,7 @@ public class TimidityActivity extends SherlockFragmentActivity implements FileBr
 		Fragment tmp = getSupportFragmentManager().getFragment(savedInstanceState,"playfrag");
 		if(tmp!=null)
 			playFrag = (PlayerFragment) tmp;
+		
 		tmp = getSupportFragmentManager().getFragment(savedInstanceState,"plfrag");
 		if(tmp!=null)
 			plistFrag = (PlaylistFragment) tmp;
@@ -294,7 +306,7 @@ public class TimidityActivity extends SherlockFragmentActivity implements FileBr
 		        
 	viewPager = (ViewPager) findViewById(R.id.vp_main);
 	viewPager.setAdapter(new TimidityFragmentPagerAdapter());
-	viewPager.setOnPageChangeListener(new OnPageChangeListener() {
+	viewPager.addOnPageChangeListener(new OnPageChangeListener() {
 
         @Override
         public void onPageSelected(int index) {
@@ -403,6 +415,7 @@ public class TimidityActivity extends SherlockFragmentActivity implements FileBr
         }
     });
 	}
+	@SuppressLint("NewApi")
 	public void initCallback()
 	{
 		if(Build.VERSION.SDK_INT>=android.os.Build.VERSION_CODES.LOLLIPOP)
@@ -465,13 +478,16 @@ public class TimidityActivity extends SherlockFragmentActivity implements FileBr
 			Globals.nativeMidi=true;
 			Toast.makeText(this, String.format(getResources().getString(R.string.tcfg_error), x), Toast.LENGTH_LONG).show();
 		}
-		if(getIntent().getData()!=null)
+		handleIntentData(getIntent());
+	}
+	public void handleIntentData(Intent in)
+	{
+		if(in.getData()!=null)
 		{
 			String data;
-			if((data=getIntent().getData().getPath())!=null&&getIntent().getData().getScheme()!=null)
+			if((data=in.getData().getPath())!=null&&in.getData().getScheme()!=null)
 			{
-				//System.out.println("Data is: "+data+" "+getIntent().getData().getScheme());
-				if(getIntent().getData().getScheme().equals("file"))
+				if(in.getData().getScheme().equals("file"))
 				{
 					if(new File(data).exists())
 					{
@@ -509,7 +525,7 @@ public class TimidityActivity extends SherlockFragmentActivity implements FileBr
 								if(position==-1)
 									Toast.makeText(this, getResources().getString(R.string.intErr1), Toast.LENGTH_SHORT).show();
 								else{
-								selectedSong(files,position,true,false);
+								selectedSong(files,position,true,false,false);
 								fileFrag.getDir(data.substring(0,data.lastIndexOf('/')+1));
 								}
 							}
@@ -517,28 +533,105 @@ public class TimidityActivity extends SherlockFragmentActivity implements FileBr
 					}else{
 						Toast.makeText(this, getResources().getString(R.string.srv_fnf),Toast.LENGTH_SHORT).show();
 					}
-				}else if(getIntent().getData().getScheme().equals("http")){
+				}else if(in.getData().getScheme().equals("http")||in.getData().getScheme().equals("https")){
 					if(!data.endsWith("/"))
 					{
-						if(!getExternalCacheDir().exists())
+						if(!Globals.getExternalCacheDir(this).exists())
 						{
-							getExternalCacheDir().mkdirs();
+							Globals.getExternalCacheDir(this).mkdirs();
 						}
-						data=getIntent().getData().toString();
 						final Globals.DownloadTask downloadTask = new Globals.DownloadTask(this);
-						downloadTask.execute(data);
-						
+						downloadTask.execute(in.getData().toString(), in.getData().getLastPathSegment());
+						in.setData(null);
 					}else{Toast.makeText(this, "This is a directory, not a file",Toast.LENGTH_SHORT).show();}
+				}else if(in.getData().getScheme().equals("content")&&(data.contains("downloads")))
+				{
+					String filename = null;
+					Cursor cursor = null;
+					try {
+					    cursor = this.getContentResolver().query(in.getData(), new String[] {
+					        OpenableColumns.DISPLAY_NAME, OpenableColumns.SIZE}, null, null, null );
+					    if (cursor != null && cursor.moveToFirst()) {
+					        filename = cursor.getString(0);
+					    }
+					} finally {
+					    if (cursor != null)
+					        cursor.close();
+					}
+					try
+					{
+						InputStream input = getContentResolver().openInputStream(in.getData());
+						if(new File(Globals.getExternalCacheDir(this).getAbsolutePath()+'/'+filename).exists())
+						{
+							new File(Globals.getExternalCacheDir(this).getAbsolutePath()+'/'+filename).delete();
+						}
+						OutputStream output = new FileOutputStream(Globals.getExternalCacheDir(this).getAbsolutePath()+'/'+filename);
+
+			            byte[] buffer = new byte[4096];
+			            int count;
+			            while ((count = input.read(buffer)) != -1) {
+			                output.write(buffer, 0, count);
+			            }
+			            output.close();
+					} catch (IOException e)
+					{
+						e.printStackTrace();
+						return;
+					}
+				
+					
+					File f = new File(Globals.getExternalCacheDir(this).getAbsolutePath()+'/');
+					if(f.exists())
+					{
+						if(f.isDirectory())
+						{
+							ArrayList<String> files = new ArrayList<String>();
+							int position=-1;
+							int goodCounter=0;
+							for(File ff: f.listFiles())
+							{
+								if(ff!=null&&ff.isFile())
+								{
+									int dotPosition = ff.getName().lastIndexOf('.');
+									String extension="";
+									if (dotPosition != -1) 
+									{
+										extension = (ff.getName().substring(dotPosition)).toLowerCase(Locale.US);
+										if(extension!=null)
+										{
+											if((Globals.showVideos?Globals.musicVideoFiles:Globals.musicFiles).contains("*"+extension+"*"))
+											{
+														
+												files.add(ff.getPath());
+												if(ff.getPath().equals(Globals.getExternalCacheDir(this).getAbsolutePath()+'/'+filename))
+													position=goodCounter;
+												goodCounter++;
+											}
+										}
+									}
+								}
+							}
+							if(position==-1)
+								Toast.makeText(this, getResources().getString(R.string.intErr1), Toast.LENGTH_SHORT).show();
+							else{
+							selectedSong(files,position,true,false,false);
+							fileFrag.getDir(Globals.getExternalCacheDir(this).getAbsolutePath());
+							}
+						}
+					}
+					
 				}else{
-					Toast.makeText(this, getResources().getString(R.string.intErr2),Toast.LENGTH_SHORT).show();
+					System.out.println(in.getDataString());
+					Toast.makeText(this, getResources().getString(R.string.intErr2)+" ("+in.getData().getScheme()+")",Toast.LENGTH_SHORT).show();
 				}
 			}
 		}
 	}
-	public void downloadFinished(String data)
+	@SuppressLint("NewApi")
+	public void downloadFinished(String data, String theFilename)
 	{
 		ArrayList<String> files = new ArrayList<String>();
-		String name = getExternalCacheDir().getAbsolutePath()+'/'+data.substring(data.lastIndexOf("/")+1);
+		String name = Globals.getExternalCacheDir(this).getAbsolutePath()+'/'+theFilename;
 		int dotPosition = name.lastIndexOf('.');
 		String extension="";
 		if (dotPosition != -1) 
@@ -550,7 +643,7 @@ public class TimidityActivity extends SherlockFragmentActivity implements FileBr
 				{
 							
 					files.add(name);
-					selectedSong(files,0,true,false);
+					selectedSong(files,0,true,false,false);
 					fileFrag.getDir(name.substring(0,name.lastIndexOf('/')+1));
 				}
 			}
@@ -680,6 +773,7 @@ public class TimidityActivity extends SherlockFragmentActivity implements FileBr
 	@Override
 	public void onBackPressed()
 	{
+		
 		switch(mode)
 		{
 		case 0:
@@ -689,26 +783,45 @@ public class TimidityActivity extends SherlockFragmentActivity implements FileBr
 					{
 						fileFrag.getDir(new File(fileFrag.currPath).getParent().toString());
 					}else
+					{
+						if(Globals.useDefaultBack)
+						{
+							super.onBackPressed();
+							return;
+						}
 						viewPager.setCurrentItem(1);
+					}
 			break;
 		case 1:
+			if(Globals.useDefaultBack)
+			{
+				super.onBackPressed();
+				return;
+			}
 			viewPager.setCurrentItem((fromPlaylist)?2:0);
 			break;
 		case 2:
 			if(plistFrag.mode)
 				plistFrag.getPlaylists(null);
 			else
+			{
+				if(Globals.useDefaultBack)
+				{
+					super.onBackPressed();
+					return;
+				}
 				viewPager.setCurrentItem(1);
+			}
 			break;
 		}
 	}
-	public void selectedSong(ArrayList<String> files, int songNumber, boolean begin, boolean loc)
+	public void selectedSong(ArrayList<String> files, int songNumber, boolean begin, boolean loc, boolean dontloadplist)
 	{
 		fromPlaylist=loc;
 		if(viewPager!=null)
 			viewPager.setCurrentItem(1);
-		Globals.plist=files;
-		if(plistFrag!=null)
+			Globals.plist=files;
+		if(plistFrag!=null&&!dontloadplist)
 			plistFrag.currPlist=files;
 		Intent new_intent = new Intent();
 	    new_intent.setAction(getResources().getString(R.string.msrv_rec));
@@ -722,6 +835,7 @@ public class TimidityActivity extends SherlockFragmentActivity implements FileBr
 	    	new_intent.putExtra(getResources().getString(R.string.msrv_currfold),fileFrag.currPath);
 	    new_intent.putExtra(getResources().getString(R.string.msrv_songnum), songNumber);
 	    new_intent.putExtra(getResources().getString(R.string.msrv_begin), begin);
+	    new_intent.putExtra(getResources().getString(R.string.msrv_dlplist), dontloadplist);
 	    sendBroadcast(new_intent);
 	    //System.out.println("sent bradcast");
 	}
@@ -884,7 +998,7 @@ public class TimidityActivity extends SherlockFragmentActivity implements FileBr
 	    new_intent.putExtra(getResources().getString(R.string.msrv_loopmode), mode);
 	    sendBroadcast(new_intent);
 	}
-	public void shuffle(boolean mode)
+	public void shuffle(int mode)
 	{
 		Intent new_intent = new Intent();
 	    new_intent.setAction(getResources().getString(R.string.msrv_rec));
@@ -909,6 +1023,7 @@ public class TimidityActivity extends SherlockFragmentActivity implements FileBr
 	    new_intent.putExtra(getResources().getString(R.string.msrv_outfile), output);
 	    sendBroadcast(new_intent);
 	}
+	@SuppressLint("NewApi")
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 	    // Check which request we're responding to
@@ -972,7 +1087,7 @@ public class TimidityActivity extends SherlockFragmentActivity implements FileBr
 			  value+=".wav";
 		  String parent=currSongName.substring(0,currSongName.lastIndexOf('/')+1);
 		  boolean alreadyExists = new File(parent+value).exists();
-		  boolean canWrite=true;
+		  boolean aWrite=true;
 		  String needRename = null;
 		  String probablyTheRoot = "";
 		  String probablyTheDirectory = "";
@@ -980,14 +1095,14 @@ public class TimidityActivity extends SherlockFragmentActivity implements FileBr
 		        new FileOutputStream(parent+value,true).close();
 		  }catch(FileNotFoundException e)
 		  {
-			canWrite=false;  
+			aWrite=false;  
 		  } catch (IOException e)
 		{
 			e.printStackTrace();
 		}
-		  if(canWrite&&!alreadyExists)
+		  if(aWrite&&!alreadyExists)
 			  new File(parent+value).delete();
-		  if(canWrite&&new File(parent).canWrite())
+		  if(aWrite&&new File(parent).canWrite())
 		  {
 			  value=parent+value;
 		  }else if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.LOLLIPOP&& Globals.theFold!=null)
@@ -1010,6 +1125,7 @@ public class TimidityActivity extends SherlockFragmentActivity implements FileBr
 			  value=Environment.getExternalStorageDirectory().getAbsolutePath()+'/'+value;
 		  }
 		  final String finalval = value;
+		  final boolean canWrite = aWrite;
 		  final String needToRename = needRename;
 		  final String probRoot = probablyTheRoot;
 		  if(new File(finalval).exists()||(new File(probRoot+needRename).exists()&&needToRename!=null))
@@ -1020,12 +1136,17 @@ public class TimidityActivity extends SherlockFragmentActivity implements FileBr
 			    dialog2.setCancelable(false);
 			    dialog2.setButton(DialogInterface.BUTTON_POSITIVE, getResources().getString(android.R.string.yes), new DialogInterface.OnClickListener() {
 			        public void onClick(DialogInterface dialog, int buttonId) {
-			        	if(needToRename!=null)
+			        	if(!canWrite&&Build.VERSION.SDK_INT>=Build.VERSION_CODES.LOLLIPOP)
 			        	{
-			        		Globals.tryToDeleteFile(TimidityActivity.this, probRoot+needToRename);
-			        		Globals.tryToDeleteFile(TimidityActivity.this, finalval);
+			        		if(needToRename!=null)
+			        		{
+			        			Globals.tryToDeleteFile(TimidityActivity.this, probRoot+needToRename);
+			        			Globals.tryToDeleteFile(TimidityActivity.this, finalval);
+			        		}else{
+			        			Globals.tryToDeleteFile(TimidityActivity.this, finalval);
+			        		}
 			        	}else{
-			        		Globals.tryToDeleteFile(TimidityActivity.this, finalval);
+			        		new File(finalval).delete();
 			        	}
 			        		
 				        	saveWavPart2(finalval, needToRename);
@@ -1090,10 +1211,10 @@ public class TimidityActivity extends SherlockFragmentActivity implements FileBr
 		alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
 		public void onClick(DialogInterface dialog, int whichButton) {
 		  String value = input.getText().toString();
-		  if(!value.toLowerCase(Locale.US).endsWith(".tcf"))
-			  value+=".tcf";
+		  if(!value.toLowerCase(Locale.US).endsWith(Globals.compressCfg?".tzf":".tcf"))
+			  value+=(Globals.compressCfg?".tzf":".tcf");
 		  String parent=currSongName.substring(0,currSongName.lastIndexOf('/')+1);
-		  boolean canWrite=true;
+		  boolean aWrite=true;
 		  boolean alreadyExists = new File(parent+value).exists();
 		  String needRename = null;
 		  String probablyTheRoot = "";
@@ -1102,14 +1223,14 @@ public class TimidityActivity extends SherlockFragmentActivity implements FileBr
 		        new FileOutputStream(parent+value,true).close();
 		  }catch(FileNotFoundException e)
 		  {
-			canWrite=false;  
+			aWrite=false;  
 		  } catch (IOException e)
 		{
 			e.printStackTrace();
 		}
-		  if(!alreadyExists&&canWrite)
+		  if(!alreadyExists&&aWrite)
 			  new File(parent+value).delete();
-		  if(canWrite&&new File(parent).canWrite())
+		  if(aWrite&&new File(parent).canWrite())
 		  {
 			  value=parent+value;
 		  }else if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.LOLLIPOP&& Globals.theFold!=null)
@@ -1133,6 +1254,7 @@ public class TimidityActivity extends SherlockFragmentActivity implements FileBr
 			  value=Environment.getExternalStorageDirectory().getAbsolutePath()+'/'+value;
 		  }
 		  final String finalval = value;
+		  final boolean canWrite = aWrite;
 		  final String needToRename = needRename;
 		  final String probRoot = probablyTheRoot;
 		  if(new File(finalval).exists()||(new File(probRoot+needRename).exists()&&needToRename!=null))
@@ -1143,12 +1265,17 @@ public class TimidityActivity extends SherlockFragmentActivity implements FileBr
 			    dialog2.setCancelable(false);
 			    dialog2.setButton(DialogInterface.BUTTON_POSITIVE, getResources().getString(android.R.string.yes), new DialogInterface.OnClickListener() {
 			        public void onClick(DialogInterface dialog, int buttonId) {
-			        	if(needToRename!=null)
+			        	if(!canWrite&&Build.VERSION.SDK_INT>=Build.VERSION_CODES.LOLLIPOP)
 			        	{
-			        		Globals.tryToDeleteFile(TimidityActivity.this, probRoot+needToRename);
-			        		Globals.tryToDeleteFile(TimidityActivity.this, finalval);
+			        		if(needToRename!=null)
+			        		{
+			        			Globals.tryToDeleteFile(TimidityActivity.this, probRoot+needToRename);
+			        			Globals.tryToDeleteFile(TimidityActivity.this, finalval);
+			        		}else{
+			        			Globals.tryToDeleteFile(TimidityActivity.this, finalval);
+			        		}
 			        	}else{
-			        		Globals.tryToDeleteFile(TimidityActivity.this, finalval);
+			        		new File(finalval).delete();
 			        	}
 			        	saveCfgPart2(finalval, needToRename);
 			        }
