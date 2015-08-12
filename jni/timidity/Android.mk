@@ -64,9 +64,9 @@ LOCAL_SRC_FILES+= wave_a.c
 LOCAL_SRC_FILES+= wrd_read.c
 LOCAL_SRC_FILES+= wrdt.c
 
-#LOCAL_LDLIBS = -llog -lm
+#LOCAL_LDLIBS = -llog
 #LOCAL_LDLIBS+= libOpenSLES
 
 LOCAL_STATIC_LIBRARIES := arc unimod utils interface
-
-include $(BUILD_STATIC_LIBRARY)
+LOCAL_SHARED_LIBRARIES := timidityhelper
+include $(BUILD_SHARED_LIBRARY)

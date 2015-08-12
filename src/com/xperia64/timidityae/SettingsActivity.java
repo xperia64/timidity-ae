@@ -528,15 +528,19 @@ public class SettingsActivity extends SherlockPreferenceActivity implements File
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
-	    	    	if(needRestart)
-	    	    		Toast.makeText(this, getResources().getString(R.string.restart), Toast.LENGTH_SHORT).show();
-	    	    	
 	    	    	if(needUpdateSf)
 	    	    	{
 	    	    		Globals.writeCfg(SettingsActivity.this,Globals.dataFolder+"/timidity/timidity.cfg", tmpSounds); // TODO ??
 	    	    	}
 	    	    		
 					Globals.reloadSettings(this, this.getAssets());
+					if(needRestart)
+	    	    	{	
+	    	    		Intent new_intent = new Intent();
+	    			    new_intent.setAction(getResources().getString(R.string.msrv_rec));
+	    			    new_intent.putExtra(getResources().getString(R.string.msrv_cmd), 18);
+	    			    sendBroadcast(new_intent);
+	    	    	}
 					Intent returnIntent = new Intent();
 					setResult(3, returnIntent);
     	    		this.finish();

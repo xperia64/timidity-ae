@@ -137,7 +137,6 @@ public class TimidityActivity extends SherlockFragmentActivity implements FileBr
         		break;
         	case 4:
         		plistFrag.currPlist=Globals.tmpplist;
-        		plistFrag.getPlaylists(plistFrag.mode?plistFrag.plistName:null);
         		Globals.tmpplist=null;
         		break;
         	case 5: // Notifiy pause/stop
@@ -233,9 +232,16 @@ public class TimidityActivity extends SherlockFragmentActivity implements FileBr
     		System.loadLibrary("timidityhelper");   
     	}
         catch( UnsatisfiedLinkError e) {
-        	Log.i("Bad:","Cannot grab timidity");
+        	Log.e("Bad:","Cannot load timidityhelper");
         	Globals.nativeMidi = Globals.onlyNative=true;
         }
+		if(JNIHandler.loadLib(Globals.getLibDir(this)+"libtimidityplusplus.so")<0)
+		{
+			Log.e("Bad:","Cannot load timidityplusplus");
+        	Globals.nativeMidi = Globals.onlyNative=true;
+		}else{
+			Globals.libLoaded = true;
+		}
 		oldTheme = Globals.theme;
 		if (Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH){
 	        this.setTheme((Globals.theme==1)?com.actionbarsherlock.R.style.Theme_Sherlock_Light_DarkActionBar:com.actionbarsherlock.R.style.Theme_Sherlock);
@@ -472,7 +478,7 @@ public class TimidityActivity extends SherlockFragmentActivity implements FileBr
 	}
 	public void initCallback2()
 	{
-		int x = JNIHandler.init(Globals.dataFolder+"timidity/","timidity.cfg", Globals.mono, Globals.defSamp, Globals.sixteen, Globals.buff, Globals.aRate, false);
+		int x = JNIHandler.init(Globals.dataFolder+"timidity/","timidity.cfg", Globals.mono, Globals.defSamp, Globals.sixteen, Globals.buff, Globals.aRate, false, false);
 		if(x!=0&&x!=-99)
 		{
 			Globals.nativeMidi=true;
@@ -686,16 +692,15 @@ public class TimidityActivity extends SherlockFragmentActivity implements FileBr
 	  public boolean onCreateOptionsMenu(Menu menu) {
 	    MenuInflater inflater = getSupportMenuInflater();
 	    inflater.inflate(R.menu.main_menu, menu);
-	    menuButton=menu.findItem(R.id.add);
-	    menuButton2=menu.findItem(R.id.subtract);
+	    menuButton=menu.findItem(R.id.menuBtn1);
+	    menuButton2=menu.findItem(R.id.menuBtn2);
 	    return true;
 	  } 
 	@Override
 	public boolean onMenuItemSelected(int featureId, MenuItem item)
 	{
-		if(item.getItemId()==R.id.add)
+		if(item.getItemId()==R.id.menuBtn1)
 		{
-			//System.out.println("add");
 			switch(mode)
 			{
 			case 0:
@@ -713,8 +718,7 @@ public class TimidityActivity extends SherlockFragmentActivity implements FileBr
 				plistFrag.getPlaylists(plistFrag.mode?plistFrag.plistName:null);
 				break;
 			}
-		}else if(item.getItemId()==R.id.subtract){
-			//System.out.println("subtract");
+		}else if(item.getItemId()==R.id.menuBtn2){
 			switch(mode)
 			{
 			case 0:
@@ -749,7 +753,7 @@ public class TimidityActivity extends SherlockFragmentActivity implements FileBr
 		    sendBroadcast(new_intent);
 			stopService(new Intent(this, MusicService.class));
 		    unregisterReceiver(activityReceiver);
-		    android.os.Process.killProcess(android.os.Process.myPid());
+		    android.os.Process.killProcess(android.os.Process.myPid()); // Probably the same
 			//System.exit(0);
 		}else if(item.getItemId()==R.id.asettings)
 		{
@@ -819,10 +823,14 @@ public class TimidityActivity extends SherlockFragmentActivity implements FileBr
 	{
 		fromPlaylist=loc;
 		if(viewPager!=null)
+		{
 			viewPager.setCurrentItem(1);
-			Globals.plist=files;
+		}
+		Globals.plist=files;
 		if(plistFrag!=null&&!dontloadplist)
+		{
 			plistFrag.currPlist=files;
+		}
 		Intent new_intent = new Intent();
 	    new_intent.setAction(getResources().getString(R.string.msrv_rec));
 	    new_intent.putExtra(getResources().getString(R.string.msrv_cmd), 5);
@@ -832,87 +840,52 @@ public class TimidityActivity extends SherlockFragmentActivity implements FileBr
 	    new_intent.putExtra(getResources().getString(R.string.msrv_cmd), 0);
 	   
 	    if(fileFrag!=null)
+	    {
 	    	new_intent.putExtra(getResources().getString(R.string.msrv_currfold),fileFrag.currPath);
+	    }
 	    new_intent.putExtra(getResources().getString(R.string.msrv_songnum), songNumber);
 	    new_intent.putExtra(getResources().getString(R.string.msrv_begin), begin);
 	    new_intent.putExtra(getResources().getString(R.string.msrv_dlplist), dontloadplist);
 	    sendBroadcast(new_intent);
-	    //System.out.println("sent bradcast");
 	}
 	public class TimidityFragmentPagerAdapter extends FragmentPagerAdapter {
-	final String[] pages = {"Files", "Player", "Playlists"};
-	public TimidityFragmentPagerAdapter() {
-	super(getSupportFragmentManager());
-	}
-	@Override
-	public int getCount() {
-	return pages.length;
-	}
-	@Override
-	public Fragment getItem(int position) {
-		switch(position)
+		final String[] pages = {"Files", "Player", "Playlists"};
+		public TimidityFragmentPagerAdapter() 
 		{
-		case 0:
-			fileFrag = FileBrowserFragment.create(Globals.defaultFolder);
-			return fileFrag;
-		case 1:
-			playFrag = PlayerFragment.create();
-			return playFrag;
-		case 2:
-			//System.out.println("creationist");
-			plistFrag = PlaylistFragment.create(Globals.dataFolder+"playlists/");
-			return plistFrag;
-		default:
-			return null;//PageFragment.create(position + 1);
+			super(getSupportFragmentManager());
 		}
-	
-	}
-	@Override
-	public CharSequence getPageTitle(int position) {
-		return pages[position];
-		}
-	}
-	/*public static class PageFragment extends SherlockFragment {
-	public static final String ARG_PAGE = "ARG_PAGE";
-	//private int mPage;
-	public static PageFragment create(int page) {
-	Bundle args = new Bundle();
-	args.putInt(ARG_PAGE, page);
-	PageFragment fragment = new PageFragment();
-	fragment.setArguments(args);
-	return fragment;
-	}
-	@Override
-	public void onCreate(Bundle savedInstanceState) {
-	super.onCreate(savedInstanceState);
-	//mPage = getArguments().getInt(ARG_PAGE);
-	}
-	/*@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container,
-	Bundle savedInstanceState) {
-		View view = null;
-		switch(mPage)
+		@Override
+		public int getCount() 
 		{
-		case 1: // Files
-			//view = inflater.inflate(R.layout.filebrowser, container, false);
-			break;
-		case 2: //
-			break;
-		case 3: // Playlists
-			break;
-		default:
-			view = inflater.inflate(R.layout.fragment_page, container, false);
-			TextView textView = (TextView) view;
-			textView.setText("Fragment #" + mPage);
-			break;
+			return pages.length;
 		}
-	
-	return view;
-	}*//*
-	
-	}*/
+		@Override
+		public Fragment getItem(int position) 
+		{
+			switch(position)
+			{
+			case 0:
+				fileFrag = FileBrowserFragment.create(Globals.defaultFolder);
+				return fileFrag;
+			case 1:
+				playFrag = PlayerFragment.create();
+				return playFrag;
+			case 2:
+				plistFrag = PlaylistFragment.create(Globals.dataFolder+"playlists/");
+				return plistFrag;
+			default:
+				return null;
+			}
+		}
+		@Override
+		public CharSequence getPageTitle(int position) 
+		{
+			return pages[position];
+		}
+	}
 	@Override
-	public void needFileBackCallback(boolean yes) {
+	public void needFileBackCallback(boolean yes) 
+	{
 		needFileBack=yes;
 		if(getSupportActionBar()!=null)
 		{
@@ -929,7 +902,8 @@ public class TimidityActivity extends SherlockFragmentActivity implements FileBr
 		}
 	}
 	@Override
-	public void needPlaylistBackCallback(boolean yes, boolean current) {
+	public void needPlaylistBackCallback(boolean yes, boolean current) 
+	{
 		needPlaylistBack=yes;
 		if(getSupportActionBar()!=null)
 		{
@@ -949,10 +923,6 @@ public class TimidityActivity extends SherlockFragmentActivity implements FileBr
 			}
 		}
 	}
-	/*@Override
-	public ArrayList<String> getCurrentPlaylist() {
-		return Globals.plist;
-	}*/
 	// Broadcast actions
 	// This is painful.
 	public void play()
@@ -1027,7 +997,8 @@ public class TimidityActivity extends SherlockFragmentActivity implements FileBr
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 	    // Check which request we're responding to
-	    if (requestCode == 1) {
+	    if (requestCode == 1) 
+	    {
 	        if(oldTheme!=Globals.theme)
 	        {
 	        	Intent intent = getIntent();
@@ -1039,16 +1010,18 @@ public class TimidityActivity extends SherlockFragmentActivity implements FileBr
 	       
 	    }else if(requestCode==42)
 	    {
-	    	 if (resultCode == RESULT_OK) {
+	    	 if (resultCode == RESULT_OK) 
+	    	 {
 	    	        Uri treeUri = data.getData();
 	    	        getContentResolver().takePersistableUriPermission(treeUri,
 	    	                Intent.FLAG_GRANT_READ_URI_PERMISSION |
 	    	                Intent.FLAG_GRANT_WRITE_URI_PERMISSION);  
-	    	    }
+	    	 }
 	    	 initCallback2();
 	    }
 	}
-	public void readyForInit() {
+	public void readyForInit() 
+	{
 		if(needInit)
 			initCallback();
 	}
@@ -1061,114 +1034,115 @@ public class TimidityActivity extends SherlockFragmentActivity implements FileBr
 		
 		AlertDialog.Builder alert = new AlertDialog.Builder(this);
 
-		alert.setTitle("Convert to WAV File");
-		alert.setMessage("Exports the MIDI/MOD file to WAV.\nNative Midi must be disabled in settings.\nWarning: WAV files are large.");
+		alert.setTitle(getResources().getString(R.string.dynex_alert1));
+		alert.setMessage(getResources().getString(R.string.dynex_alert1_msg));
 		InputFilter filter = new InputFilter() { 
-	        public CharSequence filter(CharSequence source, int start, int end, 
-	Spanned dest, int dstart, int dend) { 
-	                for (int i = start; i < end; i++) { 
-	                	String IC = "*/*\n*\r*\t*\0*\f*`*?***\\*<*>*|*\"*:*";
-	                        if (IC.contains("*"+source.charAt(i)+"*")) { 
-	                                return ""; 
-	                        } 
-	                } 
-	                return null; 
-	        } 
+			public CharSequence filter(CharSequence source, int start, int end, Spanned dest, int dstart, int dend) 
+			{
+				for (int i = start; i < end; i++)
+				{ 
+					String IC = "*/*\n*\r*\t*\0*\f*`*?***\\*<*>*|*\"*:*";
+					if (IC.contains("*"+source.charAt(i)+"*")) 
+					{ 
+						return ""; 
+					} 
+				} 
+				return null; 
+			} 
 		};
-		// Set an EditText view to get user input 
 		final EditText input = new EditText(this);
 		input.setFilters(new InputFilter[]{filter});
 		alert.setView(input);
 
-		alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-		public void onClick(DialogInterface dialog, int whichButton) {
-		  String value = input.getText().toString();
-		  if(!value.toLowerCase(Locale.US).endsWith(".wav"))
-			  value+=".wav";
-		  String parent=currSongName.substring(0,currSongName.lastIndexOf('/')+1);
-		  boolean alreadyExists = new File(parent+value).exists();
-		  boolean aWrite=true;
-		  String needRename = null;
-		  String probablyTheRoot = "";
-		  String probablyTheDirectory = "";
-		  try{
-		        new FileOutputStream(parent+value,true).close();
-		  }catch(FileNotFoundException e)
-		  {
-			aWrite=false;  
-		  } catch (IOException e)
+		alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() 
 		{
-			e.printStackTrace();
-		}
-		  if(aWrite&&!alreadyExists)
-			  new File(parent+value).delete();
-		  if(aWrite&&new File(parent).canWrite())
-		  {
-			  value=parent+value;
-		  }else if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.LOLLIPOP&& Globals.theFold!=null)
-		  {
-			  //TODO
-			  // Write the file to getExternalFilesDir, then move it with the Uri
-			  // We need to tell JNIHandler that movement is needed.
-			  
-			  String[] tmp = Globals.getDocFilePaths(TimidityActivity.this,parent);
-			  probablyTheDirectory = tmp[0];
-			  probablyTheRoot = tmp[1];
-			if(probablyTheDirectory.length()>1)
+			public void onClick(DialogInterface dialog, int whichButton) 
 			{
-				needRename = parent.substring(parent.indexOf(probablyTheRoot)+probablyTheRoot.length())+value;
-				value = probablyTheDirectory+'/'+value;
-			}else{
-				value=Environment.getExternalStorageDirectory().getAbsolutePath()+'/'+value;
-			}
-		  }else{
-			  value=Environment.getExternalStorageDirectory().getAbsolutePath()+'/'+value;
-		  }
-		  final String finalval = value;
-		  final boolean canWrite = aWrite;
-		  final String needToRename = needRename;
-		  final String probRoot = probablyTheRoot;
-		  if(new File(finalval).exists()||(new File(probRoot+needRename).exists()&&needToRename!=null))
-		  {
-			  AlertDialog dialog2 = new AlertDialog.Builder(TimidityActivity.this).create();
-			    dialog2.setTitle("Warning");
-			    dialog2.setMessage("Overwrite WAV file?");
-			    dialog2.setCancelable(false);
-			    dialog2.setButton(DialogInterface.BUTTON_POSITIVE, getResources().getString(android.R.string.yes), new DialogInterface.OnClickListener() {
-			        public void onClick(DialogInterface dialog, int buttonId) {
-			        	if(!canWrite&&Build.VERSION.SDK_INT>=Build.VERSION_CODES.LOLLIPOP)
-			        	{
-			        		if(needToRename!=null)
-			        		{
-			        			Globals.tryToDeleteFile(TimidityActivity.this, probRoot+needToRename);
-			        			Globals.tryToDeleteFile(TimidityActivity.this, finalval);
-			        		}else{
-			        			Globals.tryToDeleteFile(TimidityActivity.this, finalval);
-			        		}
-			        	}else{
-			        		new File(finalval).delete();
-			        	}
-			        		
+				String value = input.getText().toString();
+				if(!value.toLowerCase(Locale.US).endsWith(".wav"))
+					value+=".wav";
+				String parent=currSongName.substring(0,currSongName.lastIndexOf('/')+1);
+				boolean alreadyExists = new File(parent+value).exists();
+				boolean aWrite=true;
+				String needRename = null;
+				String probablyTheRoot = "";
+				String probablyTheDirectory = "";
+				try{
+					new FileOutputStream(parent+value,true).close();
+				}catch(FileNotFoundException e)
+				{
+					aWrite=false;  
+				} catch (IOException e)
+				{
+					e.printStackTrace();
+				}
+				
+				if(aWrite&&!alreadyExists)
+				  new File(parent+value).delete();
+				
+				if(aWrite&&new File(parent).canWrite())
+				{
+				  value=parent+value;
+				}else if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.LOLLIPOP&& Globals.theFold!=null)
+				{
+				  String[] tmp = Globals.getDocFilePaths(TimidityActivity.this,parent);
+				  probablyTheDirectory = tmp[0];
+				  probablyTheRoot = tmp[1];
+				  if(probablyTheDirectory.length()>1)
+				  {
+					  needRename = parent.substring(parent.indexOf(probablyTheRoot)+probablyTheRoot.length())+value;
+					  value = probablyTheDirectory+'/'+value;
+				  }else{
+					  value=Environment.getExternalStorageDirectory().getAbsolutePath()+'/'+value;
+				  }
+				}else{
+				  value=Environment.getExternalStorageDirectory().getAbsolutePath()+'/'+value;
+				}
+				final String finalval = value;
+				final boolean canWrite = aWrite;
+				final String needToRename = needRename;
+				final String probRoot = probablyTheRoot;
+				if(new File(finalval).exists()||(new File(probRoot+needRename).exists()&&needToRename!=null))
+				{
+					AlertDialog dialog2 = new AlertDialog.Builder(TimidityActivity.this).create();
+				    dialog2.setTitle(getResources().getString(R.string.warning));
+				    dialog2.setMessage(getResources().getString(R.string.dynex_alert2_msg));
+				    dialog2.setCancelable(false);
+				    dialog2.setButton(DialogInterface.BUTTON_POSITIVE, getResources().getString(android.R.string.yes), new DialogInterface.OnClickListener() 
+				    {
+				        public void onClick(DialogInterface dialog, int buttonId) 
+				        {
+				        	if(!canWrite&&Build.VERSION.SDK_INT>=Build.VERSION_CODES.LOLLIPOP)
+				        	{
+				        		if(needToRename!=null)
+				        		{
+				        			Globals.tryToDeleteFile(TimidityActivity.this, probRoot+needToRename);
+				        			Globals.tryToDeleteFile(TimidityActivity.this, finalval);
+				        		}else{
+				        			Globals.tryToDeleteFile(TimidityActivity.this, finalval);
+				        		}
+				        	}else{
+				        		new File(finalval).delete();
+				        	}
 				        	saveWavPart2(finalval, needToRename);
-			        	
-			        }
-
-					
-			    });
-			    dialog2.setButton(DialogInterface.BUTTON_NEGATIVE, getResources().getString(android.R.string.no), new DialogInterface.OnClickListener() {
-			        public void onClick(DialogInterface dialog, int buttonId) {
+				        }
+				    });
+				    dialog2.setButton(DialogInterface.BUTTON_NEGATIVE, getResources().getString(android.R.string.no), new DialogInterface.OnClickListener() 
+				    {
+				    	public void onClick(DialogInterface dialog, int buttonId) 
+				    	{
 			          
-			        }
-			    });
-			    dialog2.show();
-		  }else{
-		     saveWavPart2(finalval, needToRename);
-		  }
+				    	}
+				    });
+				    dialog2.show();
+				}else{
+					saveWavPart2(finalval, needToRename);
+				}
 		  
-		}
+			}
 		});
 
-		alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+		alert.setNegativeButton(getResources().getString(R.string.cancel), new DialogInterface.OnClickListener() {
 		  public void onClick(DialogInterface dialog, int whichButton) {
 		    // Canceled.
 		  }
@@ -1177,7 +1151,7 @@ public class TimidityActivity extends SherlockFragmentActivity implements FileBr
 
 		alerty = alert.show();
 		
-	}
+		}
 	}
 	
 	public void saveCfg()
@@ -1192,8 +1166,7 @@ public class TimidityActivity extends SherlockFragmentActivity implements FileBr
 		alert.setTitle("Save Cfg");
 		alert.setMessage("Save a MIDI configuration file");
 		InputFilter filter = new InputFilter() { 
-	        public CharSequence filter(CharSequence source, int start, int end, 
-	Spanned dest, int dstart, int dend) { 
+	        public CharSequence filter(CharSequence source, int start, int end, Spanned dest, int dstart, int dend) { 
 	                for (int i = start; i < end; i++) { 
 	                	String IC = "*/*\n*\r*\t*\0*\f*`*?***\\*<*>*|*\"*:*";
 	                        if (IC.contains("*"+source.charAt(i)+"*")) { 

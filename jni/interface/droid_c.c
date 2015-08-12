@@ -31,7 +31,7 @@
 #else
 #include <strings.h>
 #endif
-#include <android/log.h>
+//#include <android/log.h>
 #include "timidity.h"
 #include "common.h"
 #include "output.h"
@@ -90,7 +90,7 @@ ControlMode ctl=
 static int ctl_open(int using_stdin, int using_stdout)
 {
   ctl.opened=1;
-  //__android_log_print(ANDROID_LOG_DEBUG, "TIMIDITY", "Opening");
+  //andro_timidity_log_print( "TIMIDITY", "Opening");
   return 0;
 }
 static void ctl_close(void)
@@ -175,7 +175,7 @@ static void ctl_lyric(int lyricid)
 }
 static void ctl_program(int ch, int prog, char *comm, unsigned int banks)
 {
-	//__android_log_print(ANDROID_LOG_DEBUG, "TIMIDITY", "Channel: %d Program: %d", ch, prog);
+	//andro_timidity_log_print( "TIMIDITY", "Channel: %d Program: %d", ch, prog);
 	setProgram(ch, prog);
 }
 static void ctl_drumpart(int ch, int isdrum)
@@ -260,7 +260,7 @@ static int ctl_read(int32 *valp)
 	  return c;
   }*/
 	if(droid_rc){ 
-		//__android_log_print(ANDROID_LOG_DEBUG, "TIMIDITY", "Native control: %d", droid_rc);
+		//andro_timidity_log_print( "TIMIDITY", "Native control: %d", droid_rc);
 		ret=droid_rc; 
 		*valp=(int32)droid_arg;/*:*valp;*/ 
 		droid_rc=RC_NONE; droid_arg=0; 
@@ -277,8 +277,7 @@ int play_list(int number_of_files, char *list_of_files[])
 }
 static int ctl_pass_playing_list(int number_of_files, char *list_of_files[]) {
 	if(number_of_files)
-		play_midi_file(list_of_files[0]);
-
+		return play_midi_file(list_of_files[0]);
 	return 0;
 
 }
@@ -304,7 +303,7 @@ static int cmsg(int type, int verbosity_level, char *fmt, ...)
 	  vsprintf(buffer, fmt, ap);
       //vfprintf(outfp, fmt, ap);
      // fputs(NLS, outfp);
-	  __android_log_print(ANDROID_LOG_DEBUG, "TIMIDITY", "%s", buffer);
+	  andro_timidity_log_print( "TIMIDITY", "%s", buffer);
       //fflush(outfp);
     }
   va_end(ap);

@@ -56,6 +56,7 @@ import android.util.SparseIntArray;
 import android.widget.Toast;
 
 public class Globals {
+	public static boolean libLoaded = false;
 public static int isPlaying = 1; // Active low.
 public static ArrayList<String> plist; // Because arguments don't like big things.
 public static ArrayList<String> tmpplist; // I'm lazy. 
@@ -87,6 +88,22 @@ public static File getExternalCacheDir(Context c)
 		return c.getExternalCacheDir();
 	}else{
 		return new File("/sdcard/Android/data/com.xperia64.timidityae/cache/");
+	}
+}
+
+@SuppressLint({ "NewApi", "SdCardPath" })
+public static String getLibDir(Context c)
+{
+	if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.GINGERBREAD)
+	{
+		String s = c.getApplicationInfo().nativeLibraryDir;
+		if(!s.endsWith(File.separator))
+		{
+			s+="/";
+		}
+		return s;
+	}else{
+		return "/data/data/com.xperia64.timidityae/lib/";
 	}
 }
 
@@ -176,7 +193,7 @@ public static boolean manConfig;
 public static int defSamp;
 public static boolean shouldLolNag;
 //public static ArrayList<String> soundfonts; // this list should only be touched in SettingsActivity
-public static boolean mono;
+public static int mono; // 0 = stereo downsampled to mono, 1 = timidity-synthesized mono, 2 = stereo
 public static boolean sixteen;
 public static int aRate;
 public static int buff;
@@ -204,7 +221,7 @@ public static void reloadSettings(Activity c, AssetManager assets)
 	dataFolder = prefs.getString("dataDir", Environment.getExternalStorageDirectory()+"/TimidityAE/");
 	manConfig = prefs.getBoolean("manualConfig", false);
 	JNIHandler.currsamp = defSamp = Integer.parseInt(prefs.getString("tplusResamp", "0"));
-	mono = prefs.getString("sdlChanValue", "2").equals("1");
+	mono = Integer.parseInt(prefs.getString("sdlChanValue", "2"));
 	sixteen = prefs.getString("tplusBits", "16").equals("16");
 	aRate = Integer.parseInt(prefs.getString("tplusRate", Integer.toString(AudioTrack.getNativeOutputSampleRate(AudioTrack.MODE_STREAM))));
 	buff = Integer.parseInt(prefs.getString("tplusBuff", "192000"));
@@ -642,40 +659,40 @@ public static void tryToDeleteFile(Context c, String filename)
 	filename = filename.replace("//", "/");
 	if(new File(filename).exists())
 	{
-	if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.LOLLIPOP&& Globals.theFold!=null)
-	{
-	DocumentFile df = DocumentFile.fromTreeUri(c, theFold);
-	String split[] = filename.split("/");
-	int i;
-	for(i = 0; i<split.length; i++)
-	{
-		if(split[i].equals(df.getName()))
+		if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.LOLLIPOP&& Globals.theFold!=null)
 		{
-			i++;
-			break;
-		}
-	}
-	DocumentFile xx = df;
-	//StringBuilder upper = new StringBuilder();
-	while(i<split.length)
-	{
-		xx = xx.findFile(split[i++]);
-		//upper.append("../");
-		if(xx==null)
-		{
-			Log.e("TimidityAE Globals","Delete file error.");
-			break;
-		}
-	}
+			DocumentFile df = DocumentFile.fromTreeUri(c, theFold);
+			String split[] = filename.split("/");
+			int i;
+			for(i = 0; i<split.length; i++)
+			{
+				if(split[i].equals(df.getName()))
+				{
+					i++;
+					break;
+				}
+			}
+			DocumentFile xx = df;
+			//StringBuilder upper = new StringBuilder();
+			while(i<split.length)
+			{
+				xx = xx.findFile(split[i++]);
+				//upper.append("../");
+				if(xx==null)
+				{
+					Log.e("TimidityAE Globals","Delete file error.");
+					break;
+				}
+			}
 	// Why on earth is DocumentFile's delete method recursive by default?
 	// Seriously. I wiped my sd card twice because of this.
-	if(xx!=null&&xx.isFile()&&!xx.isDirectory())
-	{
-		xx.delete();
-	}
-	}else{
-		new File(filename).delete();
-	}
+			if(xx!=null&&xx.isFile()&&!xx.isDirectory())
+			{
+				xx.delete();
+			}
+		}else{
+			new File(filename).delete();
+		}
 	}
 }
 public static void tryToCreateFile(Context c, String filename)
@@ -683,44 +700,44 @@ public static void tryToCreateFile(Context c, String filename)
 	filename = filename.replace("//", "/");
 	if(!(new File(filename).exists()))
 	{
-	if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.LOLLIPOP&&theFold!=null)
-	{
-	DocumentFile df = DocumentFile.fromTreeUri(c, theFold);
-	String split[] = filename.split("/");
-	int i;
-	for(i = 0; i<split.length; i++)
-	{
-		if(split[i].equals(df.getName()))
+		if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.LOLLIPOP&&theFold!=null)
 		{
-			i++;
-			break;
+			DocumentFile df = DocumentFile.fromTreeUri(c, theFold);
+			String split[] = filename.split("/");
+			int i;
+			for(i = 0; i<split.length; i++)
+			{
+				if(split[i].equals(df.getName()))
+				{
+					i++;
+					break;
+				}
+			}
+			DocumentFile xx = df;
+			//StringBuilder upper = new StringBuilder();
+			while(i<split.length-1)
+			{
+				xx = xx.findFile(split[i++]);
+				//upper.append("../");
+				if(xx==null)
+				{
+					Log.e("TimidityAE Globals","Create file error.");
+					break;
+				}
+			}
+			if(xx!=null)
+			{
+				xx.createFile("timidityae/tpl", split[split.length-1]);
+			}
+		}else{
+			try
+			{
+				new File(filename).createNewFile();
+			} catch (IOException e)
+			{
+				e.printStackTrace();
+			}
 		}
-	}
-	DocumentFile xx = df;
-	//StringBuilder upper = new StringBuilder();
-	while(i<split.length-1)
-	{
-		xx = xx.findFile(split[i++]);
-		//upper.append("../");
-		if(xx==null)
-		{
-			Log.e("TimidityAE Globals","Create file error.");
-			break;
-		}
-	}
-	if(xx!=null)
-	{
-		xx.createFile("timidityae/tpl", split[split.length-1]);
-	}
-	}else{
-		try
-		{
-			new File(filename).createNewFile();
-		} catch (IOException e)
-		{
-			e.printStackTrace();
-		}
-	}
 	}
 }
 
@@ -743,27 +760,27 @@ public static int[] updateRates()
 {
 	if(prefs!=null)
 	{
-	int[] values = Globals.validRates(
-			prefs.getString("sdlChanValue","2").equals("2"), 
-			prefs.getString("tplusBits", "16").equals("16"));
-    CharSequence[] hz = new CharSequence[values.length];
-    CharSequence[] hzItems = new CharSequence[values.length];
-    boolean validRate=false;
-    for(int i = 0; i<values.length; i++)
-    {
-    	hz[i]=Integer.toString(values[i])+"Hz";
-    	hzItems[i]=Integer.toString(values[i]);
-    	if(prefs.getString("tplusRate", Integer.toString(AudioTrack.getNativeOutputSampleRate(AudioTrack.MODE_STREAM))).equals(hzItems[i]))
-    	{
-    			validRate=true;
+		int[] values = Globals.validRates(
+				prefs.getString("sdlChanValue","2").equals("2"), 
+				prefs.getString("tplusBits", "16").equals("16"));
+		CharSequence[] hz = new CharSequence[values.length];
+		CharSequence[] hzItems = new CharSequence[values.length];
+		boolean validRate=false;
+		for(int i = 0; i<values.length; i++)
+		{
+			hz[i]=Integer.toString(values[i])+"Hz";
+			hzItems[i]=Integer.toString(values[i]);
+			if(prefs.getString("tplusRate", Integer.toString(AudioTrack.getNativeOutputSampleRate(AudioTrack.MODE_STREAM))).equals(hzItems[i]))
+			{
+				validRate=true;
     			break;
-    	}
-    }
+			}
+		}
   
-    if(!validRate)
-    	prefs.edit().putString("tplusRate",Integer.toString(AudioTrack.getNativeOutputSampleRate(AudioTrack.MODE_STREAM))).commit();
+		if(!validRate)
+			prefs.edit().putString("tplusRate",Integer.toString(AudioTrack.getNativeOutputSampleRate(AudioTrack.MODE_STREAM))).commit();
     
-    return values;
+		return values;
 	}
 	return null;
 }
@@ -771,14 +788,13 @@ public static boolean updateBuffers(int[] rata)
 {
 	if(rata!=null)
 	{
-	SparseIntArray buffMap = Globals.validBuffers(rata, prefs.getString("sdlChanValue","2").equals("2"), prefs.getString("tplusBits", "16").equals("16"));
-	int realMin = buffMap.get(Integer.parseInt(prefs.getString("tplusRate", Integer.toString(AudioTrack.getNativeOutputSampleRate(AudioTrack.MODE_STREAM)))));
-	if(buff<realMin)
-	{
-		prefs.edit().putString("tplusBuff", Integer.toString(buff=realMin)).commit();
-		return false;
-	}
-	
+		SparseIntArray buffMap = Globals.validBuffers(rata, prefs.getString("sdlChanValue","2").equals("2"), prefs.getString("tplusBits", "16").equals("16"));
+		int realMin = buffMap.get(Integer.parseInt(prefs.getString("tplusRate", Integer.toString(AudioTrack.getNativeOutputSampleRate(AudioTrack.MODE_STREAM)))));
+		if(buff<realMin)
+		{
+			prefs.edit().putString("tplusBuff", Integer.toString(buff=realMin)).commit();
+			return false;
+		}
 	}
 	return true;
 }
@@ -795,13 +811,13 @@ public static int extract8Rock(Context c)
 	String[] needLol = null;
 	try{
         new FileOutputStream(Globals.dataFolder+"/soundfonts/8Rock11e.sfArk",true).close();
-  }catch(FileNotFoundException e)
-  {
-	needLol=getDocFilePaths(c, Globals.dataFolder); 
-  } catch (IOException e)
-{
-	e.printStackTrace();
-}
+	}catch(FileNotFoundException e)
+	{
+		needLol=getDocFilePaths(c, Globals.dataFolder); 
+	}catch (IOException e)
+	{
+		e.printStackTrace();
+	}
 
 	if(needLol!=null)
 	{

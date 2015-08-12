@@ -417,7 +417,6 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 		}else{
 			getPlaylists(plistName=path.get(position));
 		}
-		
 	}
 	@Override
 	public void setItem(String path, int type) {

@@ -35,8 +35,10 @@ public class JNIHandler {
 
 	// config folder, config file, mono, resampling algorithm, bits, preserve
 	// silence
+	public static native int loadLib(String libPath);
+	public static native int unloadLib();
 	private static native int prepareTimidity(String config, String config2,
-			int jmono, int jcustResamp, int jsixteen, int jPresSil);
+			int jmono, int jcustResamp, int jsixteen, int jPresSil, int jreloading);
 
 	private static native int loadSongTimidity(String filename);
 
@@ -48,7 +50,7 @@ public class JNIHandler {
 
 	public static native void setChannelVolumeTimidity(int jchan, int jvol);
 
-	public static native boolean timidityReady();
+	private static native boolean timidityReady();
 
 	public static native int setResampleTimidity(int jcustResamp);
 
@@ -60,7 +62,7 @@ public class JNIHandler {
 	public static int currTime = 0;
 	public static boolean paused = false;
 	public static boolean type = true; // true = mediaplayer, false = audiotrack
-	public static boolean monoop;
+	public static int monoop;
 	public static boolean bits;
 	public static int rate;
 	public static int buffer;
@@ -83,6 +85,7 @@ public class JNIHandler {
 	public static int voice;
 	public static int maxvoice=256;
 	public static int koffset=0;
+	//public static boolean breakLoops = false;
 	// file output things
 	public static boolean writeToFile = false;
 	public static long filesize=0;
@@ -91,7 +94,7 @@ public class JNIHandler {
 	public static boolean dataWritten=false;
 
 	public static boolean shouldPlayNow = true;
-
+	public static int ultSafetyCheck = 1;
 	// public static ArrayList<String> lyricLines;
 	// End Timidity Stuff
 
@@ -157,6 +160,7 @@ public class JNIHandler {
 			{
 			}
 			Globals.isPlaying = 1;
+			ultSafetyCheck = 1;
 			alternativeCheck = 555555;
 		} else
 		{
@@ -196,6 +200,17 @@ public class JNIHandler {
 			  try {Thread.sleep(interval);} catch (InterruptedException e){}
 		}
 	}
+	public static void waitForStop()
+	{
+		waitForStop(10);
+	}
+	public static void waitForStop(int interval)
+	{
+		while(Globals.isPlaying==0||alternativeCheck == 333333||ultSafetyCheck == 0)
+		{
+			  try {Thread.sleep(interval);} catch (InterruptedException e){}
+		}
+	}
     public static byte[] shortToByteArray(short data)
     {
         return new byte[]{(byte)(data & 0xff),(byte)((data >>> 8) & 0xff)};
@@ -215,7 +230,7 @@ public class JNIHandler {
 			        long mySubChunk1Size = 16;
 			        int myBitsPerSample= (bits?16:8);
 			        int myFormat = 1;
-			        long myChannels = (monoop?1:2);
+			        long myChannels = ((monoop<2)?1:2);
 			        long mySampleRate = rate;
 			        long myByteRate = mySampleRate * myChannels * myBitsPerSample/8;
 			        int myBlockAlign = (int) (myChannels * myBitsPerSample/8);
@@ -269,7 +284,7 @@ public class JNIHandler {
 			finishedWriting=true;
 			long myDataSize = filesize; // this changes
 	        int myBitsPerSample= (bits?16:8);
-	        long myChannels = (monoop?1:2);
+	        long myChannels = ((monoop<2)?1:2);
 			long myChunk2Size =  myDataSize * myChannels * myBitsPerSample/8;
 	        long myChunkSize = 36 + myChunk2Size;
 	     
@@ -302,33 +317,75 @@ public class JNIHandler {
 		{
 			if(writeToFile&&!finishedWriting)
 			{
-				try
+				if(monoop==0)
 				{
-					filesize+=length;
-					outFile.write(data, 0, length);
-				} catch (IOException e)
-				{
-					e.printStackTrace();
+					byte[] mono = new byte[length/2];
+					for (int i = 0 ; i < mono.length/2; ++i){
+						int HI = 1; int LO = 0;
+						int left = (data[i * 4 + HI] << 8) | (data[i * 4 + LO] & 0xff);
+						int right = (data[i * 4 + 2 + HI] << 8) | (data[i * 4 + 2 + LO] & 0xff);
+						int avg = (left + right) / 2;
+						mono[i * 2 + HI] = (byte)((avg >> 8) & 0xff);
+						mono[i * 2 + LO] = (byte)(avg & 0xff);
+					}
+					try
+					{
+						filesize+=mono.length;
+						outFile.write(mono, 0, mono.length);
+					} catch (IOException e)
+					{
+						e.printStackTrace();
+					}
+				}else{
+					try
+					{
+						filesize+=length;
+						outFile.write(data, 0, length);
+					} catch (IOException e)
+					{
+						e.printStackTrace();
+					}
 				}
+				
 			}else{
-				try
+				if(monoop==0)
 				{
-					mAudioTrack.write(data, 0, length);
-				} catch (IllegalStateException e)
-				{}
+					byte[] mono = new byte[length/2];
+					for (int i = 0 ; i < mono.length/2; ++i){
+						int HI = 1; int LO = 0;
+						int left = (data[i * 4 + HI] << 8) | (data[i * 4 + LO] & 0xff);
+						int right = (data[i * 4 + 2 + HI] << 8) | (data[i * 4 + 2 + LO] & 0xff);
+						int avg = (left + right) / 2;
+						mono[i * 2 + HI] = (byte)((avg >> 8) & 0xff);
+						mono[i * 2 + LO] = (byte)(avg & 0xff);
+					}
+					try
+					{
+						mAudioTrack.write(mono, 0, mono.length);
+					} catch (IllegalStateException e)
+					{}
+				}else{
+					try
+					{
+						mAudioTrack.write(data, 0, length);
+					} catch (IllegalStateException e)
+					{}
+				}
+				
 			}
 		}
 			
 
 	}
 
-	public static int init(String path, String file, boolean mono, int resamp, boolean sixteen, int b, int r, boolean preserveSilence)
+	public static int init(String path, String file,int mono, int resamp, boolean sixteen, int b, int r, boolean preserveSilence, boolean reloading)
 	{
 		if (!prepared)
 		{
+			
 			 System.out.println(String.format("Opening Timidity: Path: %s cfgFile: %s resample: %s mono: %s sixteenBit: %s buffer: %d rate: %d",
 			 path, file,
-			 Globals.sampls[resamp],(mono?"true":"false"),(sixteen?"true":"false"),b,
+			 Globals.sampls[resamp],((mono==1)?"true":"false"),(sixteen?"true":"false"),b,
 			 r));
 			for (int i = 0; i < MAX_CHANNELS; i++)
 			{
@@ -342,11 +399,12 @@ public class JNIHandler {
 			bits = sixteen;
 			rate = r;
 			buffer = b;
-			mMediaPlayer = new MediaPlayer();
+			if(mMediaPlayer == null)
+				mMediaPlayer = new MediaPlayer();
 
 			prepared = true;
-			return prepareTimidity(path, path + file, monoop ? 1 : 0, resamp,
-					bits ? 1 : 0, preserveSilence ? 1 : 0);
+			return prepareTimidity(path, path + file, (monoop==1) ? 1 : 0, resamp,
+					bits ? 1 : 0, preserveSilence ? 1 : 0, reloading ? 1:0);
 		} else
 		{
 			// Log.w("Warning", "Attempt to prepare again cancelled.");
@@ -368,6 +426,7 @@ public class JNIHandler {
 				currentLyric = "";
 				overwriteLyricAt = 0;
 				Globals.isPlaying = 0;
+				ultSafetyCheck = 0;
 				type = false;
 				paused = false;
 				dataWritten=false;
@@ -407,6 +466,7 @@ public class JNIHandler {
 										arg0.setOnCompletionListener(null);
 
 										Globals.isPlaying = 1;
+										ultSafetyCheck = 1;
 										alternativeCheck = 555555;
 									}
 								});
@@ -430,7 +490,7 @@ public class JNIHandler {
 
 							mAudioTrack = new AudioTrack(
 									AudioManager.STREAM_MUSIC, rate,
-									(!monoop) ? AudioFormat.CHANNEL_OUT_STEREO
+									(monoop==2) ? AudioFormat.CHANNEL_OUT_STEREO
 											: AudioFormat.CHANNEL_OUT_MONO,
 									(bits) ? AudioFormat.ENCODING_PCM_16BIT
 											: AudioFormat.ENCODING_PCM_8BIT,
@@ -447,7 +507,7 @@ public class JNIHandler {
 							
 							alternativeCheck=loadSongTimidity(songTitle);
 							alternativeCheck = 555555;
-							Globals.isPlaying = 1;
+							
 							if(writeToFile&&!finishedWriting)
 								finishOutput();
 						}
@@ -502,7 +562,8 @@ public class JNIHandler {
 		 */
 		if (y == 10)
 		{
-			Globals.isPlaying = 1; // Wait until all is unloaded.
+			
+			//Globals.isPlaying = 1; // Wait until all is unloaded.
 			if (mAudioTrack != null)
 			{
 				try
@@ -541,6 +602,8 @@ public class JNIHandler {
 
 	public static void finishIt()
 	{
+		ultSafetyCheck = 1;
+		Globals.isPlaying = 1;
 	}
 
 	public static void flushIt()

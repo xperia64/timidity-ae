@@ -287,7 +287,7 @@ public class MusicService extends Service{
 	        		if(shuffleMode == 1)
 	        		{
 	        			fixedShuffle = false;
-	        			if(Globals.reShuffle)
+	        			if(Globals.reShuffle||reverseShuffledIndices==null||shuffledIndices==null)
 	        			{	
 	        				genShuffledPlist();
 	        				
@@ -659,6 +659,30 @@ public class MusicService extends Service{
 						JNIHandler.waitUntilReady();
 					}
 	        		break;
+	        	case 18:	// Reload native libs
+	        		if(!JNIHandler.type)
+	        		{
+	        			fullStop=true;
+		        		Globals.hardStop=true;
+		        		shouldAdvance=false;
+	        			stop();
+	        			JNIHandler.waitForStop();
+	        		}
+	        		System.out.println("Unloading: "+JNIHandler.unloadLib());
+	        		JNIHandler.prepared = false;
+	        		JNIHandler.volumes = new ArrayList<Integer>();
+	        		JNIHandler.programs = new ArrayList<Integer>();
+	        		JNIHandler.drums = new ArrayList<Boolean>();
+	        		JNIHandler.custInst = new ArrayList<Boolean>();
+	        		JNIHandler.custVol = new ArrayList<Boolean>();
+	        		System.out.println("Reloading: "+JNIHandler.loadLib(Globals.getLibDir(MusicService.this)+"libtimidityplusplus.so"));
+	        		int x = JNIHandler.init(Globals.dataFolder+"timidity/","timidity.cfg", Globals.mono, Globals.defSamp, Globals.sixteen, Globals.buff, Globals.aRate, false, true);
+	        		if(x!=0&&x!=-99)
+	        		{
+	        			Globals.nativeMidi=true;
+	        			Toast.makeText(MusicService.this, String.format(getResources().getString(R.string.tcfg_error), x), Toast.LENGTH_LONG).show();
+	        		}
+	        		break;
 	        	}
 	            }
 	        }
@@ -899,7 +923,7 @@ public class MusicService extends Service{
   	        new_intent.putExtra(getResources().getString(R.string.msrv_reset),true);
   	        sendBroadcast(new_intent);
     		  }
-    	      while(!death&&((Globals.isPlaying==0&&shouldAdvance))){
+    	      while(!death&&(((Globals.isPlaying==0||JNIHandler.alternativeCheck==333333)&&shouldAdvance))){
     	    	  try {Thread.sleep(25);} catch (InterruptedException e){}}
     	      if(shouldAdvance&&!death)
     	      {

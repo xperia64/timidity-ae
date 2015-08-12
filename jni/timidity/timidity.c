@@ -54,7 +54,7 @@
 # endif
 #endif  /* TIME_WITH_SYS_TIME */
 #include <fcntl.h> /* for open */
-#include <android/log.h>
+//#include <android/log.h>
 #ifdef BORLANDC_EXCEPTION
 #include <excpt.h>
 #endif /* BORLANDC_EXCEPTION */
@@ -97,6 +97,7 @@
 #include "rtsyn.h"
 #else
 extern char* getConfig2();
+extern void andro_timidity_log_print(const char* tag, const char* fmt, ...);
 #endif
 
 #ifdef __BORLANDC__
@@ -5562,7 +5563,7 @@ MAIN_INTERFACE int timidity_play_main(int nfiles, char **files)
 
     if(nfiles == 0 && !strchr(INTERACTIVE_INTERFACE_IDS, ctl->id_character))
 	return 0;
-	//__android_log_print(ANDROID_LOG_DEBUG, "TIMIDITY", files[0]);
+	//andro_timidity_log_print( "TIMIDITY", files[0]);
     if(opt_output_name)
     {
 	play_mode->name = opt_output_name;
@@ -5584,7 +5585,7 @@ MAIN_INTERFACE int timidity_play_main(int nfiles, char **files)
 
     if(ctl->open(need_stdin, need_stdout))
     {
-		__android_log_print(ANDROID_LOG_DEBUG, "TIMIDITY", "Couldn't open %s (`%c')" NLS,
+		andro_timidity_log_print( "TIMIDITY", "Couldn't open %s (`%c')" NLS,
 		ctl->id_name, ctl->id_character);
 	fprintf(stderr, "Couldn't open %s (`%c')" NLS,
 		ctl->id_name, ctl->id_character);
@@ -5594,7 +5595,7 @@ MAIN_INTERFACE int timidity_play_main(int nfiles, char **files)
 
     if(wrdt->open(wrdt_open_opts))
     {
-		__android_log_print(ANDROID_LOG_DEBUG, "TIMIDITY", "Couldn't open WRD Tracer: %s (`%c')" NLS,
+		andro_timidity_log_print( "TIMIDITY", "Couldn't open WRD Tracer: %s (`%c')" NLS,
 		wrdt->name, wrdt->id);
 	fprintf(stderr, "Couldn't open WRD Tracer: %s (`%c')" NLS,
 		wrdt->name, wrdt->id);
@@ -5646,11 +5647,11 @@ MAIN_INTERFACE int timidity_play_main(int nfiles, char **files)
 	    ctl->cmsg(CMSG_INFO, VERB_DEBUG_SILLY,
 		      "requesting fragment size: %d",
 		      play_mode->extra_param[1]);
-			//__android_log_print(ANDROID_LOG_DEBUG, "TIMIDITY", "Fragging");
+			//andro_timidity_log_print( "TIMIDITY", "Fragging");
 	}
 #if !defined ( IA_W32GUI ) && !defined ( IA_W32G_SYN )
 	if(play_mode->open_output() < 0)
-	{__android_log_print(ANDROID_LOG_DEBUG, "TIMIDITY", "We're dying");
+	{andro_timidity_log_print( "TIMIDITY", "We're dying");
 	    ctl->cmsg(CMSG_FATAL, VERB_NORMAL,
 		      "Couldn't open %s (`%c')",
 		      play_mode->id_name, play_mode->id_character);
@@ -5662,7 +5663,7 @@ MAIN_INTERFACE int timidity_play_main(int nfiles, char **files)
 #endif /* IA_W32GUI */
 	if(!control_ratio)
 	{
-			//__android_log_print(ANDROID_LOG_DEBUG, "TIMIDITY", "control ratio");
+			//andro_timidity_log_print( "TIMIDITY", "control ratio");
 	    control_ratio = play_mode->rate / CONTROLS_PER_SECOND;
 	    if(control_ratio < 1)
 		control_ratio = 1;
@@ -5673,24 +5674,24 @@ MAIN_INTERFACE int timidity_play_main(int nfiles, char **files)
 	init_load_soundfont();
 	if(!output_fail)
 	{
-			//__android_log_print(ANDROID_LOG_DEBUG, "TIMIDITY", "Output NO FAILED");
+			//andro_timidity_log_print( "TIMIDITY", "Output NO FAILED");
 	    aq_setup();
 	    timidity_init_aq_buff();
 	}
 	if(allocate_cache_size > 0)
 	{
-		//__android_log_print(ANDROID_LOG_DEBUG, "TIMIDITY", "Cache resetting");
+		//andro_timidity_log_print( "TIMIDITY", "Cache resetting");
 	    resamp_cache_reset();
 	}
 
 	if (def_prog >= 0)
 	{
-		//__android_log_print(ANDROID_LOG_DEBUG, "TIMIDITY", "def prog");
+		//andro_timidity_log_print( "TIMIDITY", "def prog");
 		set_default_program(def_prog);
 	}
 	if (*def_instr_name)
 	{
-		//__android_log_print(ANDROID_LOG_DEBUG, "TIMIDITY", "def instr name");
+		//andro_timidity_log_print( "TIMIDITY", "def instr name");
 		set_default_instrument(def_instr_name);
 	}
 	if(ctl->flags & CTLF_LIST_RANDOM)
@@ -5706,14 +5707,14 @@ MAIN_INTERFACE int timidity_play_main(int nfiles, char **files)
 
 	if(intr)
 	{
-		//__android_log_print(ANDROID_LOG_DEBUG, "TIMIDITY", "Flushing");
+		//andro_timidity_log_print( "TIMIDITY", "Flushing");
 		aq_flush(1);
 	}
 
 #ifdef XP_UNIX
 	return 0;
 #endif /* XP_UNIX */
-	//__android_log_print(ANDROID_LOG_DEBUG, "TIMIDITY", "Normal end?");
+	//andro_timidity_log_print( "TIMIDITY", "Normal end?");
 	play_mode->close_output();
 	ctl->close();
 	wrdt->close();

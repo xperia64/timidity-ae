@@ -50,9 +50,8 @@ static int open_output(void)
 	   int include_enc, exclude_enc;
 	include_enc = 0;
 	if(getMono())
-	{
-		
-		dpm.encoding = PE_SIGNED|PE_MONO;
+	{	
+		dpm.encoding |= PE_MONO;
 	}
 	if(getSixteen())
 	{

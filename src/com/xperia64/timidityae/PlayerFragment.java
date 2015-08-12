@@ -119,11 +119,15 @@ public class PlayerFragment extends SherlockFragment {
 	};
 	public void lyricUpdation()
 	{
-		if(Globals.isPlaying==0&&!JNIHandler.type&&fragMode==2)
+		if(Globals.isPlaying==0)
 		{
+			if(!JNIHandler.type&&fragMode==2)
+			{
 				lyrical.updateLyrics();
+			}
+			seekHandler.postDelayed(lyricUpdater,10);
 		}
-		seekHandler.postDelayed(lyricUpdater,10);
+		
 	}
 	public void seekUpdation() {
 		if(Globals.isPlaying==0&&isAdded())
