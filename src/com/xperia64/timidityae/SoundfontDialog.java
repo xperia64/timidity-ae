@@ -84,7 +84,7 @@ public class SoundfontDialog implements OnItemLongClickListener, FileBrowserDial
 
 	@Override
 	public void setItem(final String path, int type) {
-		if(path.toLowerCase(Locale.US).endsWith(".sfark"))
+		if(path.toLowerCase(Locale.US).endsWith(".sfark")||path.toLowerCase(Locale.US).endsWith(".sfark.exe"))
 		{
 			AlertDialog.Builder be = new AlertDialog.Builder(context);
 			be.setCancelable(false);
@@ -129,7 +129,7 @@ public class SoundfontDialog implements OnItemLongClickListener, FileBrowserDial
 								AlertDialog.Builder bee = new AlertDialog.Builder(context);
 								bee.setCancelable(false);
 								bee.setTitle("Delete sfArk?");
-								bee.setMessage(String.format("Delete %?",path.substring(path.lastIndexOf('/')+1),path.substring(path.lastIndexOf('/')+1)));
+								bee.setMessage(String.format("Delete %s?",path.substring(path.lastIndexOf('/')+1)));
 								bee.setNegativeButton(context.getResources().getString(android.R.string.cancel), new DialogInterface.OnClickListener(){
 
 									@Override
@@ -145,7 +145,7 @@ public class SoundfontDialog implements OnItemLongClickListener, FileBrowserDial
 								});
 							}
 							else
-								Toast.makeText(context, "Error extracting sfArk", Toast.LENGTH_SHORT);
+								Toast.makeText(context, "Error extracting sfArk", Toast.LENGTH_SHORT).show();
 								//b.setEnabled(true);
 						}
 							
@@ -221,7 +221,7 @@ public class SoundfontDialog implements OnItemLongClickListener, FileBrowserDial
 	}
 
 	@Override
-	public void setEnabled(int position, boolean yes) {
+	public void setSFEnabled(int position, boolean yes) {
 		String pos = sfList.get(position);
 		
  		if(pos.startsWith("#")&&yes)

@@ -14,15 +14,15 @@ package com.xperia64.timidityae;
 import android.app.Activity;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
-import com.actionbarsherlock.app.SherlockFragment;
 import com.xperia64.timidityae.R;
 
-public class ArtFragment extends SherlockFragment {
+public class ArtFragment extends Fragment {
 	private ImageView mImg;
 	private boolean artOk = false;
 
@@ -39,6 +39,7 @@ public class ArtFragment extends SherlockFragment {
 	@Override
 	public void onViewCreated(View view, Bundle savedInstanceState)
 	{
+		// If the view is set up, we can set the album art
 		artOk = true;
 		setArt(Globals.currArt, getActivity());
 	}

@@ -11,6 +11,7 @@
  ******************************************************************************/
 package com.xperia64.timidityae;
 
+import java.io.File;
 import java.util.List;
 
 import com.xperia64.timidityae.R;
@@ -23,45 +24,44 @@ import android.widget.ArrayAdapter;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
+public class SoundfontArrayAdapter extends ArrayAdapter<String> {
 
-public class SoundfontArrayAdapter extends ArrayAdapter<String> {  
-     
-		public interface SoundfontArrayAdapterListener{
-			public void setEnabled(int position, boolean yes);
-		}
-		SoundfontArrayAdapterListener mc;
-	    private LayoutInflater inflater;  
-	    public SoundfontArrayAdapter(SoundfontArrayAdapterListener c, Context context, List<String> sfList ) {  
-	      super( context, R.layout.row_check, R.id.checkText, sfList );  
-	      mc=c; 
-	      inflater = LayoutInflater.from(context) ;  
-	    }  
-	  
-	    @Override  
-	    public View getView(final int position, View convertView, ViewGroup parent) {  
-	      final String sfName = this.getItem( position );   
-	  
-	      ToggleButton switchy ;   
-	      TextView textView ;   
-	        
+	public interface SoundfontArrayAdapterListener {
+		public void setSFEnabled(int position, boolean yes);
+	}
 
-	        convertView = inflater.inflate(R.layout.row_check, null);  
-	          
-	        textView = (TextView) convertView.findViewById( R.id.checkText );  
-	        switchy = (ToggleButton) convertView.findViewById( R.id.sfSwitch );  
-	          
-	        switchy.setOnClickListener( new View.OnClickListener() {  
-	          public void onClick(View v) {  
-	            ToggleButton cb = (ToggleButton) v ;  
-	           mc.setEnabled(position, cb.isChecked());
-	          }  
-	        });
-	        
-		      switchy.setChecked( !sfName.startsWith("#") );  
-		      textView.setText( sfName.substring(sfName.lastIndexOf('/')+1));   
-	           
-	        
-	      return convertView;  
-	    }  
-	      
-	  }  
+	SoundfontArrayAdapterListener mc;
+	private LayoutInflater inflater;
+
+	public SoundfontArrayAdapter(SoundfontArrayAdapterListener c, Context context, List<String> sfList) {
+		super(context, R.layout.row_check, R.id.checkText, sfList);
+		mc = c;
+		inflater = LayoutInflater.from(context);
+	}
+
+	@Override
+	public View getView(final int position, View convertView, ViewGroup parent) {
+		final String sfName = this.getItem(position);
+
+		ToggleButton switchy;
+		TextView textView;
+
+		convertView = inflater.inflate(R.layout.row_check, null);
+
+		textView = (TextView) convertView.findViewById(R.id.checkText);
+		switchy = (ToggleButton) convertView.findViewById(R.id.sfSwitch);
+
+		switchy.setOnClickListener(new View.OnClickListener() {
+			public void onClick(View v) {
+				ToggleButton cb = (ToggleButton) v;
+				mc.setSFEnabled(position, cb.isChecked());
+			}
+		});
+
+		switchy.setChecked(!sfName.startsWith("#"));
+		textView.setText(sfName.substring(sfName.lastIndexOf(File.separator) + 1));
+
+		return convertView;
+	}
+
+}

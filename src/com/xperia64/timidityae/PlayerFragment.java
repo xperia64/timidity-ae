@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -27,6 +28,7 @@ import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.view.LayoutInflater;
@@ -45,11 +47,11 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.SeekBar.OnSeekBarChangeListener;
-import com.actionbarsherlock.app.SherlockFragment;
+
 import com.xperia64.timidityae.R;
 
 @SuppressLint("Recycle")
-public class PlayerFragment extends SherlockFragment {
+public class PlayerFragment extends Fragment {
 	
 	public boolean shouldAdvance=true;
 	public int loopMode=1;

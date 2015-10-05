@@ -13,12 +13,13 @@ package com.xperia64.timidityae;
 
 import java.util.ArrayList;
 import java.util.List;
-
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
@@ -35,11 +36,9 @@ import android.widget.ListView;
 import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.AdapterView.OnItemClickListener;
-
-import com.actionbarsherlock.app.SherlockFragment;
 import com.xperia64.timidityae.R;
 
-public class TrackFragment extends SherlockFragment {
+public class TrackFragment extends Fragment {
 	ArrayList<Integer> localInst = new ArrayList<Integer>();
 
 	ArrayList<Integer> localVol = new ArrayList<Integer>();
@@ -73,6 +72,7 @@ public class TrackFragment extends SherlockFragment {
 		channelList.setOnItemClickListener(new OnItemClickListener()
 		{
 
+			@SuppressLint("InflateParams")
 			@Override
 			public void onItemClick(AdapterView<?> arg0, View arg1, final int arg2,
 					long arg3) {

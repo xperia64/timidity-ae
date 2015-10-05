@@ -14,11 +14,11 @@ package com.xperia64.timidityae;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import com.actionbarsherlock.app.SherlockPreferenceActivity;
-import com.actionbarsherlock.view.MenuItem;
+
 import com.xperia64.timidityae.FileBrowserDialog.FileBrowserDialogListener;
 import com.xperia64.timidityae.SoundfontDialog.SoundfontDialogListener;
 import com.xperia64.timidityae.R;
+
 import android.preference.CheckBoxPreference;
 import android.preference.EditTextPreference;
 import android.preference.ListPreference;
@@ -27,19 +27,27 @@ import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v4.preference.PreferenceFragment;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.util.SparseIntArray;
+import android.util.TypedValue;
+import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.view.ViewParent;
 import android.widget.BaseAdapter;
-import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.Toast;
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.UriPermission;
@@ -49,7 +57,7 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-public class SettingsActivity extends SherlockPreferenceActivity implements FileBrowserDialogListener, SoundfontDialogListener {
+public class SettingsActivity extends AppCompatActivity implements FileBrowserDialogListener, SoundfontDialogListener {
 	
 	public static SettingsActivity mInstance = null;
 	private ArrayList<String> tmpSounds;
@@ -80,10 +88,34 @@ public class SettingsActivity extends SherlockPreferenceActivity implements File
 	private CheckBoxPreference nativeMidi;
 	private CheckBoxPreference keepWav;
 	private SharedPreferences prefs;
+	private TimidityPrefsFragment pf;
+	private float abElevation;
+	
 	        @SuppressLint("InlinedApi")
-			@SuppressWarnings({ "deprecation", "unchecked" })
 			@Override
-	        protected void onCreate(Bundle savedInstanceState) {
+            protected void onCreate(Bundle savedInstanceState) {
+                        
+                        mInstance = this;
+                        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.ECLAIR&&Build.VERSION.SDK_INT < Build.VERSION_CODES.ICE_CREAM_SANDWICH)
+                        {
+                        	this.setTheme(android.support.v7.appcompat.R.style.Theme_AppCompat);
+                        }else{
+                        	this.setTheme((Globals.theme==1)?android.support.v7.appcompat.R.style.Theme_AppCompat_Light_DarkActionBar:android.support.v7.appcompat.R.style.Theme_AppCompat);
+                        }
+                        super.onCreate(savedInstanceState);
+        	        	getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        	        	
+                        // Display the fragment as the main content.
+                        FragmentManager mFragmentManager = getSupportFragmentManager();
+                        FragmentTransaction mFragmentTransaction = mFragmentManager
+                                                .beginTransaction();
+                         pf = new TimidityPrefsFragment();
+                        mFragmentTransaction.replace(android.R.id.content, pf);
+                        mFragmentTransaction.commit();
+                        abElevation = getSupportActionBar().getElevation();
+            }
+	        
+	       /* protected void onCreate(Bundle savedInstanceState) {
 	        	mInstance = this;
 	        	// Themes are borked.
 	        	// TODO nix Sherlock
@@ -91,7 +123,7 @@ public class SettingsActivity extends SherlockPreferenceActivity implements File
 	    		   this.setTheme((Globals.theme==1)?android.R.style.Theme_Holo_Light_DarkActionBar:android.R.style.Theme_Holo);
 	    	   }
 	        	super.onCreate(savedInstanceState);
-	        	getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+	        	getActionBar().setDisplayHomeAsUpEnabled(true);
 	                addPreferencesFromResource(R.layout.settings);
 	                prefs = PreferenceManager
 	    	                .getDefaultSharedPreferences(getBaseContext());
@@ -453,30 +485,17 @@ public class SettingsActivity extends SherlockPreferenceActivity implements File
 	                	
 	                });
 	                
-	        }
+	        }*/
 	        
-	        @SuppressWarnings("deprecation")
-			@Override
-	        public boolean onPreferenceTreeClick(PreferenceScreen preferenceScreen, Preference preference) {
-	            super.onPreferenceTreeClick(preferenceScreen, preference);
 
-	            // If the user has clicked on a preference screen, set up the action bar
-	            if (Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH){
-		    		   
-		    	   
-	            if (preference instanceof PreferenceScreen) {
-	                initializeActionBar((PreferenceScreen) preference);
-	            }
-	            }
-	            return false;
-	        }
-	        @SuppressLint("NewApi")
-			public static void initializeActionBar(PreferenceScreen preferenceScreen) {
+	        
+			/*public static void initializeActionBar(PreferenceScreen preferenceScreen, SettingsActivity s) {
 	            final Dialog dialog = preferenceScreen.getDialog();
 
 	            if (dialog != null) {
+	            	s.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 	                // Inialize the action bar
-	                dialog.getActionBar().setDisplayHomeAsUpEnabled(true);
+	                //dialog.getActionBar().setDisplayHomeAsUpEnabled(true);
 
 	                // Apply custom home button area click listener to close the PreferenceScreen because PreferenceScreens are dialogs which swallow
 	                // events instead of passing to the activity
@@ -511,6 +530,54 @@ public class SettingsActivity extends SherlockPreferenceActivity implements File
 	                    }
 	                }    
 	            }
+	        }*/
+	        @SuppressLint("NewApi")
+			public void setUpNestedScreen(PreferenceScreen preferenceScreen) {
+	            final Dialog dialog = preferenceScreen.getDialog();
+	            
+	            Toolbar bar;
+
+	            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+	            {
+	            	LinearLayout root = (LinearLayout) dialog.findViewById(android.R.id.list).getParent();
+	                bar = (Toolbar) LayoutInflater.from(this).inflate(R.layout.settings_toolbar, root, false);
+	                bar.setElevation(abElevation);
+	                root.addView(bar,0);
+	            }
+	            else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
+	                LinearLayout root = (LinearLayout) dialog.findViewById(android.R.id.list).getParent();
+	                bar = (Toolbar) LayoutInflater.from(this).inflate(R.layout.settings_toolbar, root, false);
+	                root.addView(bar, 0); // insert at top
+	            } else {
+	                ViewGroup root = (ViewGroup) dialog.findViewById(android.R.id.content);
+	                ListView content = (ListView) root.getChildAt(0);
+
+	                root.removeAllViews();
+
+	                bar = (Toolbar) LayoutInflater.from(this).inflate(R.layout.settings_toolbar, root, false);
+
+	                int height;
+	                TypedValue tv = new TypedValue();
+	                if (getTheme().resolveAttribute(R.attr.actionBarSize, tv, true)) {
+	                    height = TypedValue.complexToDimensionPixelSize(tv.data, getResources().getDisplayMetrics());
+	                }else{
+	                    height = bar.getHeight();
+	                }
+	                
+	                content.setPadding(0, height, 0, 0);
+
+	                root.addView(content);
+	                root.addView(bar);
+	            }
+
+	            bar.setTitle(preferenceScreen.getTitle());
+
+	            bar.setNavigationOnClickListener(new View.OnClickListener() {
+	                @Override
+	                public void onClick(View v) {
+	                    dialog.dismiss();
+	                }
+	            });
 	        }
 	        @Override
 	        public boolean onOptionsItemSelected(MenuItem item) {
@@ -549,7 +616,6 @@ public class SettingsActivity extends SherlockPreferenceActivity implements File
 	    	}
 
 			
-			@SuppressWarnings( "deprecation" )
 			@Override
 			public void setItem(String path, int type) {
 				if(path!=null)
@@ -562,12 +628,12 @@ public class SettingsActivity extends SherlockPreferenceActivity implements File
 								prefs.edit().putString("defaultPath", path).commit();
 								manHomeFolder.setText(path);
 								Globals.defaultFolder=path;
-								((BaseAdapter)getPreferenceScreen().getRootAdapter()).notifyDataSetChanged();
+								((BaseAdapter)pf.getPreferenceScreen().getRootAdapter()).notifyDataSetChanged();
 							break;
 							case 4:
 								prefs.edit().putString("dataDir", path).commit();
 								manDataFolder.setText(path);
-								((BaseAdapter)getPreferenceScreen().getRootAdapter()).notifyDataSetChanged();
+								((BaseAdapter)pf.getPreferenceScreen().getRootAdapter()).notifyDataSetChanged();
 							break;
 							case 5:
 								//soundfont fun
@@ -608,9 +674,411 @@ public class SettingsActivity extends SherlockPreferenceActivity implements File
 				needUpdateSf=true;
 				tmpSounds = new ArrayList<String>();
 
-				for (String foo: l) {
+				for (String foo : l) {
 				  tmpSounds.add(foo);
 				}
 			}
+			public static class TimidityPrefsFragment extends PreferenceFragment {
+	        	 
+				SettingsActivity s;
+                @SuppressWarnings("unchecked")
+				@Override
+                public void onCreate(Bundle savedInstanceState) {
+                			
+                            super.onCreate(savedInstanceState);
+                            s = (SettingsActivity) getActivity();
+                            // Load the preferences from an XML resource
+                            addPreferencesFromResource(R.xml.settings);
+                            s.prefs = PreferenceManager
+        	    	                .getDefaultSharedPreferences(s.getBaseContext());
+        	                s.themePref = (ListPreference) findPreference("fbTheme");
+        	                s.hiddenFold = (CheckBoxPreference) findPreference("hiddenSwitch");
+        	                s.showVids = (CheckBoxPreference) findPreference("videoSwitch");
+        	                s.defaultFoldPreference = findPreference("defFold");
+        	                s.reinstallSoundfont = findPreference("reSF");
+        	                s.manHomeFolder = (EditTextPreference) findPreference("defaultPath");
+        	                s.dataFoldPreference = findPreference("defData");
+        	                s.manDataFolder = (EditTextPreference) findPreference("dataDir");
+        	                s.manTcfg = (CheckBoxPreference) findPreference("manualConfig");
+        	                s.sfPref = findPreference("sfConfig");
+        	                s.resampMode = (ListPreference) findPreference("tplusResamp");
+        	                s.stereoMode = (ListPreference) findPreference("sdlChanValue");
+        	                s.bitMode = (ListPreference) findPreference("tplusBits");
+        	                s.rates = (ListPreference) findPreference("tplusRate");
+        	                s.bufferSize = (EditTextPreference) findPreference("tplusBuff");
+        	                //nativeMidi = (CheckBoxPreference) findPreference("nativeMidiSwitch");
+        	               // ds = (PreferenceScreen) findPreference("dsKey");
+        	                s.tplus = (PreferenceScreen) findPreference("tplusKey");
+        	                s.nativeMidi = (CheckBoxPreference) findPreference("nativeMidiSwitch");
+        	                s.keepWav = (CheckBoxPreference) findPreference("keepPartialWav");
+        	                s.sfPref.setEnabled(!s.manTcfg.isChecked());
+        	                s.lolPref = findPreference("lolWrite");
+
+        	                s.hiddenFold.setOnPreferenceChangeListener(new OnPreferenceChangeListener(){
+
+        						@Override
+        						public boolean onPreferenceChange(Preference arg0,
+        								Object arg1) {
+        								Globals.showHiddenFiles=(Boolean)arg1;
+        							return true;
+        						}
+        	                	
+        	                });
+        	                s.showVids.setOnPreferenceChangeListener(new OnPreferenceChangeListener(){
+
+        						@Override
+        						public boolean onPreferenceChange(Preference arg0,
+        								Object arg1) {
+        								Globals.showVideos=(Boolean)arg1;
+        							return true;
+        						}
+        	                	
+        	                });
+        	                s.nativeMidi.setOnPreferenceChangeListener(new OnPreferenceChangeListener(){
+
+        						@Override
+        						public boolean onPreferenceChange(Preference arg0,
+        								Object arg1) {
+        							if(!Globals.onlyNative)
+        								Globals.nativeMidi=(Boolean)arg1;
+        							else
+        								Globals.nativeMidi=true;
+        							return true;
+        						}
+        	                	
+        	                });
+        	                s.keepWav.setOnPreferenceChangeListener(new OnPreferenceChangeListener(){
+
+        						@Override
+        						public boolean onPreferenceChange(Preference arg0,
+        								Object arg1) {
+        								Globals.keepWav=(Boolean)arg1;
+        							return true;
+        						}
+        	                	
+        	                });
+        	                s.defaultFoldPreference.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+        	                        public boolean onPreferenceClick(Preference preference) {
+        	                            // dialog code here
+        	                        	
+        	                        	new FileBrowserDialog().create(3, null, s, s, s.getLayoutInflater(), true, s.prefs.getString("defaultPath", Environment.getExternalStorageDirectory().getAbsolutePath()), getResources().getString(R.string.fb_add));
+        	                            return true;
+        	                        }
+        	                    });
+        	                if(s.lolPref!=null)
+        	                	s.lolPref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+                                @SuppressLint("NewApi")
+        						public boolean onPreferenceClick(Preference preference) {
+                                    // dialog code here
+                                	List<UriPermission> permissions = s.getContentResolver().getPersistedUriPermissions();
+                        			if(!(permissions==null||permissions.isEmpty()))
+                        			{
+                        				for(UriPermission p : permissions)
+                        				{
+                        					s.getContentResolver().releasePersistableUriPermission(p.getUri(), Intent.FLAG_GRANT_READ_URI_PERMISSION |
+                        	    	                Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                        				}
+                        			}
+                                	Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+            					    startActivityForResult(intent, 42);
+                                    return true;
+                                }
+                            });
+        	                s.reinstallSoundfont.setOnPreferenceClickListener(new OnPreferenceClickListener(){
+
+        						@Override
+        						public boolean onPreferenceClick(Preference arg0) {
+        							AlertDialog dialog = new AlertDialog.Builder(getActivity()).create();
+        						    dialog.setTitle("Reinstall 8Rock11e.sf2?");
+        						    dialog.setMessage("This may take a few minutes.");
+        						    dialog.setCancelable(true);
+        						    dialog.setButton(DialogInterface.BUTTON_POSITIVE, getResources().getString(android.R.string.ok), new DialogInterface.OnClickListener() {
+        						        public void onClick(DialogInterface dialog, int buttonId) {
+        						        	AsyncTask<Void, Void, Integer> task = new AsyncTask<Void, Void, Integer>() {
+                								
+                								ProgressDialog pd;
+                								@Override
+                								protected void onPreExecute() {
+                									pd = new ProgressDialog(s);
+                									pd.setTitle(getResources().getString(R.string.extract));
+                									pd.setMessage(getResources().getString(R.string.extract_sum));
+                									pd.setCancelable(false);
+                									pd.setIndeterminate(true);
+                									pd.show();
+                								}
+                									
+                								@Override
+                								protected Integer doInBackground(Void... arg0) {
+                									
+                									return Globals.extract8Rock(s);
+                								}
+                								
+                								@Override
+                								protected void onPostExecute(Integer result) {
+                									
+                									if (pd!=null) {
+                										pd.dismiss();
+                										if(result!=777)
+                										{
+                											Toast.makeText(s, "Could not extrct default soundfont", Toast.LENGTH_SHORT).show();
+                										}else{
+                											Toast.makeText(s,getResources().getString(R.string.extract_def),Toast.LENGTH_LONG).show();
+                										}
+                										//b.setEnabled(true);
+                									}
+                								}
+                									
+                							};
+                							task.execute((Void[])null);
+        						        }
+        						    });
+        						    dialog.setButton(DialogInterface.BUTTON_NEGATIVE, getResources().getString(android.R.string.cancel), new DialogInterface.OnClickListener() {
+        						        public void onClick(DialogInterface dialog, int buttonId) {
+        						        	
+        						        }
+        						    });
+        						    dialog.show();
+        							return true;
+        							
+        							
+        						}
+        	                	
+        	                });
+        	                s.dataFoldPreference.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+        	                        public boolean onPreferenceClick(Preference preference) {
+        	                            // dialog code here
+        	                        	s.needRestart=true;
+        	                        	new FileBrowserDialog().create(4, null, s, s, s.getLayoutInflater(), true, s.prefs.getString("dataDir", Environment.getExternalStorageDirectory().getAbsolutePath()), getResources().getString(R.string.fb_add));
+        	                            return true;
+        	                        }
+        	                    });
+        	                
+        	                try {
+        	                	s.tmpSounds = (ArrayList<String>) ObjectSerializer.deserialize(s.prefs.getString("tplusSoundfonts", ObjectSerializer.serialize(new ArrayList<String>())));
+        						for(int i = 0; i<s.tmpSounds.size();i++)
+        						{
+        							if(s.tmpSounds.get(i)==null)
+        								s.tmpSounds.remove(i);
+        						}
+        					} catch (IOException e) {
+        						e.printStackTrace();
+        					}
+        	               
+        	                s.rates.setOnPreferenceChangeListener(new OnPreferenceChangeListener(){
+
+        						@Override
+        						public boolean onPreferenceChange(
+        								Preference preference, Object newValue) {
+        							s.needRestart=true;
+        							String stereo = s.stereoMode.getValue();
+        							String sixteen = s.bitMode.getValue();
+        							boolean sb=(stereo!=null)?stereo.equals("2"):true;
+        							boolean sxb=(sixteen!=null)?sixteen.equals("16"):true;
+        							SparseIntArray mmm = Globals.validBuffers(Globals.validRates(sb,sxb),sb,sxb);
+        							if(mmm!=null)
+        							{
+        								
+        							int minBuff = mmm.get(Integer.parseInt((String) newValue));
+        							
+        							int buff = Integer.parseInt(s.bufferSize.getText());
+        							if(buff<minBuff)
+        							{
+        								s.prefs.edit().putString("tplusBuff",Integer.toString(minBuff)).commit();
+        								s.bufferSize.setText(Integer.toString(minBuff));
+        								Toast.makeText(s, getResources().getString(R.string.invalidbuff), Toast.LENGTH_SHORT).show();
+        								((BaseAdapter)s.tplus.getRootAdapter()).notifyDataSetChanged();
+        								((BaseAdapter)s.tplus.getRootAdapter()).notifyDataSetInvalidated();
+        							}
+        							}
+        							return true;
+        						}
+        	                });
+        	                if(s.tmpSounds == null)
+        	                	s.tmpSounds = new ArrayList<String>();
+        	                s. manTcfg.setOnPreferenceChangeListener(new OnPreferenceChangeListener(){
+
+        						@Override
+        						public boolean onPreferenceChange(Preference arg0,
+        								Object arg1) {
+        							s.sfPref.setEnabled(!(Boolean)arg1);
+        							return true;
+        						}
+        	                	
+        	                });
+        	                s.sfPref.setOnPreferenceClickListener(new OnPreferenceClickListener(){
+
+        						@Override
+        						public boolean onPreferenceClick(Preference preference) {
+        							new SoundfontDialog().create(s.tmpSounds, s, s, s.getLayoutInflater(), s.prefs.getString("defaultPath", 
+        									Environment.getExternalStorageDirectory().getPath()));
+        							return true;
+        						}
+        	                	
+        	                });
+        	                s.resampMode.setOnPreferenceChangeListener(new OnPreferenceChangeListener(){
+
+        						@Override
+        						public boolean onPreferenceChange(
+        								Preference preference, Object newValue) {
+        							s.needRestart=true;
+        							return true;
+        						}
+        	                	
+        	                });
+        	                s.manDataFolder.setOnPreferenceChangeListener(new OnPreferenceChangeListener(){
+        	                	@Override
+        						public boolean onPreferenceChange(Preference preference, Object newValue) {
+        	                		s.needRestart=true;
+        							return true;
+        						}
+        	                });
+        	               // buffSize = Integer.parseInt(prefs.getString("tplusBuff", "192000"));
+        	                //System.out.println("Buffsize is: "+buffSize);
+        	                Globals.updateBuffers(Globals.updateRates());
+        	                int[] values = Globals.updateRates();
+        	                if(values!=null)
+        	                {
+        	                CharSequence[] hz = new CharSequence[values.length];
+        	                CharSequence[] hzItems = new CharSequence[values.length];
+        	                for(int i = 0; i<values.length; i++)
+        	                {
+        	                	hz[i]=Integer.toString(values[i])+"Hz";
+        	                	hzItems[i]=Integer.toString(values[i]);
+        	                }
+        	                s.rates.setEntries(hz);
+        	                s.rates.setEntryValues(hzItems);
+        	                s.rates.setDefaultValue(Integer.toString(AudioTrack.getNativeOutputSampleRate(AudioTrack.MODE_STREAM)));
+        	                s.rates.setValue(s.prefs.getString("tplusRate",Integer.toString(AudioTrack.getNativeOutputSampleRate(AudioTrack.MODE_STREAM))));
+        	                }
+        	                s.bufferSize.setOnPreferenceChangeListener(new OnPreferenceChangeListener(){
+
+        						@Override
+        						public boolean onPreferenceChange(
+        								Preference preference, final Object newValue) {
+        							s.needRestart=true;
+        							String txt = (String)newValue;
+        							if(txt!=null)
+        							{
+        								if(!TextUtils.isEmpty(txt))
+        								{
+        									
+        									String stereo = s.stereoMode.getValue();
+        									String sixteen = s.bitMode.getValue();
+        									boolean sb=(stereo!=null)?stereo.equals("2"):true;
+        									boolean sxb=(sixteen!=null)?sixteen.equals("16"):true;
+        									SparseIntArray mmm = Globals.validBuffers(Globals.validRates(sb,sxb),sb,sxb);
+        									if(mmm!=null)
+        									{
+        										
+        									int minBuff = mmm.get(Integer.parseInt(s.rates.getValue()));
+        									
+        									int buff = Integer.parseInt(txt);
+        									if(buff<minBuff)
+        									{
+        										s.prefs.edit().putString("tplusBuff",Integer.toString(minBuff)).commit();
+        										((EditTextPreference)preference).setText(Integer.toString(minBuff));
+        										Toast.makeText(s, getResources().getString(R.string.invalidbuff), Toast.LENGTH_SHORT).show();
+        										((BaseAdapter)s.tplus.getRootAdapter()).notifyDataSetChanged();
+        										((BaseAdapter)s.tplus.getRootAdapter()).notifyDataSetInvalidated();
+        										return false;
+        									}
+        									}
+        									return true;
+        									//System.out.println("Text is change");
+        									//return Globals.updateBuffers(Globals.updateRates());
+        								}
+        							}
+        							return false;
+        						}
+        						
+        	                	
+        	                });
+        	                s.stereoMode.setOnPreferenceChangeListener(new OnPreferenceChangeListener(){
+
+        						@Override
+        						public boolean onPreferenceChange(
+        								Preference preference, Object newValue) {
+        							s.needRestart=true;
+        							String stereo = (String) newValue;
+        							String sixteen = s.bitMode.getValue();
+        							boolean sb=(stereo!=null)?stereo.equals("2"):true;
+        							boolean sxb=(sixteen!=null)?sixteen.equals("16"):true;
+        							SparseIntArray mmm = Globals.validBuffers(Globals.validRates(sb,sxb),sb,sxb);
+        							if(mmm!=null)
+        							{
+        								
+        							int minBuff = mmm.get(Integer.parseInt(s.rates.getValue()));
+        							
+        							int buff = Integer.parseInt(s.bufferSize.getText());
+        							if(buff<minBuff)
+        							{
+        								s.prefs.edit().putString("tplusBuff",Integer.toString(minBuff)).commit();
+        								s.bufferSize.setText(Integer.toString(minBuff));
+        								Toast.makeText(s, getResources().getString(R.string.invalidbuff), Toast.LENGTH_SHORT).show();
+        								((BaseAdapter)s.tplus.getRootAdapter()).notifyDataSetChanged();
+        								((BaseAdapter)s.tplus.getRootAdapter()).notifyDataSetInvalidated();
+        							}
+        							}
+        							return true;
+        						}
+        	                });
+        	                s.bitMode.setOnPreferenceChangeListener(new OnPreferenceChangeListener(){
+
+        						@Override
+        						public boolean onPreferenceChange(
+        								Preference preference, Object newValue) {
+        							s.needRestart=true;
+        							String stereo = s.stereoMode.getValue();
+        							String sixteen = (String) newValue;
+        							boolean sb=(stereo!=null)?stereo.equals("2"):true;
+        							boolean sxb=(sixteen!=null)?sixteen.equals("16"):true;
+        							SparseIntArray mmm = Globals.validBuffers(Globals.validRates(sb,sxb),sb,sxb);
+        							if(mmm!=null)
+        							{
+        								
+        							int minBuff = mmm.get(Integer.parseInt(s.rates.getValue()));
+        							
+        							int buff = Integer.parseInt(s.bufferSize.getText());
+        							if(buff<minBuff)
+        							{
+        								s.prefs.edit().putString("tplusBuff",Integer.toString(minBuff)).commit();
+        								s.bufferSize.setText(Integer.toString(minBuff));
+        								Toast.makeText(s, getResources().getString(R.string.invalidbuff), Toast.LENGTH_SHORT).show();
+        								((BaseAdapter)s.tplus.getRootAdapter()).notifyDataSetChanged();
+        								((BaseAdapter)s.tplus.getRootAdapter()).notifyDataSetInvalidated();
+        							}
+        							}
+        							return true;
+        						}
+        	                });
+        	                s.themePref.setOnPreferenceChangeListener(new OnPreferenceChangeListener(){
+
+        						@Override
+        						public boolean onPreferenceChange(
+        								Preference preference, Object newValue) {
+        							Globals.theme=Integer.parseInt((String) newValue);
+        							Intent intent = s.getIntent();
+        							s.finish();
+        				            startActivity(intent);							
+        				            return true;
+        						}
+        	                	
+        	                });
+                }
+                public boolean onPreferenceTreeClick(PreferenceScreen preferenceScreen, Preference preference) {
+    	            super.onPreferenceTreeClick(preferenceScreen, preference);
+
+    	            // If the user has clicked on a preference screen, set up the action bar
+    	            if (Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH){
+    		    		   
+    		    	   
+    	            if (preference instanceof PreferenceScreen) {
+    	            	s.setTheme((Globals.theme==1)?android.support.v7.appcompat.R.style.Theme_AppCompat_Light_DarkActionBar:android.support.v7.appcompat.R.style.Theme_AppCompat);
+    	            	s.setUpNestedScreen((PreferenceScreen) preference);
+    	            }
+    	            }
+    	            return false;
+    	        }
+    }
 	       
 }

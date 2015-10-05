@@ -6,6 +6,11 @@
     <string name = "action_quit">Quit</string>
 	<string name = "soundfont">Choose Soundfonts</string>
 	<string name = "soundfont2">Manage soundfonts</string>
+	<string name = "dynex_alert1">Convert to WAV File</string>
+	<string name = "dynex_alert1_msg">Exports the MIDI/MOD file to WAV.\nNative Midi must be disabled in settings.\nWarning: WAV files are large.</string>
+	<string name = "warning">Warning</string>
+	<string name = "dynex_alert2_msg">Overwrite WAV file?</string>
+	<string name = "cancel">Cancel</string>
 	<string name = "sett_file">File Browser Options</string>
 	<string name = "sett_shf">Show Hidden Files</string>
 	<string name = "sett_shf_sum">Show files and folders beginning with a .</string>
@@ -170,6 +175,7 @@
 	</string>
 	
 <!-- MusicService Commands (DO NOT TRANSLATE) -->
+<!-- (these really should go in Globals, shouldn't they...) -->
 <string name = "msrv_rec" translatable="false">com.xperia64.timidityae.MusicService_RECEIVER</string>
 <string name = "msrv_cmd" translatable="false">com.xperia64.timidityae.MusicService_CMD</string>
 <string name = "msrv_songnum" translatable="false">com.xperia64.timidityae.MusicService_SONGNUM</string>
@@ -223,10 +229,12 @@
     <item>5</item>
 </string-array>
 <string-array name="select_channel_items">
-    <item>1 (Mono)</item>
+    <item>1 (Downmixed Mono)</item>
+    <item>1 (Synthesized Mono)</item>
     <item>2 (Stereo)</item>
 </string-array>
 <string-array name="background_channel_items">
+    <item>0</item>
     <item>1</item>
     <item>2</item>
 </string-array>

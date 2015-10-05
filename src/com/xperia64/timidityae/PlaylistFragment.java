@@ -42,6 +42,7 @@ import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 
@@ -57,6 +58,7 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 	String plistName;
 	String tmpName;
 	int loki=-1;
+	int highlightMe = -1;
 	boolean mode=false;
 	boolean dontReloadPlist = false;
 	public interface ActionPlaylistBackListener{
@@ -316,7 +318,7 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
             getActivity().sendBroadcast(new_intent);
     	}
 	}
-	public void getPlaylists(String which)
+	public void getPlaylists(final String which)
 	{
 		if(which==null) // Root playlist dir.
 		{
@@ -384,10 +386,48 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 				}
 			}
 		}
-		ArrayAdapter<String> fileList = new ArrayAdapter<String>(getActivity(),R.layout.row,fname);
-		fileList.notifyDataSetChanged();
-		getListView().setFastScrollEnabled(true);
+		ArrayAdapter<String> fileList; 
+		if(which!=null&&which.equals("CURRENT"))
+		{
+			fileList = new ArrayAdapter<String>(getActivity(),R.layout.row,fname){
+				
+			    @Override
+			    public View getView(int position, View convertView, ViewGroup parent)
+			    {
+			        final View renderer = super.getView(position, convertView, parent);
+			    	if(Globals.defaultListColor==-1)
+			    	{
+			    		Globals.defaultListColor = Globals.getBackgroundColor(((TextView)renderer));
+			    	}
+			        if (position == highlightMe)
+			        {
+			        	//TODO Choose a nicer color in settings?
+			            renderer.setBackgroundColor(0xFF00CC00);
+			        }else{
+			        	renderer.setBackgroundColor(Globals.defaultListColor);
+			        }
+			        //renderer.postInvalidate();
+			        return renderer;
+			    }
+			};
+		}else{
+			fileList = new ArrayAdapter<String>(getActivity(),R.layout.row,fname);
+		}
+		
+		
+		
+		//fileList.notifyDataSetChanged();
+		//getListView().setFastScrollEnabled(true);
+		//getListView().setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+	  	/* if(which!=null&&which.equals("CURRENT")&&highlightMe!=-1)
+	   	 {
+	  		 System.out.println("Selected: "+highlightMe);
+	   		 fileList.setSelector(R.color.listSelection);
+	   		 getListView().setItemChecked(highlightMe, true);
+	   	 }*/
    	 setListAdapter(fileList);
+//    <!--  android:listSelector="@color/listSelection"-->
+ 
 	}
 	public ArrayList<String> parsePlist(String path)
 	{

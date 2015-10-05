@@ -45,19 +45,19 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
+import android.support.v7.app.AppCompatActivity;
 import android.text.InputFilter;
 import android.text.Spanned;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import com.actionbarsherlock.app.SherlockFragmentActivity;
-import com.actionbarsherlock.view.Menu;
-import com.actionbarsherlock.view.MenuInflater;
-import com.actionbarsherlock.view.MenuItem;
 import com.xperia64.timidityae.R;
 
-public class TimidityActivity extends SherlockFragmentActivity implements FileBrowserFragment.ActionFileBackListener, PlaylistFragment.ActionPlaylistBackListener, FileBrowserDialog.FileBrowserDialogListener {
+public class TimidityActivity extends AppCompatActivity implements FileBrowserFragment.ActionFileBackListener, PlaylistFragment.ActionPlaylistBackListener, FileBrowserDialog.FileBrowserDialogListener {
 	//public static TimidityActivity staticthis;
 	private MenuItem menuButton;
 	private MenuItem menuButton2;
@@ -102,6 +102,21 @@ public class TimidityActivity extends SherlockFragmentActivity implements FileBr
 	            	menuButton2.setEnabled((!JNIHandler.type)&&Globals.isPlaying==0);
         		}
         		playFrag.play(intent.getIntExtra(getResources().getString(R.string.ta_startt),0), intent.getStringExtra(getResources().getString(R.string.ta_songttl)));
+        		if(plistFrag!=null)
+        		{
+        			plistFrag.highlightMe = intent.getIntExtra("stupidNumber", -1);
+        			try{
+        				
+                		int x = plistFrag.getListView().getFirstVisiblePosition();
+                		plistFrag.getPlaylists(plistFrag.mode?plistFrag.plistName:null);
+                		plistFrag.getListView().setSelection(x);
+        			}catch(Exception e)
+        			{
+        				
+        			}
+        			
+        		}
+        		
         		break;
         	case 1:
         		break;
@@ -243,11 +258,7 @@ public class TimidityActivity extends SherlockFragmentActivity implements FileBr
 			Globals.libLoaded = true;
 		}
 		oldTheme = Globals.theme;
-		if (Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH){
-	        this.setTheme((Globals.theme==1)?com.actionbarsherlock.R.style.Theme_Sherlock_Light_DarkActionBar:com.actionbarsherlock.R.style.Theme_Sherlock);
-	   }else{
-		   this.setTheme((Globals.theme==1)?android.R.style.Theme_Holo_Light_DarkActionBar:android.R.style.Theme_Holo);
-	   }
+	        this.setTheme((Globals.theme==1)?android.support.v7.appcompat.R.style.Theme_AppCompat_Light_DarkActionBar:android.support.v7.appcompat.R.style.Theme_AppCompat);
 	super.onCreate(savedInstanceState);
 	if(savedInstanceState==null)
 	{
@@ -531,6 +542,7 @@ public class TimidityActivity extends SherlockFragmentActivity implements FileBr
 								if(position==-1)
 									Toast.makeText(this, getResources().getString(R.string.intErr1), Toast.LENGTH_SHORT).show();
 								else{
+									stop();
 								selectedSong(files,position,true,false,false);
 								fileFrag.getDir(data.substring(0,data.lastIndexOf('/')+1));
 								}
@@ -620,6 +632,7 @@ public class TimidityActivity extends SherlockFragmentActivity implements FileBr
 							if(position==-1)
 								Toast.makeText(this, getResources().getString(R.string.intErr1), Toast.LENGTH_SHORT).show();
 							else{
+								stop();
 							selectedSong(files,position,true,false,false);
 							fileFrag.getDir(Globals.getExternalCacheDir(this).getAbsolutePath());
 							}
@@ -649,6 +662,7 @@ public class TimidityActivity extends SherlockFragmentActivity implements FileBr
 				{
 							
 					files.add(name);
+					stop();
 					selectedSong(files,0,true,false,false);
 					fileFrag.getDir(name.substring(0,name.lastIndexOf('/')+1));
 				}
@@ -690,21 +704,23 @@ public class TimidityActivity extends SherlockFragmentActivity implements FileBr
 		}
 	@Override
 	  public boolean onCreateOptionsMenu(Menu menu) {
-	    MenuInflater inflater = getSupportMenuInflater();
+	    MenuInflater inflater = getMenuInflater();
 	    inflater.inflate(R.menu.main_menu, menu);
 	    menuButton=menu.findItem(R.id.menuBtn1);
 	    menuButton2=menu.findItem(R.id.menuBtn2);
 	    return true;
 	  } 
 	@Override
-	public boolean onMenuItemSelected(int featureId, MenuItem item)
+	public boolean onOptionsItemSelected(MenuItem item)
 	{
 		if(item.getItemId()==R.id.menuBtn1)
 		{
 			switch(mode)
 			{
 			case 0:
+				int x = fileFrag.getListView().getFirstVisiblePosition();
 				fileFrag.getDir(fileFrag.currPath);
+				fileFrag.setSelection(x);
 				break;
 			case 1:
 				if(playFrag!=null&&!JNIHandler.type)
@@ -715,7 +731,9 @@ public class TimidityActivity extends SherlockFragmentActivity implements FileBr
 				}*/
 				break;
 			case 2:
+				int y = plistFrag.getListView().getFirstVisiblePosition();
 				plistFrag.getPlaylists(plistFrag.mode?plistFrag.plistName:null);
+				plistFrag.getListView().setSelection(y);
 				break;
 			}
 		}else if(item.getItemId()==R.id.menuBtn2){
@@ -772,7 +790,7 @@ public class TimidityActivity extends SherlockFragmentActivity implements FileBr
 				
 			}).show();
 		}
-		return super.onMenuItemSelected(featureId, item);
+		return super.onOptionsItemSelected(item);
 	}
 	@Override
 	public void onBackPressed()
@@ -831,6 +849,8 @@ public class TimidityActivity extends SherlockFragmentActivity implements FileBr
 		{
 			plistFrag.currPlist=files;
 		}
+
+		//plistFrag.getListView().setItemChecked(songNumber, true);
 		Intent new_intent = new Intent();
 	    new_intent.setAction(getResources().getString(R.string.msrv_rec));
 	    new_intent.putExtra(getResources().getString(R.string.msrv_cmd), 5);

@@ -8,6 +8,8 @@
                 <PreferenceScreen android:title="@string/sett_ds"
                     android:summary="@string/sett_ds_sum"
                     android:key="dsKey">
+                    <PreferenceCategory
+                android:title="@string/sett_ds">
                  <ListPreference
                         android:title="@string/sett_theme"
                         android:defaultValue="1"
@@ -33,6 +35,7 @@
                 android:defaultValue="/sdcard/"
                 android:title="@string/sett_fbpath"
                 android:key="defaultPath" />
+                 </PreferenceCategory>
                 </PreferenceScreen>
                 </PreferenceCategory>
 <PreferenceScreen android:title="@string/sett_plus"

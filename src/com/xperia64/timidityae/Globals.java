@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -42,6 +43,8 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.media.AudioFormat;
 import android.media.AudioTrack;
 import android.net.Uri;
@@ -53,6 +56,7 @@ import android.preference.PreferenceManager;
 import android.support.v4.provider.DocumentFile;
 import android.util.Log;
 import android.util.SparseIntArray;
+import android.widget.TextView;
 import android.widget.Toast;
 
 public class Globals {
@@ -76,9 +80,35 @@ public static String musicFiles = "*.mid*.smf*.kar*.mod*.xm*.s3m*.it*.669*.amf*.
 public static String musicVideoFiles = musicFiles+".mp4*.3gp*";
 public static String playlistFiles = "*.tpl*";
 public static String configFiles = "*.tcf*.tzf*";
-public static String fontFiles = "*.sf2*.sfark*";
+public static String fontFiles = "*.sf2*.sfark*.sfark.exe*";
 public static ArrayList<String> knownWritablePaths = new ArrayList<String>();
 public static ArrayList<String> knownUnwritablePaths = new ArrayList<String>();
+public static int defaultListColor = -1;
+
+
+@SuppressLint("NewApi")
+public static int getBackgroundColor(TextView textView) {
+    Drawable drawable = textView.getBackground();
+    if (drawable instanceof ColorDrawable) {
+        ColorDrawable colorDrawable = (ColorDrawable) drawable;
+        if (Build.VERSION.SDK_INT >= 11) {
+            return colorDrawable.getColor();
+        }
+        try {
+            Field field = colorDrawable.getClass().getDeclaredField("mState");
+            field.setAccessible(true);
+            Object object = field.get(colorDrawable);
+            field = object.getClass().getDeclaredField("mUseColor");
+            field.setAccessible(true);
+            return field.getInt(object);
+        } catch (NoSuchFieldException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+    }
+    return 0;
+}
 
 @SuppressLint({ "NewApi", "SdCardPath" })
 public static File getExternalCacheDir(Context c)

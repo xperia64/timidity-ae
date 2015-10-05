@@ -101,11 +101,13 @@ public class MusicService extends Service{
 	
 	private Handler handler;
 	 
+	@SuppressLint("NewApi")
 	@Override
 	public void onTaskRemoved( Intent rootIntent ) {
 	   Intent intent = new Intent( this, DummyActivity.class );
 	   intent.addFlags( Intent.FLAG_ACTIVITY_NEW_TASK );
 	   startActivity( intent );
+	   super.onTaskRemoved(rootIntent);
 	}
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
@@ -890,6 +892,7 @@ public class MusicService extends Service{
     	        new_intent.putExtra(getResources().getString(R.string.ta_startt),JNIHandler.maxTime);
     	        new_intent.putExtra(getResources().getString(R.string.ta_songttl),currTitle);
     	        new_intent.putExtra(getResources().getString(R.string.ta_filename),playList.get(songIndex));
+    	        new_intent.putExtra("stupidNumber",songIndex);
     	        sendBroadcast(new_intent);
     		  }
     		  if(new File(playList.get(songIndex)+".def.tcf").exists()||new File(playList.get(songIndex)+".def.tzf").exists())

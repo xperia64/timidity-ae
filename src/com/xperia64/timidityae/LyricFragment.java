@@ -12,6 +12,7 @@
 package com.xperia64.timidityae;
 
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,10 +20,9 @@ import android.view.ViewGroup;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
-import com.actionbarsherlock.app.SherlockFragment;
 import com.xperia64.timidityae.R;
 
-public class LyricFragment extends SherlockFragment {
+public class LyricFragment extends Fragment {
 	TextView lyrics;
 	ScrollView scrollContainer;
 	boolean ready;
