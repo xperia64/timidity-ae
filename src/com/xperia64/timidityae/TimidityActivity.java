@@ -21,10 +21,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.ActivityManager;
 import android.app.ActivityManager.RunningServiceInfo;
+import android.app.AlarmManager;
 import android.app.AlertDialog;
+import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -33,6 +36,7 @@ import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.UriPermission;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
@@ -41,8 +45,10 @@ import android.os.Environment;
 import android.provider.OpenableColumns;
 //import com.actionbarsherlock.app.SherlockFragment;
 
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
 import android.support.v7.app.AppCompatActivity;
@@ -57,6 +63,8 @@ import android.widget.Toast;
 
 import com.xperia64.timidityae.R;
 
+// Eclipse Stahp
+@SuppressLint("NewApi")
 public class TimidityActivity extends AppCompatActivity implements FileBrowserFragment.ActionFileBackListener, PlaylistFragment.ActionPlaylistBackListener, FileBrowserDialog.FileBrowserDialogListener {
 	//public static TimidityActivity staticthis;
 	private MenuItem menuButton;
@@ -126,11 +134,8 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
         		}catch(IllegalStateException e){
         			
         		}
-        		
-        		//System.out.println(integExtrnt.getStrina(getResources().getString(R.string.ta_currpath)));
         		break;
         	case 3:
-        		//System.out.println("case 3");
         		currSongName=intent.getStringExtra(getResources().getString(R.string.ta_filename));
         		if(viewPager.getCurrentItem()==1)
         		{
@@ -230,6 +235,141 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
         super.onNewIntent(intent);
         handleIntentData(intent);
     }
+    
+    final int PERMISSION_REQUEST=177;
+    final int NUM_PERMISSIONS = 3;
+    public void requestPermissions()
+    {
+    	if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
+    			||ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
+    			||ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED){
+
+    // Should we show an explanation?
+    		if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_EXTERNAL_STORAGE)
+    				||ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+    				||ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_PHONE_STATE)) {
+
+    			new AlertDialog.Builder(this).setTitle("Permissions")
+    			.setMessage("Timidity AE needs to be able to:\n"
+    					+ "Read your storage to play music files\n\n"
+    					+ "Write to your storage to save configuration files\n\n"
+    					+ "Read phone state to auto-pause music during a phone call\n"
+    					+ "Timidity will not make phone calls or do anything besides checking if your device is receiving a call")
+    					
+    					.setPositiveButton("OK", new OnClickListener(){
+
+							@Override
+							public void onClick(DialogInterface dialog,
+									int which) {
+								actuallyRequestPermissions();
+								
+							}
+    						
+    					}).setNegativeButton("Cancel", new OnClickListener(){
+
+							@Override
+							public void onClick(DialogInterface dialog,
+									int which) {
+								new AlertDialog.Builder(TimidityActivity.this).setTitle("Error")
+								.setMessage("Timidity AE cannot proceed without these permissions")
+								.setPositiveButton("OK", new OnClickListener(){
+
+									@Override
+									public void onClick(DialogInterface dialog,
+											int which) {
+										TimidityActivity.this.finish();
+									}
+									
+								}).show();
+								
+							}
+    						
+    					}).show();
+    			
+        // Show an expanation to the user *asynchronously* -- don't block
+        // this thread waiting for the user's response! After the user
+        // sees the explanation, try again to request the permission.
+
+    		} else {
+
+        // No explanation needed, we can request the permission.
+    			actuallyRequestPermissions();
+        
+
+        // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
+        // app-defined int constant. The callback method gets the
+        // result of the request.
+    	}
+    	}else{
+    		yetAnotherInit();
+    	}
+    }
+    
+    public void actuallyRequestPermissions()
+    {
+    	ActivityCompat.requestPermissions(this,
+                new String[]{Manifest.permission.READ_PHONE_STATE,Manifest.permission.READ_EXTERNAL_STORAGE, 
+        		Manifest.permission.WRITE_EXTERNAL_STORAGE
+        		},
+                PERMISSION_REQUEST);
+    }
+    public void yetAnotherInit()
+    {
+    	needInit=Globals.initialize(TimidityActivity.this);
+    }
+    
+    
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+            String permissions[], int[] grantResults) {
+    	super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode) {
+            case PERMISSION_REQUEST: {
+                // If request is cancelled, the result arrays are empty.
+            	boolean good = true;
+            	if(permissions.length != NUM_PERMISSIONS || grantResults.length != NUM_PERMISSIONS)
+            	{
+            		good = false;
+            	}
+            	
+                for(int i = 0; i<grantResults.length && good; i++)
+                {
+                	if(grantResults[i]!=PackageManager.PERMISSION_GRANTED)
+                	{
+                		good = false;
+                	}
+                }
+                if(!good) {
+
+                    // permission denied, boo! Disable the app.
+                	new AlertDialog.Builder(TimidityActivity.this).setTitle("Error")
+					.setMessage("Timidity AE cannot proceed without these permissions")
+					.setPositiveButton("OK", new OnClickListener(){
+
+						@Override
+						public void onClick(DialogInterface dialog,
+								int which) {
+							TimidityActivity.this.finish();
+						}
+						
+					}).show();
+                }else{
+                	if(!Environment.getExternalStorageDirectory().canRead())
+                	{
+                		// Buggy emulator? Try restarting the app
+                		AlarmManager alm = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
+                		alm.set(AlarmManager.RTC, System.currentTimeMillis() + 1000, PendingIntent.getActivity(this, 237462, new Intent(this, TimidityActivity.class), Intent.FLAG_ACTIVITY_NEW_TASK));
+                		System.exit(0);
+                	}
+                	yetAnotherInit();
+                }
+                return;
+            }
+
+            // other 'case' lines to check for other
+            // permissions this app might request
+        }
+    }
 	@SuppressLint("InlinedApi")
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -238,7 +378,8 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 		{
 			Globals.reloadSettings(this, getAssets());
 		}else{
-			if(!savedInstanceState.getBoolean("justtheme", false))
+			// For some reason when I kill the activity and restart it, justtheme is true, but Globals.theme = 0
+			if(!savedInstanceState.getBoolean("justtheme", false)||Globals.theme==0)
 			{
 				Globals.reloadSettings(this, getAssets());
 			}
@@ -263,7 +404,14 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 	if(savedInstanceState==null)
 	{
 		Log.i("Timidity","Initializing");
-		needInit=Globals.initialize(TimidityActivity.this);
+		if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.M)
+		{
+			// Uggh.
+			requestPermissions();
+		}else{
+			yetAnotherInit();
+		}
+		
 	}else{
 		Log.i("Timidity","Resuming...");
 		needService=!isMyServiceRunning(MusicService.class);
@@ -489,7 +637,7 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 	}
 	public void initCallback2()
 	{
-		int x = JNIHandler.init(Globals.dataFolder+"timidity/","timidity.cfg", Globals.mono, Globals.defSamp, Globals.sixteen, Globals.buff, Globals.aRate, false, false);
+		int x = JNIHandler.init(Globals.dataFolder+"timidity/","timidity.cfg", Globals.mono, Globals.defSamp, Globals.sixteen, Globals.buff, Globals.aRate, Globals.preserveSilence, false, Globals.freeInsts);
 		if(x!=0&&x!=-99)
 		{
 			Globals.nativeMidi=true;
@@ -1301,9 +1449,6 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 	    new_intent.putExtra(getResources().getString(R.string.msrv_cmd), 16);
 	    new_intent.putExtra(getResources().getString(R.string.msrv_outfile), finalval);
 	    sendBroadcast(new_intent);
-		//JNIHandler.setupOutputFile("/sdcard/whya.wav");
-		//System.out.println(path.get(position));
-		//System.out.println(JNIHandler.play(path.get(position)));
 	  final ProgressDialog prog;
 	  prog = new ProgressDialog(TimidityActivity.this);
 	  prog.setButton(DialogInterface.BUTTON_NEGATIVE, "Cancel", new DialogInterface.OnClickListener() {
@@ -1355,9 +1500,6 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 	    new_intent.putExtra(getResources().getString(R.string.msrv_cmd), 15);
 	    new_intent.putExtra(getResources().getString(R.string.msrv_outfile), finalval);
 	    sendBroadcast(new_intent);
-		//JNIHandler.setupOutputFile("/sdcard/whya.wav");
-		//System.out.println(path.get(position));
-		//System.out.println(JNIHandler.play(path.get(position)));
 	  final ProgressDialog prog;
 	  prog = new ProgressDialog(TimidityActivity.this);
 	  prog.setButton(DialogInterface.BUTTON_NEGATIVE, "Cancel", new DialogInterface.OnClickListener() {

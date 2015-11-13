@@ -97,6 +97,7 @@
 #include "rtsyn.h"
 #else
 extern char* getConfig2();
+extern int getFreeInsts();
 extern void andro_timidity_log_print(const char* tag, const char* fmt, ...);
 #endif
 
@@ -4690,7 +4691,8 @@ static inline int parse_opt_Q1(const char *arg)
 
 static inline int parse_opt_preserve_silence(const char *arg)
 {
-	opt_preserve_silence = 1;
+
+	//opt_preserve_silence = 1;
 	return 0;
 }
 
@@ -4785,7 +4787,7 @@ static inline int parse_opt_t(const char *arg)
 static inline int parse_opt_U(const char *arg)
 {
 #ifdef __ANDROID_API__
-	free_instruments_afterwards = 1;
+	free_instruments_afterwards = getFreeInsts();
 #else
 	free_instruments_afterwards = y_or_n_p(arg);
 #endif

@@ -68,6 +68,7 @@ char* configFile2;
 int sixteen;
 int mono;
 int itIsDone=0;
+int shouldFreeInsts = 1;
 //JNIEnv* envelope;
 //JavaVM  *jvm;
 //JNIEnv *theGoodEnv;
@@ -287,37 +288,38 @@ Java_com_xperia64_timidityae_JNIHandler_unloadLib(JNIEnv * env, jobject  obj)
 
 
 JNIEXPORT int JNICALL 
-Java_com_xperia64_timidityae_JNIHandler_prepareTimidity(JNIEnv * env, jobject  obj, jstring config, jstring config2, jint jmono, jint jcustResamp, jint jsixteen, jint jPresSil, jint jreloading)
+Java_com_xperia64_timidityae_JNIHandler_prepareTimidity(JNIEnv * env, jobject  obj, jstring config, jstring config2, jint jmono, jint jcustResamp, jint jsixteen, jint jPresSil, jint jreloading, jint jfreeInsts)
 {
 	itIsDone = 0;
 	if(!jreloading)
 	{
 		Android_JNI_SetupThread();
-	//jclass tmp = 
-	//pushClazz = (jclass)(*env)->NewGlobalRef(env, tmp);
-	pushClazz = (*env)->NewGlobalRef(env,(*env)->FindClass(env, "com/xperia64/timidityae/JNIHandler"));
-	pushBuffit=(*env)->GetStaticMethodID(env, pushClazz, "buffit", "([BI)V");
-	flushId=(*env)->GetStaticMethodID(env, pushClazz, "flushIt", "()V");
-	buffId=(*env)->GetStaticMethodID(env, pushClazz, "bufferSize", "()I");
-	controlId=(*env)->GetStaticMethodID(env, pushClazz, "controlMe", "(I)V");
-	buffId=(*env)->GetStaticMethodID(env, pushClazz, "bufferSize", "()I");
-	rateId=(*env)->GetStaticMethodID(env, pushClazz, "getRate", "()I");
-	finishId=(*env)->GetStaticMethodID(env, pushClazz, "finishIt", "()V");
-	seekInitId=(*env)->GetStaticMethodID(env, pushClazz, "initSeeker", "(I)V");
-	updateSeekId=(*env)->GetStaticMethodID(env, pushClazz, "updateSeeker", "(II)V");
-	pushLyricId=(*env)->GetStaticMethodID(env, pushClazz, "updateLyrics", "([B)V");
-	updateMaxChanId=(*env)->GetStaticMethodID(env, pushClazz, "updateMaxChannels", "(I)V");
-	updateProgId=(*env)->GetStaticMethodID(env, pushClazz, "updateProgramInfo", "(II)V");
-	updateVolId=(*env)->GetStaticMethodID(env, pushClazz, "updateVolInfo", "(II)V");
-	updateDrumId=(*env)->GetStaticMethodID(env, pushClazz, "updateDrumInfo", "(II)V");
-	updateTempoId=(*env)->GetStaticMethodID(env, pushClazz, "updateTempo", "(II)V");
-	updateMaxVoiceId=(*env)->GetStaticMethodID(env, pushClazz, "updateMaxVoice", "(I)V");
-	updateKeyId=(*env)->GetStaticMethodID(env, pushClazz, "updateKey", "(I)V");
+		//jclass tmp = 
+		//pushClazz = (jclass)(*env)->NewGlobalRef(env, tmp);
+		pushClazz = (*env)->NewGlobalRef(env,(*env)->FindClass(env, "com/xperia64/timidityae/JNIHandler"));
+		pushBuffit=(*env)->GetStaticMethodID(env, pushClazz, "buffit", "([BI)V");
+		flushId=(*env)->GetStaticMethodID(env, pushClazz, "flushIt", "()V");
+		buffId=(*env)->GetStaticMethodID(env, pushClazz, "bufferSize", "()I");
+		controlId=(*env)->GetStaticMethodID(env, pushClazz, "controlMe", "(I)V");
+		buffId=(*env)->GetStaticMethodID(env, pushClazz, "bufferSize", "()I");
+		rateId=(*env)->GetStaticMethodID(env, pushClazz, "getRate", "()I");
+		finishId=(*env)->GetStaticMethodID(env, pushClazz, "finishIt", "()V");
+		seekInitId=(*env)->GetStaticMethodID(env, pushClazz, "initSeeker", "(I)V");
+		updateSeekId=(*env)->GetStaticMethodID(env, pushClazz, "updateSeeker", "(II)V");
+		pushLyricId=(*env)->GetStaticMethodID(env, pushClazz, "updateLyrics", "([B)V");
+		updateMaxChanId=(*env)->GetStaticMethodID(env, pushClazz, "updateMaxChannels", "(I)V");
+		updateProgId=(*env)->GetStaticMethodID(env, pushClazz, "updateProgramInfo", "(II)V");
+		updateVolId=(*env)->GetStaticMethodID(env, pushClazz, "updateVolInfo", "(II)V");
+		updateDrumId=(*env)->GetStaticMethodID(env, pushClazz, "updateDrumInfo", "(II)V");
+		updateTempoId=(*env)->GetStaticMethodID(env, pushClazz, "updateTempo", "(II)V");
+		updateMaxVoiceId=(*env)->GetStaticMethodID(env, pushClazz, "updateMaxVoice", "(I)V");
+		updateKeyId=(*env)->GetStaticMethodID(env, pushClazz, "updateKey", "(I)V");
 	}
 
 	mono = (int)jmono;
 	sixteen = (int)jsixteen;
-		jboolean isCopy;
+	shouldFreeInsts = (int)jfreeInsts;
+	jboolean isCopy;
 	configFile=(char*)(*env)->GetStringUTFChars(env, config, &isCopy); 
 	configFile2=(char*)(*env)->GetStringUTFChars(env, config2, &isCopy); 
 	int err=0;
@@ -414,7 +416,10 @@ char* getConfig2()
 	//__android_log_print(ANDROID_LOG_DEBUG, "TIMIDITY", "%s", configFile2);
 	return configFile2;
 }
-
+int getFreeInsts()
+{
+	return shouldFreeInsts;
+}
 int nativePush(char* buf, int nframes)
 {
 	//jclass clazz = (*theGoodEnv)->FindClass(theGoodEnv, "com/xperia64/timidityae/JNIHandler");

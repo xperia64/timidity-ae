@@ -49,7 +49,17 @@
                         android:key="manualConfig" />
                 <PreferenceScreen android:title="@string/soundfont"
     		android:summary="@string/soundfont2"
-    		android:key="sfConfig"/>
+    		android:key="sfConfig">
+                </PreferenceScreen>
+                <CheckBoxPreference 
+                    android:key="tplusSilKey" 
+                    android:summary="@string/sett_sil_sum" 
+                    android:title="@string/sett_sil"
+                     android:defaultValue="true"/>
+                <CheckBoxPreference android:summary="@string/sett_unload_sum" 
+                    android:title="@string/sett_unload" 
+                    android:key="tplusUnload" 
+                    android:defaultValue="true" />
                 <ListPreference
                         android:title="@string/sett_res"
                         android:defaultValue="0"
@@ -57,6 +67,7 @@
                         android:entryValues="@array/background_resamp_items"
                         android:summary="@string/sett_res_sum"
                         android:key="tplusResamp" />
+                
                 <ListPreference
                         android:title="@string/sett_chan"
                         android:defaultValue="2"
@@ -64,13 +75,6 @@
                         android:entryValues="@array/background_channel_items"
                         android:summary="@string/sett_chan_sum"
                         android:key="sdlChanValue" />
-                 <ListPreference
-                        android:title="@string/sett_bits"
-                        android:defaultValue="16"
-                        android:entries="@array/select_bit_items"
-                        android:entryValues="@array/background_bit_items"
-                        android:summary="@string/sett_bits_sum"
-                        android:key="tplusBits" />
                   <ListPreference
                         android:title="@string/sett_rate"
                         android:summary="@string/sett_rate_sum"
@@ -82,6 +86,7 @@
                         android:defaultValue="192000"
                         android:summary="@string/sett_buff_sum"
                         android:key="tplusBuff" />
+                
                 </PreferenceCategory>
                 <PreferenceCategory
                 android:title="@string/sett_dat">

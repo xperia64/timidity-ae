@@ -27,8 +27,8 @@ import java.util.Locale;
 import com.xperia64.timidityae.FileBrowserDialog.FileBrowserDialogListener;
 import com.xperia64.timidityae.R;
 
-import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -42,7 +42,7 @@ import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.TextView;
+//import android.widget.TextView;
 import android.widget.Toast;
 
 
@@ -301,7 +301,7 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 	    });
 	}
 	@Override
-	public void onAttach(Activity activity)
+	public void onAttach(Context activity)
 	{
 		super.onAttach(activity);
 		try {
@@ -332,7 +332,7 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 			if(f.exists())
 			{
 			File[] files = f.listFiles(); 
-			if (files.length>0){
+			if (files!=null&&files.length>0){
 				if(files != null)
 				{
 					Arrays.sort(files, new FileComparator());
@@ -391,7 +391,7 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 		{
 			fileList = new ArrayAdapter<String>(getActivity(),R.layout.row,fname){
 				
-			    @Override
+			   /* @Override
 			    public View getView(int position, View convertView, ViewGroup parent)
 			    {
 			        final View renderer = super.getView(position, convertView, parent);
@@ -408,7 +408,7 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 			        }
 			        //renderer.postInvalidate();
 			        return renderer;
-			    }
+			    }*/
 			};
 		}else{
 			fileList = new ArrayAdapter<String>(getActivity(),R.layout.row,fname);
@@ -426,8 +426,6 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 	   		 getListView().setItemChecked(highlightMe, true);
 	   	 }*/
    	 setListAdapter(fileList);
-//    <!--  android:listSelector="@color/listSelection"-->
- 
 	}
 	public ArrayList<String> parsePlist(String path)
 	{

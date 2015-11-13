@@ -1600,6 +1600,9 @@ static void init_ch_reverb_delay(InfoDelay3 *info)
 	set_delay(&(info->delayL), x);
 	set_delay(&(info->delayR), x);
 	info->index[0] = x - info->size[0];
+	if (info->index[0] >= info->size[0]) {
+		info->index[0] = (info->size[0] == 0) ? 0 : info->size[0] - 1;
+	}
 	info->level[0] = (double)reverb_status_gs.level * 1.82 / 127.0;
 	info->feedback = sqrt((double)reverb_status_gs.delay_feedback / 127.0) * 0.98;
 	info->leveli[0] = TIM_FSCALE(info->level[0], 24);

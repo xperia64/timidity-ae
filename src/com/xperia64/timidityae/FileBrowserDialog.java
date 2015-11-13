@@ -143,7 +143,6 @@ public class FileBrowserDialog implements OnItemClickListener {
 					{
 						Arrays.sort(files, new FileComparator());
 					}
-					// System.out.println(currPath);
 					if (!currPath.matches("[/]+"))
 					{
 						fname.add("../");

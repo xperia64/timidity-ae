@@ -57,6 +57,8 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+
+@SuppressLint("NewApi")
 public class SettingsActivity extends AppCompatActivity implements FileBrowserDialogListener, SoundfontDialogListener {
 	
 	public static SettingsActivity mInstance = null;
@@ -75,9 +77,11 @@ public class SettingsActivity extends AppCompatActivity implements FileBrowserDi
 	// -- needs restart below -- 
 	private CheckBoxPreference manTcfg;
 	private Preference sfPref;
+	private CheckBoxPreference psilence;
+	private CheckBoxPreference unload;
 	private ListPreference resampMode;
 	private ListPreference stereoMode;
-	private ListPreference bitMode;
+	//private ListPreference bitMode;
 	private ListPreference rates;
 	private EditTextPreference bufferSize;
 	private Preference dataFoldPreference;
@@ -114,423 +118,6 @@ public class SettingsActivity extends AppCompatActivity implements FileBrowserDi
                         mFragmentTransaction.commit();
                         abElevation = getSupportActionBar().getElevation();
             }
-	        
-	       /* protected void onCreate(Bundle savedInstanceState) {
-	        	mInstance = this;
-	        	// Themes are borked.
-	        	// TODO nix Sherlock
-	        	if (Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH){
-	    		   this.setTheme((Globals.theme==1)?android.R.style.Theme_Holo_Light_DarkActionBar:android.R.style.Theme_Holo);
-	    	   }
-	        	super.onCreate(savedInstanceState);
-	        	getActionBar().setDisplayHomeAsUpEnabled(true);
-	                addPreferencesFromResource(R.layout.settings);
-	                prefs = PreferenceManager
-	    	                .getDefaultSharedPreferences(getBaseContext());
-	                themePref = (ListPreference) findPreference("fbTheme");
-	                hiddenFold = (CheckBoxPreference) findPreference("hiddenSwitch");
-	                showVids = (CheckBoxPreference) findPreference("videoSwitch");
-	                defaultFoldPreference = findPreference("defFold");
-	                reinstallSoundfont = findPreference("reSF");
-	                manHomeFolder = (EditTextPreference) findPreference("defaultPath");
-	                dataFoldPreference = findPreference("defData");
-	                manDataFolder = (EditTextPreference) findPreference("dataDir");
-	                manTcfg = (CheckBoxPreference) findPreference("manualConfig");
-	                sfPref = findPreference("sfConfig");
-	                resampMode = (ListPreference) findPreference("tplusResamp");
-	                stereoMode = (ListPreference) findPreference("sdlChanValue");
-	                bitMode = (ListPreference) findPreference("tplusBits");
-	                rates = (ListPreference) findPreference("tplusRate");
-	                bufferSize = (EditTextPreference) findPreference("tplusBuff");
-	                //nativeMidi = (CheckBoxPreference) findPreference("nativeMidiSwitch");
-	               // ds = (PreferenceScreen) findPreference("dsKey");
-	                tplus = (PreferenceScreen) findPreference("tplusKey");
-	                nativeMidi = (CheckBoxPreference) findPreference("nativeMidiSwitch");
-	                keepWav = (CheckBoxPreference) findPreference("keepPartialWav");
-	                sfPref.setEnabled(!manTcfg.isChecked());
-	                lolPref = findPreference("lolWrite");
-
-	                hiddenFold.setOnPreferenceChangeListener(new OnPreferenceChangeListener(){
-
-						@Override
-						public boolean onPreferenceChange(Preference arg0,
-								Object arg1) {
-								Globals.showHiddenFiles=(Boolean)arg1;
-							return true;
-						}
-	                	
-	                });
-	                showVids.setOnPreferenceChangeListener(new OnPreferenceChangeListener(){
-
-						@Override
-						public boolean onPreferenceChange(Preference arg0,
-								Object arg1) {
-								Globals.showVideos=(Boolean)arg1;
-							return true;
-						}
-	                	
-	                });
-	                nativeMidi.setOnPreferenceChangeListener(new OnPreferenceChangeListener(){
-
-						@Override
-						public boolean onPreferenceChange(Preference arg0,
-								Object arg1) {
-							if(!Globals.onlyNative)
-								Globals.nativeMidi=(Boolean)arg1;
-							else
-								Globals.nativeMidi=true;
-							return true;
-						}
-	                	
-	                });
-	                keepWav.setOnPreferenceChangeListener(new OnPreferenceChangeListener(){
-
-						@Override
-						public boolean onPreferenceChange(Preference arg0,
-								Object arg1) {
-								Globals.keepWav=(Boolean)arg1;
-							return true;
-						}
-	                	
-	                });
-	                defaultFoldPreference.setOnPreferenceClickListener(new OnPreferenceClickListener() {
-	                        public boolean onPreferenceClick(Preference preference) {
-	                            // dialog code here
-	                        	
-	                        	new FileBrowserDialog().create(3, null, SettingsActivity.this, SettingsActivity.this, SettingsActivity.this.getLayoutInflater(), true, prefs.getString("defaultPath", Environment.getExternalStorageDirectory().getAbsolutePath()), getResources().getString(R.string.fb_add));
-	                            return true;
-	                        }
-	                    });
-	                if(lolPref!=null)
-	                lolPref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
-                        @SuppressLint("NewApi")
-						public boolean onPreferenceClick(Preference preference) {
-                            // dialog code here
-                        	List<UriPermission> permissions = getContentResolver().getPersistedUriPermissions();
-                			if(!(permissions==null||permissions.isEmpty()))
-                			{
-                				for(UriPermission p : permissions)
-                				{
-                					getContentResolver().releasePersistableUriPermission(p.getUri(), Intent.FLAG_GRANT_READ_URI_PERMISSION |
-                	    	                Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-                				}
-                			}
-                        	Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
-    					    startActivityForResult(intent, 42);
-                            return true;
-                        }
-                    });
-	                reinstallSoundfont.setOnPreferenceClickListener(new OnPreferenceClickListener(){
-
-						@Override
-						public boolean onPreferenceClick(Preference arg0) {
-							AsyncTask<Void, Void, Integer> task = new AsyncTask<Void, Void, Integer>() {
-								
-								ProgressDialog pd;
-								@Override
-								protected void onPreExecute() {
-									pd = new ProgressDialog(SettingsActivity.this);
-									pd.setTitle(getResources().getString(R.string.extract));
-									pd.setMessage(getResources().getString(R.string.extract_sum));
-									pd.setCancelable(false);
-									pd.setIndeterminate(true);
-									pd.show();
-								}
-									
-								@Override
-								protected Integer doInBackground(Void... arg0) {
-									
-									return Globals.extract8Rock(SettingsActivity.this);
-								}
-								
-								@Override
-								protected void onPostExecute(Integer result) {
-									
-									if (pd!=null) {
-										pd.dismiss();
-										if(result!=777)
-										{
-											Toast.makeText(SettingsActivity.this, "Could not extrct default soundfont", Toast.LENGTH_SHORT).show();
-										}else{
-											Toast.makeText(SettingsActivity.this,getResources().getString(R.string.extract_def),Toast.LENGTH_LONG).show();
-										}
-										//b.setEnabled(true);
-									}
-								}
-									
-							};
-							task.execute((Void[])null);
-							return true;
-						}
-	                	
-	                });
-	                dataFoldPreference.setOnPreferenceClickListener(new OnPreferenceClickListener() {
-	                        public boolean onPreferenceClick(Preference preference) {
-	                            // dialog code here
-	                        	needRestart=true;
-	                        	new FileBrowserDialog().create(4, null, SettingsActivity.this, SettingsActivity.this, SettingsActivity.this.getLayoutInflater(), true, prefs.getString("dataDir", Environment.getExternalStorageDirectory().getAbsolutePath()), getResources().getString(R.string.fb_add));
-	                            return true;
-	                        }
-	                    });
-	                
-	                try {
-						tmpSounds = (ArrayList<String>) ObjectSerializer.deserialize(prefs.getString("tplusSoundfonts", ObjectSerializer.serialize(new ArrayList<String>())));
-						for(int i = 0; i<tmpSounds.size();i++)
-						{
-							if(tmpSounds.get(i)==null)
-								tmpSounds.remove(i);
-						}
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-	               
-	                rates.setOnPreferenceChangeListener(new OnPreferenceChangeListener(){
-
-						@Override
-						public boolean onPreferenceChange(
-								Preference preference, Object newValue) {
-							needRestart=true;
-							String stereo = stereoMode.getValue();
-							String sixteen = bitMode.getValue();
-							boolean sb=(stereo!=null)?stereo.equals("2"):true;
-							boolean sxb=(sixteen!=null)?sixteen.equals("16"):true;
-							SparseIntArray mmm = Globals.validBuffers(Globals.validRates(sb,sxb),sb,sxb);
-							if(mmm!=null)
-							{
-								
-							int minBuff = mmm.get(Integer.parseInt((String) newValue));
-							
-							int buff = Integer.parseInt(bufferSize.getText());
-							if(buff<minBuff)
-							{
-								prefs.edit().putString("tplusBuff",Integer.toString(minBuff)).commit();
-								bufferSize.setText(Integer.toString(minBuff));
-								Toast.makeText(SettingsActivity.this, getResources().getString(R.string.invalidbuff), Toast.LENGTH_SHORT).show();
-								((BaseAdapter)tplus.getRootAdapter()).notifyDataSetChanged();
-								((BaseAdapter)tplus.getRootAdapter()).notifyDataSetInvalidated();
-							}
-							}
-							return true;
-						}
-	                });
-	                if(tmpSounds == null)
-	                	tmpSounds = new ArrayList<String>();
-	                manTcfg.setOnPreferenceChangeListener(new OnPreferenceChangeListener(){
-
-						@Override
-						public boolean onPreferenceChange(Preference arg0,
-								Object arg1) {
-							sfPref.setEnabled(!(Boolean)arg1);
-							return true;
-						}
-	                	
-	                });
-	                sfPref.setOnPreferenceClickListener(new OnPreferenceClickListener(){
-
-						@Override
-						public boolean onPreferenceClick(Preference preference) {
-							new SoundfontDialog().create(tmpSounds, SettingsActivity.this, SettingsActivity.this, getLayoutInflater(), prefs.getString("defaultPath", 
-									Environment.getExternalStorageDirectory().getPath()));
-							return true;
-						}
-	                	
-	                });
-	                resampMode.setOnPreferenceChangeListener(new OnPreferenceChangeListener(){
-
-						@Override
-						public boolean onPreferenceChange(
-								Preference preference, Object newValue) {
-							needRestart=true;
-							return true;
-						}
-	                	
-	                });
-	                manDataFolder.setOnPreferenceChangeListener(new OnPreferenceChangeListener(){
-	                	@Override
-						public boolean onPreferenceChange(Preference preference, Object newValue) {
-	                		needRestart=true;
-							return true;
-						}
-	                });
-	               // buffSize = Integer.parseInt(prefs.getString("tplusBuff", "192000"));
-	                //System.out.println("Buffsize is: "+buffSize);
-	                Globals.updateBuffers(Globals.updateRates());
-	                int[] values = Globals.updateRates();
-	                if(values!=null)
-	                {
-	                CharSequence[] hz = new CharSequence[values.length];
-	                CharSequence[] hzItems = new CharSequence[values.length];
-	                for(int i = 0; i<values.length; i++)
-	                {
-	                	hz[i]=Integer.toString(values[i])+"Hz";
-	                	hzItems[i]=Integer.toString(values[i]);
-	                }
-	                rates.setEntries(hz);
-	                rates.setEntryValues(hzItems);
-	                rates.setDefaultValue(Integer.toString(AudioTrack.getNativeOutputSampleRate(AudioTrack.MODE_STREAM)));
-	                rates.setValue(prefs.getString("tplusRate",Integer.toString(AudioTrack.getNativeOutputSampleRate(AudioTrack.MODE_STREAM))));
-	                }
-	                bufferSize.setOnPreferenceChangeListener(new OnPreferenceChangeListener(){
-
-						@Override
-						public boolean onPreferenceChange(
-								Preference preference, final Object newValue) {
-							needRestart=true;
-							String txt = (String)newValue;
-							if(txt!=null)
-							{
-								if(!TextUtils.isEmpty(txt))
-								{
-									
-									String stereo = stereoMode.getValue();
-									String sixteen = bitMode.getValue();
-									boolean sb=(stereo!=null)?stereo.equals("2"):true;
-									boolean sxb=(sixteen!=null)?sixteen.equals("16"):true;
-									SparseIntArray mmm = Globals.validBuffers(Globals.validRates(sb,sxb),sb,sxb);
-									if(mmm!=null)
-									{
-										
-									int minBuff = mmm.get(Integer.parseInt(rates.getValue()));
-									
-									int buff = Integer.parseInt(txt);
-									if(buff<minBuff)
-									{
-										prefs.edit().putString("tplusBuff",Integer.toString(minBuff)).commit();
-										((EditTextPreference)preference).setText(Integer.toString(minBuff));
-										Toast.makeText(SettingsActivity.this, getResources().getString(R.string.invalidbuff), Toast.LENGTH_SHORT).show();
-										((BaseAdapter)tplus.getRootAdapter()).notifyDataSetChanged();
-										((BaseAdapter)tplus.getRootAdapter()).notifyDataSetInvalidated();
-										return false;
-									}
-									}
-									return true;
-									//System.out.println("Text is change");
-									//return Globals.updateBuffers(Globals.updateRates());
-								}
-							}
-							return false;
-						}
-						
-	                	
-	                });
-	                stereoMode.setOnPreferenceChangeListener(new OnPreferenceChangeListener(){
-
-						@Override
-						public boolean onPreferenceChange(
-								Preference preference, Object newValue) {
-							needRestart=true;
-							String stereo = (String) newValue;
-							String sixteen = bitMode.getValue();
-							boolean sb=(stereo!=null)?stereo.equals("2"):true;
-							boolean sxb=(sixteen!=null)?sixteen.equals("16"):true;
-							SparseIntArray mmm = Globals.validBuffers(Globals.validRates(sb,sxb),sb,sxb);
-							if(mmm!=null)
-							{
-								
-							int minBuff = mmm.get(Integer.parseInt(rates.getValue()));
-							
-							int buff = Integer.parseInt(bufferSize.getText());
-							if(buff<minBuff)
-							{
-								prefs.edit().putString("tplusBuff",Integer.toString(minBuff)).commit();
-								bufferSize.setText(Integer.toString(minBuff));
-								Toast.makeText(SettingsActivity.this, getResources().getString(R.string.invalidbuff), Toast.LENGTH_SHORT).show();
-								((BaseAdapter)tplus.getRootAdapter()).notifyDataSetChanged();
-								((BaseAdapter)tplus.getRootAdapter()).notifyDataSetInvalidated();
-							}
-							}
-							return true;
-						}
-	                });
-	                bitMode.setOnPreferenceChangeListener(new OnPreferenceChangeListener(){
-
-						@Override
-						public boolean onPreferenceChange(
-								Preference preference, Object newValue) {
-							needRestart=true;
-							String stereo = stereoMode.getValue();
-							String sixteen = (String) newValue;
-							boolean sb=(stereo!=null)?stereo.equals("2"):true;
-							boolean sxb=(sixteen!=null)?sixteen.equals("16"):true;
-							SparseIntArray mmm = Globals.validBuffers(Globals.validRates(sb,sxb),sb,sxb);
-							if(mmm!=null)
-							{
-								
-							int minBuff = mmm.get(Integer.parseInt(rates.getValue()));
-							
-							int buff = Integer.parseInt(bufferSize.getText());
-							if(buff<minBuff)
-							{
-								prefs.edit().putString("tplusBuff",Integer.toString(minBuff)).commit();
-								bufferSize.setText(Integer.toString(minBuff));
-								Toast.makeText(SettingsActivity.this, getResources().getString(R.string.invalidbuff), Toast.LENGTH_SHORT).show();
-								((BaseAdapter)tplus.getRootAdapter()).notifyDataSetChanged();
-								((BaseAdapter)tplus.getRootAdapter()).notifyDataSetInvalidated();
-							}
-							}
-							return true;
-						}
-	                });
-	                themePref.setOnPreferenceChangeListener(new OnPreferenceChangeListener(){
-
-						@Override
-						public boolean onPreferenceChange(
-								Preference preference, Object newValue) {
-							Globals.theme=Integer.parseInt((String) newValue);
-							Intent intent = getIntent();
-				            finish();
-				            startActivity(intent);							
-				            return true;
-						}
-	                	
-	                });
-	                
-	        }*/
-	        
-
-	        
-			/*public static void initializeActionBar(PreferenceScreen preferenceScreen, SettingsActivity s) {
-	            final Dialog dialog = preferenceScreen.getDialog();
-
-	            if (dialog != null) {
-	            	s.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-	                // Inialize the action bar
-	                //dialog.getActionBar().setDisplayHomeAsUpEnabled(true);
-
-	                // Apply custom home button area click listener to close the PreferenceScreen because PreferenceScreens are dialogs which swallow
-	                // events instead of passing to the activity
-	                // Related Issue: https://code.google.com/p/android/issues/detail?id=4611
-	                View homeBtn = dialog.findViewById(android.R.id.home);
-
-	                if (homeBtn != null) {
-	                    OnClickListener dismissDialogClickListener = new OnClickListener() {
-	                        @Override
-	                        public void onClick(View v) {
-	                            dialog.dismiss();
-	                        }
-	                    };
-
-	                    // Prepare yourselves for some hacky programming
-	                    ViewParent homeBtnContainer = homeBtn.getParent();
-
-	                    // The home button is an ImageView inside a FrameLayout
-	                    if (homeBtnContainer instanceof FrameLayout) {
-	                        ViewGroup containerParent = (ViewGroup) homeBtnContainer.getParent();
-
-	                        if (containerParent instanceof LinearLayout) {
-	                            // This view also contains the title text, set the whole view as clickable
-	                            ((LinearLayout) containerParent).setOnClickListener(dismissDialogClickListener);
-	                        } else {
-	                            // Just set it on the home button
-	                            ((FrameLayout) homeBtnContainer).setOnClickListener(dismissDialogClickListener);
-	                        }
-	                    } else {
-	                        // The 'If all else fails' default case
-	                        homeBtn.setOnClickListener(dismissDialogClickListener);
-	                    }
-	                }    
-	            }
-	        }*/
 	        @SuppressLint("NewApi")
 			public void setUpNestedScreen(PreferenceScreen preferenceScreen) {
 	            final Dialog dialog = preferenceScreen.getDialog();
@@ -670,12 +257,27 @@ public class SettingsActivity extends AppCompatActivity implements FileBrowserDi
 
 			@Override
 			public void writeSoundfonts(ArrayList<String> l) {
-				needRestart=true;
-				needUpdateSf=true;
-				tmpSounds = new ArrayList<String>();
-
-				for (String foo : l) {
-				  tmpSounds.add(foo);
+				if(l.size() == tmpSounds.size())
+				{
+					for(int i = 0; i<l.size(); i++)
+					{
+						if(!l.get(i).equals(tmpSounds.get(i)))
+						{
+							needRestart=true;
+							needUpdateSf=true;
+							break;
+						}
+					}
+				}else{
+					needRestart = true;
+					needUpdateSf = true;
+				}
+				if(needUpdateSf)
+				{
+					tmpSounds.clear();
+					for (String foo : l) {
+					  tmpSounds.add(foo);
+					}
 				}
 			}
 			public static class TimidityPrefsFragment extends PreferenceFragment {
@@ -703,7 +305,7 @@ public class SettingsActivity extends AppCompatActivity implements FileBrowserDi
         	                s.sfPref = findPreference("sfConfig");
         	                s.resampMode = (ListPreference) findPreference("tplusResamp");
         	                s.stereoMode = (ListPreference) findPreference("sdlChanValue");
-        	                s.bitMode = (ListPreference) findPreference("tplusBits");
+        	                //s.bitMode = (ListPreference) findPreference("tplusBits");
         	                s.rates = (ListPreference) findPreference("tplusRate");
         	                s.bufferSize = (EditTextPreference) findPreference("tplusBuff");
         	                //nativeMidi = (CheckBoxPreference) findPreference("nativeMidiSwitch");
@@ -713,6 +315,8 @@ public class SettingsActivity extends AppCompatActivity implements FileBrowserDi
         	                s.keepWav = (CheckBoxPreference) findPreference("keepPartialWav");
         	                s.sfPref.setEnabled(!s.manTcfg.isChecked());
         	                s.lolPref = findPreference("lolWrite");
+        	                s.psilence = (CheckBoxPreference) findPreference("tplusSilKey");
+        	                s.unload = (CheckBoxPreference) findPreference("tplusUnload");
 
         	                s.hiddenFold.setOnPreferenceChangeListener(new OnPreferenceChangeListener(){
 
@@ -789,8 +393,8 @@ public class SettingsActivity extends AppCompatActivity implements FileBrowserDi
         						@Override
         						public boolean onPreferenceClick(Preference arg0) {
         							AlertDialog dialog = new AlertDialog.Builder(getActivity()).create();
-        						    dialog.setTitle("Reinstall 8Rock11e.sf2?");
-        						    dialog.setMessage("This may take a few minutes.");
+        						    dialog.setTitle(getResources().getString(R.string.sett_resf_q));
+        						    dialog.setMessage(getResources().getString(R.string.sett_resf_q_sum));
         						    dialog.setCancelable(true);
         						    dialog.setButton(DialogInterface.BUTTON_POSITIVE, getResources().getString(android.R.string.ok), new DialogInterface.OnClickListener() {
         						        public void onClick(DialogInterface dialog, int buttonId) {
@@ -820,11 +424,10 @@ public class SettingsActivity extends AppCompatActivity implements FileBrowserDi
                 										pd.dismiss();
                 										if(result!=777)
                 										{
-                											Toast.makeText(s, "Could not extrct default soundfont", Toast.LENGTH_SHORT).show();
+                											Toast.makeText(s, getResources().getString(R.string.sett_resf_err), Toast.LENGTH_SHORT).show();
                 										}else{
                 											Toast.makeText(s,getResources().getString(R.string.extract_def),Toast.LENGTH_LONG).show();
                 										}
-                										//b.setEnabled(true);
                 									}
                 								}
                 									
@@ -869,38 +472,62 @@ public class SettingsActivity extends AppCompatActivity implements FileBrowserDi
         						@Override
         						public boolean onPreferenceChange(
         								Preference preference, Object newValue) {
-        							s.needRestart=true;
-        							String stereo = s.stereoMode.getValue();
-        							String sixteen = s.bitMode.getValue();
-        							boolean sb=(stereo!=null)?stereo.equals("2"):true;
-        							boolean sxb=(sixteen!=null)?sixteen.equals("16"):true;
-        							SparseIntArray mmm = Globals.validBuffers(Globals.validRates(sb,sxb),sb,sxb);
-        							if(mmm!=null)
-        							{
-        								
-        							int minBuff = mmm.get(Integer.parseInt((String) newValue));
         							
-        							int buff = Integer.parseInt(s.bufferSize.getText());
-        							if(buff<minBuff)
+        							if(!((String)s.rates.getValue()).equals((String) newValue))
         							{
-        								s.prefs.edit().putString("tplusBuff",Integer.toString(minBuff)).commit();
-        								s.bufferSize.setText(Integer.toString(minBuff));
-        								Toast.makeText(s, getResources().getString(R.string.invalidbuff), Toast.LENGTH_SHORT).show();
-        								((BaseAdapter)s.tplus.getRootAdapter()).notifyDataSetChanged();
-        								((BaseAdapter)s.tplus.getRootAdapter()).notifyDataSetInvalidated();
-        							}
+										s.needRestart=true;
+										String stereo = s.stereoMode.getValue();
+										String sixteen = "16";//s.bitMode.getValue();
+										boolean sb=(stereo!=null)?stereo.equals("2"):true;
+										boolean sxb=(sixteen!=null)?sixteen.equals("16"):true;
+										SparseIntArray mmm = Globals.validBuffers(Globals.validRates(sb,sxb),sb,sxb);
+										if(mmm!=null)
+										{
+											int minBuff = mmm.get(Integer.parseInt((String) newValue));
+											
+											int buff = Integer.parseInt(s.bufferSize.getText());
+											if(buff<minBuff)
+											{
+												s.prefs.edit().putString("tplusBuff",Integer.toString(minBuff)).commit();
+												s.bufferSize.setText(Integer.toString(minBuff));
+												Toast.makeText(s, getResources().getString(R.string.invalidbuff), Toast.LENGTH_SHORT).show();
+												((BaseAdapter)s.tplus.getRootAdapter()).notifyDataSetChanged();
+												((BaseAdapter)s.tplus.getRootAdapter()).notifyDataSetInvalidated();
+											}
+										}
         							}
         							return true;
         						}
         	                });
         	                if(s.tmpSounds == null)
         	                	s.tmpSounds = new ArrayList<String>();
-        	                s. manTcfg.setOnPreferenceChangeListener(new OnPreferenceChangeListener(){
+        	                s.manTcfg.setOnPreferenceChangeListener(new OnPreferenceChangeListener(){
 
         						@Override
         						public boolean onPreferenceChange(Preference arg0,
         								Object arg1) {
         							s.sfPref.setEnabled(!(Boolean)arg1);
+        							return true;
+        						}
+        	                	
+        	                });
+        	                
+        	                s.psilence.setOnPreferenceChangeListener(new OnPreferenceChangeListener(){
+
+        						@Override
+        						public boolean onPreferenceChange(Preference arg0,
+        								Object arg1) {
+        							s.needRestart = true;
+        							return true;
+        						}
+        	                	
+        	                });
+        	                s.unload.setOnPreferenceChangeListener(new OnPreferenceChangeListener(){
+
+        						@Override
+        						public boolean onPreferenceChange(Preference arg0,
+        								Object arg1) {
+        							s.needRestart = true;
         							return true;
         						}
         	                	
@@ -920,7 +547,10 @@ public class SettingsActivity extends AppCompatActivity implements FileBrowserDi
         						@Override
         						public boolean onPreferenceChange(
         								Preference preference, Object newValue) {
-        							s.needRestart=true;
+        							if(!((String)s.resampMode.getValue()).equals((String) newValue))
+									{
+        								s.needRestart=true;
+									}
         							return true;
         						}
         	                	
@@ -928,7 +558,10 @@ public class SettingsActivity extends AppCompatActivity implements FileBrowserDi
         	                s.manDataFolder.setOnPreferenceChangeListener(new OnPreferenceChangeListener(){
         	                	@Override
         						public boolean onPreferenceChange(Preference preference, Object newValue) {
-        	                		s.needRestart=true;
+        							if(!((String)s.manDataFolder.getText()).equals((String) newValue))
+									{
+        								s.needRestart=true;
+									}
         							return true;
         						}
         	                });
@@ -955,40 +588,42 @@ public class SettingsActivity extends AppCompatActivity implements FileBrowserDi
         						@Override
         						public boolean onPreferenceChange(
         								Preference preference, final Object newValue) {
-        							s.needRestart=true;
-        							String txt = (String)newValue;
-        							if(txt!=null)
-        							{
-        								if(!TextUtils.isEmpty(txt))
-        								{
-        									
-        									String stereo = s.stereoMode.getValue();
-        									String sixteen = s.bitMode.getValue();
-        									boolean sb=(stereo!=null)?stereo.equals("2"):true;
-        									boolean sxb=(sixteen!=null)?sixteen.equals("16"):true;
-        									SparseIntArray mmm = Globals.validBuffers(Globals.validRates(sb,sxb),sb,sxb);
-        									if(mmm!=null)
-        									{
-        										
-        									int minBuff = mmm.get(Integer.parseInt(s.rates.getValue()));
-        									
-        									int buff = Integer.parseInt(txt);
-        									if(buff<minBuff)
-        									{
-        										s.prefs.edit().putString("tplusBuff",Integer.toString(minBuff)).commit();
-        										((EditTextPreference)preference).setText(Integer.toString(minBuff));
-        										Toast.makeText(s, getResources().getString(R.string.invalidbuff), Toast.LENGTH_SHORT).show();
-        										((BaseAdapter)s.tplus.getRootAdapter()).notifyDataSetChanged();
-        										((BaseAdapter)s.tplus.getRootAdapter()).notifyDataSetInvalidated();
-        										return false;
-        									}
-        									}
-        									return true;
-        									//System.out.println("Text is change");
-        									//return Globals.updateBuffers(Globals.updateRates());
-        								}
-        							}
-        							return false;
+        							if(!((String)s.bufferSize.getText()).equals((String) newValue))
+									{
+	        							s.needRestart=true;
+	        							String txt = (String)newValue;
+	        							if(txt!=null)
+	        							{
+	        								if(!TextUtils.isEmpty(txt))
+	        								{
+	        									
+	        									String stereo = s.stereoMode.getValue();
+	        									String sixteen = "16"; //s.bitMode.getValue();
+	        									boolean sb=(stereo!=null)?stereo.equals("2"):true;
+	        									boolean sxb=(sixteen!=null)?sixteen.equals("16"):true;
+	        									SparseIntArray mmm = Globals.validBuffers(Globals.validRates(sb,sxb),sb,sxb);
+	        									if(mmm!=null)
+	        									{
+	        										
+	        									int minBuff = mmm.get(Integer.parseInt(s.rates.getValue()));
+	        									
+	        									int buff = Integer.parseInt(txt);
+	        									if(buff<minBuff)
+	        									{
+	        										s.prefs.edit().putString("tplusBuff",Integer.toString(minBuff)).commit();
+	        										((EditTextPreference)preference).setText(Integer.toString(minBuff));
+	        										Toast.makeText(s, getResources().getString(R.string.invalidbuff), Toast.LENGTH_SHORT).show();
+	        										((BaseAdapter)s.tplus.getRootAdapter()).notifyDataSetChanged();
+	        										((BaseAdapter)s.tplus.getRootAdapter()).notifyDataSetInvalidated();
+	        										return false;
+	        									}
+	        									}
+	        									return true;
+	        								}
+	        							}
+	        							return false;
+	        						}
+        							return true;
         						}
         						
         	                	
@@ -998,59 +633,66 @@ public class SettingsActivity extends AppCompatActivity implements FileBrowserDi
         						@Override
         						public boolean onPreferenceChange(
         								Preference preference, Object newValue) {
-        							s.needRestart=true;
-        							String stereo = (String) newValue;
-        							String sixteen = s.bitMode.getValue();
-        							boolean sb=(stereo!=null)?stereo.equals("2"):true;
-        							boolean sxb=(sixteen!=null)?sixteen.equals("16"):true;
-        							SparseIntArray mmm = Globals.validBuffers(Globals.validRates(sb,sxb),sb,sxb);
-        							if(mmm!=null)
-        							{
-        								
-        							int minBuff = mmm.get(Integer.parseInt(s.rates.getValue()));
-        							
-        							int buff = Integer.parseInt(s.bufferSize.getText());
-        							if(buff<minBuff)
-        							{
-        								s.prefs.edit().putString("tplusBuff",Integer.toString(minBuff)).commit();
-        								s.bufferSize.setText(Integer.toString(minBuff));
-        								Toast.makeText(s, getResources().getString(R.string.invalidbuff), Toast.LENGTH_SHORT).show();
-        								((BaseAdapter)s.tplus.getRootAdapter()).notifyDataSetChanged();
-        								((BaseAdapter)s.tplus.getRootAdapter()).notifyDataSetInvalidated();
-        							}
-        							}
+        							if(!((String)s.stereoMode.getValue()).equals((String) newValue))
+									{
+	        							s.needRestart=true;
+	        							String stereo = (String) newValue;
+	        							String sixteen = "16"; //s.bitMode.getValue();
+	        							boolean sb=(stereo!=null)?stereo.equals("2"):true;
+	        							boolean sxb=(sixteen!=null)?sixteen.equals("16"):true;
+	        							SparseIntArray mmm = Globals.validBuffers(Globals.validRates(sb,sxb),sb,sxb);
+	        							if(mmm!=null)
+	        							{
+		        								
+		        							int minBuff = mmm.get(Integer.parseInt(s.rates.getValue()));
+		        							
+		        							int buff = Integer.parseInt(s.bufferSize.getText());
+		        							if(buff<minBuff)
+		        							{
+		        								s.prefs.edit().putString("tplusBuff",Integer.toString(minBuff)).commit();
+		        								s.bufferSize.setText(Integer.toString(minBuff));
+		        								Toast.makeText(s, getResources().getString(R.string.invalidbuff), Toast.LENGTH_SHORT).show();
+		        								((BaseAdapter)s.tplus.getRootAdapter()).notifyDataSetChanged();
+		        								((BaseAdapter)s.tplus.getRootAdapter()).notifyDataSetInvalidated();
+		        							}
+	        							}
+	        							
+									}
         							return true;
         						}
         	                });
-        	                s.bitMode.setOnPreferenceChangeListener(new OnPreferenceChangeListener(){
+        	                /*s.bitMode.setOnPreferenceChangeListener(new OnPreferenceChangeListener(){
 
         						@Override
         						public boolean onPreferenceChange(
         								Preference preference, Object newValue) {
-        							s.needRestart=true;
-        							String stereo = s.stereoMode.getValue();
-        							String sixteen = (String) newValue;
-        							boolean sb=(stereo!=null)?stereo.equals("2"):true;
-        							boolean sxb=(sixteen!=null)?sixteen.equals("16"):true;
-        							SparseIntArray mmm = Globals.validBuffers(Globals.validRates(sb,sxb),sb,sxb);
-        							if(mmm!=null)
-        							{
-        								
-        							int minBuff = mmm.get(Integer.parseInt(s.rates.getValue()));
-        							
-        							int buff = Integer.parseInt(s.bufferSize.getText());
-        							if(buff<minBuff)
-        							{
-        								s.prefs.edit().putString("tplusBuff",Integer.toString(minBuff)).commit();
-        								s.bufferSize.setText(Integer.toString(minBuff));
-        								Toast.makeText(s, getResources().getString(R.string.invalidbuff), Toast.LENGTH_SHORT).show();
-        								((BaseAdapter)s.tplus.getRootAdapter()).notifyDataSetChanged();
-        								((BaseAdapter)s.tplus.getRootAdapter()).notifyDataSetInvalidated();
-        							}
-        							}
+        							if(!((String)s.bitMode.getValue()).equals((String) newValue))
+									{
+	        							s.needRestart=true;
+	        							String stereo = s.stereoMode.getValue();
+	        							String sixteen = (String) newValue;
+	        							boolean sb=(stereo!=null)?stereo.equals("2"):true;
+	        							boolean sxb=(sixteen!=null)?sixteen.equals("16"):true;
+	        							SparseIntArray mmm = Globals.validBuffers(Globals.validRates(sb,sxb),sb,sxb);
+	        							if(mmm!=null)
+	        							{
+		        								
+		        							int minBuff = mmm.get(Integer.parseInt(s.rates.getValue()));
+		        							
+		        							int buff = Integer.parseInt(s.bufferSize.getText());
+		        							if(buff<minBuff)
+		        							{
+		        								s.prefs.edit().putString("tplusBuff",Integer.toString(minBuff)).commit();
+		        								s.bufferSize.setText(Integer.toString(minBuff));
+		        								Toast.makeText(s, getResources().getString(R.string.invalidbuff), Toast.LENGTH_SHORT).show();
+		        								((BaseAdapter)s.tplus.getRootAdapter()).notifyDataSetChanged();
+		        								((BaseAdapter)s.tplus.getRootAdapter()).notifyDataSetInvalidated();
+		        							}
+	        							}
+									}
         							return true;
         						}
-        	                });
+        	                });*/
         	                s.themePref.setOnPreferenceChangeListener(new OnPreferenceChangeListener(){
 
         						@Override
@@ -1068,7 +710,6 @@ public class SettingsActivity extends AppCompatActivity implements FileBrowserDi
                 public boolean onPreferenceTreeClick(PreferenceScreen preferenceScreen, Preference preference) {
     	            super.onPreferenceTreeClick(preferenceScreen, preference);
 
-    	            // If the user has clicked on a preference screen, set up the action bar
     	            if (Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH){
     		    		   
     		    	   

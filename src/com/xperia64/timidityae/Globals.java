@@ -140,7 +140,7 @@ public static String getLibDir(Context c)
 public static int[] validRates(boolean stereo, boolean sixteen)
 {
 	ArrayList<Integer> valid = new ArrayList<Integer>();
-	for (int rate : new int[] {8000, 11025, 16000, 22050, 44100, 48000, 88200, 96000}) {  // add the rates you wish to check against
+	for (int rate : new int[] {8000, 11025, 16000, 22050, 44100, 48000, 88200, 96000}) {
        
 		int bufferSize = AudioTrack.getMinBufferSize(rate, (stereo)?AudioFormat.CHANNEL_OUT_STEREO:AudioFormat.CHANNEL_OUT_MONO, (sixteen)?AudioFormat.ENCODING_PCM_16BIT:AudioFormat.ENCODING_PCM_8BIT);
         if (bufferSize > 0) {
@@ -149,7 +149,6 @@ public static int[] validRates(boolean stereo, boolean sixteen)
         	valid.add(rate);
         }
     }
-	//System.out.println("hhh: "+AudioTrack.getNativeOutputSampleRate(AudioTrack.MODE_STREAM));
 	int[] rates = new int[valid.size()];
 	for(int i = 0; i<rates.length; i++)
 		rates[i]=valid.get(i);
@@ -223,7 +222,7 @@ public static boolean manConfig;
 public static int defSamp;
 public static boolean shouldLolNag;
 //public static ArrayList<String> soundfonts; // this list should only be touched in SettingsActivity
-public static int mono; // 0 = stereo downsampled to mono, 1 = timidity-synthesized mono, 2 = stereo
+public static int mono; // 0 = stereo downsampled to mono, 1 = timidity-synthesized mono, 2 = stereo, 3 = downsampled to mono then copied to stereo?
 public static boolean sixteen;
 public static int aRate;
 public static int buff;
@@ -237,7 +236,8 @@ public static boolean compressCfg = true;
 public static boolean nukedWidgets=false;
 public static Uri theFold=null;
 public static boolean reShuffle = false;
-
+public static boolean preserveSilence = true;
+public static boolean freeInsts = true;
 
 public static void reloadSettings(Activity c, AssetManager assets)
 {
@@ -252,7 +252,7 @@ public static void reloadSettings(Activity c, AssetManager assets)
 	manConfig = prefs.getBoolean("manualConfig", false);
 	JNIHandler.currsamp = defSamp = Integer.parseInt(prefs.getString("tplusResamp", "0"));
 	mono = Integer.parseInt(prefs.getString("sdlChanValue", "2"));
-	sixteen = prefs.getString("tplusBits", "16").equals("16");
+	sixteen = true;//prefs.getString("tplusBits", "16").equals("16");
 	aRate = Integer.parseInt(prefs.getString("tplusRate", Integer.toString(AudioTrack.getNativeOutputSampleRate(AudioTrack.MODE_STREAM))));
 	buff = Integer.parseInt(prefs.getString("tplusBuff", "192000"));
 	showVideos=prefs.getBoolean("videoSwitch", true);
@@ -261,6 +261,8 @@ public static void reloadSettings(Activity c, AssetManager assets)
 	useDefaultBack=prefs.getBoolean("useDefBack", false);
 	compressCfg=prefs.getBoolean("compressCfg", true);
 	reShuffle=prefs.getBoolean("reShuffle",false);
+	freeInsts=prefs.getBoolean("tplusUnload", true);
+	preserveSilence=prefs.getBoolean("tplusSilKey", true);
 	if(!onlyNative)
 		nativeMidi = prefs.getBoolean("nativeMidiSwitch", false);
 	else
@@ -287,7 +289,6 @@ public static boolean initialize(final Activity a)
 {
 	if(firstRun)
 	{
-		//System.out.println("First run");
 		final File rootStorage = new File(Environment.getExternalStorageDirectory().getAbsolutePath()+"/TimidityAE/");
 		if(!rootStorage.exists())
 		{
@@ -310,8 +311,7 @@ public static boolean initialize(final Activity a)
 		}
 		updateBuffers(updateRates());
 		aRate = Integer.parseInt(prefs.getString("tplusRate", Integer.toString(AudioTrack.getNativeOutputSampleRate(AudioTrack.MODE_STREAM))));
-		//System.out.println("Rate is: "+aRate);
-		buff = Integer.parseInt(prefs.getString("tplusBuff", "192000"));
+		buff = Integer.parseInt(prefs.getString("tplusBuff", "192000")); // This is usually a safe number, but should probably do a test or something
 		migrateFrom1X(rootStorage);
 		final Editor eee = prefs.edit();
 		firstRun=false;
@@ -323,7 +323,6 @@ public static boolean initialize(final Activity a)
 			{
 				eee.putBoolean("manConfig", true);
 			}else{
-				//System.out.println("Parsing previous config");
 				eee.putBoolean("manConfig", false);
 				ArrayList<String> soundfonts = new ArrayList<String>();
 				 FileInputStream fstream = null;
@@ -376,7 +375,6 @@ public static boolean initialize(final Activity a)
 		}else{
 			// Should probably check if 8rock11e exists no matter what
 			eee.putBoolean("manConfig", false);
-			//pd = ProgressDialog.show(context, "Extracting...", "Extracting 8Rock11e.sf2", true);
 			
 			AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
 				
@@ -415,7 +413,6 @@ public static boolean initialize(final Activity a)
 						eee.commit();
 						writeCfg(a, rootStorage.getAbsolutePath()+"/timidity/timidity.cfg",tmpConfig);
 						((TimidityActivity)a).initCallback();
-						//b.setEnabled(true);
 				}
 					
 			};
@@ -506,7 +503,6 @@ public static void writeCfg(Context c, String path, ArrayList<String> soundfonts
 				}
 				if(new File(path).exists())
 				{
-					//System.out.println("path exists: "+path);
 					if(cfgIsAuto(path)||new File(path).length()<=0)
 					{
 						Globals.tryToDeleteFile(c, path);
@@ -517,7 +513,6 @@ public static void writeCfg(Context c, String path, ArrayList<String> soundfonts
 				}
 				
 				FileWriter fw = null;
-				//System.out.println(value);
 				try {
 					fw = new FileWriter(value,false);
 				} catch (IOException e) {
@@ -613,7 +608,6 @@ public static String[] getDocFilePaths(Context c, String parent)
 		if(f!=null)
 		{
 		String ex = f.getAbsolutePath();
-		//System.out.println(ex);
 		String ss1;
 		String ss2;
 		int lastmatch = 1;
@@ -703,7 +697,6 @@ public static void tryToDeleteFile(Context c, String filename)
 				}
 			}
 			DocumentFile xx = df;
-			//StringBuilder upper = new StringBuilder();
 			while(i<split.length)
 			{
 				xx = xx.findFile(split[i++]);
@@ -744,11 +737,9 @@ public static void tryToCreateFile(Context c, String filename)
 				}
 			}
 			DocumentFile xx = df;
-			//StringBuilder upper = new StringBuilder();
 			while(i<split.length-1)
 			{
 				xx = xx.findFile(split[i++]);
-				//upper.append("../");
 				if(xx==null)
 				{
 					Log.e("TimidityAE Globals","Create file error.");
@@ -792,7 +783,7 @@ public static int[] updateRates()
 	{
 		int[] values = Globals.validRates(
 				prefs.getString("sdlChanValue","2").equals("2"), 
-				prefs.getString("tplusBits", "16").equals("16"));
+				/*prefs.getString("tplusBits", "16").equals("16")*/true);
 		CharSequence[] hz = new CharSequence[values.length];
 		CharSequence[] hzItems = new CharSequence[values.length];
 		boolean validRate=false;
@@ -818,7 +809,7 @@ public static boolean updateBuffers(int[] rata)
 {
 	if(rata!=null)
 	{
-		SparseIntArray buffMap = Globals.validBuffers(rata, prefs.getString("sdlChanValue","2").equals("2"), prefs.getString("tplusBits", "16").equals("16"));
+		SparseIntArray buffMap = Globals.validBuffers(rata, prefs.getString("sdlChanValue","2").equals("2"), true/*prefs.getString("tplusBits", "16").equals("16")*/);
 		int realMin = buffMap.get(Integer.parseInt(prefs.getString("tplusRate", Integer.toString(AudioTrack.getNativeOutputSampleRate(AudioTrack.MODE_STREAM)))));
 		if(buff<realMin)
 		{
@@ -837,7 +828,6 @@ public static int extract8Rock(Context c)
 	} catch (IOException e) {
 		e.printStackTrace();
 	}
-	//System.out.println("extracting 8rock");
 	String[] needLol = null;
 	try{
         new FileOutputStream(Globals.dataFolder+"/soundfonts/8Rock11e.sfArk",true).close();
@@ -896,7 +886,6 @@ public static int extract8Rock(Context c)
 		}
 	    JNIHandler.decompressSFArk(value, "8Rock11e.sf2");
 	    renameDocumentFile(c, value2, needRename);
-	    //System.out.println("decompresed sfark");
 	    tryToDeleteFile(c,value);
 	}else{
 		File f = new File(Globals.dataFolder+"/soundfonts/8Rock11e.sfArk");
@@ -981,7 +970,6 @@ public static class DownloadTask extends AsyncTask<String, Integer, String> {
     @Override
     protected void onProgressUpdate(Integer... progress) {
         super.onProgressUpdate(progress);
-        // if we get here, length is known, now set indeterminate to false
         prog.setIndeterminate(false);
         prog.setMax(100);
         prog.setProgress(progress[0]);
@@ -1008,7 +996,6 @@ public static class DownloadTask extends AsyncTask<String, Integer, String> {
 			url = new URL(sUrl[0]);
 		} catch (MalformedURLException e1)
 		{
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
         theUrl=sUrl[0];

@@ -678,7 +678,7 @@ public class MusicService extends Service{
 	        		JNIHandler.custInst = new ArrayList<Boolean>();
 	        		JNIHandler.custVol = new ArrayList<Boolean>();
 	        		System.out.println("Reloading: "+JNIHandler.loadLib(Globals.getLibDir(MusicService.this)+"libtimidityplusplus.so"));
-	        		int x = JNIHandler.init(Globals.dataFolder+"timidity/","timidity.cfg", Globals.mono, Globals.defSamp, Globals.sixteen, Globals.buff, Globals.aRate, false, true);
+	        		int x = JNIHandler.init(Globals.dataFolder+"timidity/","timidity.cfg", Globals.mono, Globals.defSamp, Globals.sixteen, Globals.buff, Globals.aRate, Globals.preserveSilence, true, Globals.freeInsts);
 	        		if(x!=0&&x!=-99)
 	        		{
 	        			Globals.nativeMidi=true;

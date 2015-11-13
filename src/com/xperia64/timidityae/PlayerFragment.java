@@ -20,8 +20,8 @@ import java.util.List;
 import java.util.Random;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
@@ -222,7 +222,7 @@ public class PlayerFragment extends Fragment {
 	}
 	
 	@Override
-	public void onAttach(Activity activity)
+	public void onAttach(Context activity)
 	{
 		super.onAttach(activity);
 		if(Globals.shouldRestore)

@@ -22,9 +22,9 @@ import java.util.Locale;
 
 import com.xperia64.timidityae.R;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Build;
@@ -95,7 +95,7 @@ public class FileBrowserFragment extends ListFragment {
 	}
 
 	@Override
-	public void onAttach(Activity activity)
+	public void onAttach(Context activity)
 	{
 		super.onAttach(activity);
 		try
@@ -245,7 +245,6 @@ public class FileBrowserFragment extends ListFragment {
 							aWrite=false;  
 						  } catch (IOException e)
 						{
-							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
 						  if(!alreadyExists&&aWrite)
@@ -255,7 +254,6 @@ public class FileBrowserFragment extends ListFragment {
 							  value=parent+value;
 						  }else if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.LOLLIPOP&& Globals.theFold!=null)
 						  {
-							  //TODO
 							  // Write the file to getExternalFilesDir, then move it with the Uri
 							  // We need to tell JNIHandler that movement is needed.
 							
@@ -341,9 +339,6 @@ public class FileBrowserFragment extends ListFragment {
 	public void saveWavPart2(final int position, final String finalval, final String needToRename)
 	{
 		((TimidityActivity)getActivity()).writeFile(path.get(position), finalval);
-		//JNIHandler.setupOutputFile("/sdcard/whya.wav");
-		//System.out.println(path.get(position));
-		//System.out.println(JNIHandler.play(path.get(position)));
 	  final ProgressDialog prog;
 	  prog = new ProgressDialog(getActivity());
 	  prog.setButton(DialogInterface.BUTTON_NEGATIVE, "Cancel", new DialogInterface.OnClickListener() {

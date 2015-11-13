@@ -38,7 +38,7 @@ public class JNIHandler {
 	public static native int loadLib(String libPath);
 	public static native int unloadLib();
 	private static native int prepareTimidity(String config, String config2,
-			int jmono, int jcustResamp, int jsixteen, int jPresSil, int jreloading);
+			int jmono, int jcustResamp, int jsixteen, int jPresSil, int jreloading, int jfreeInsts);
 
 	private static native int loadSongTimidity(String filename);
 
@@ -320,13 +320,23 @@ public class JNIHandler {
 				if(monoop==0)
 				{
 					byte[] mono = new byte[length/2];
-					for (int i = 0 ; i < mono.length/2; ++i){
-						int HI = 1; int LO = 0;
-						int left = (data[i * 4 + HI] << 8) | (data[i * 4 + LO] & 0xff);
-						int right = (data[i * 4 + 2 + HI] << 8) | (data[i * 4 + 2 + LO] & 0xff);
-						int avg = (left + right) / 2;
-						mono[i * 2 + HI] = (byte)((avg >> 8) & 0xff);
-						mono[i * 2 + LO] = (byte)(avg & 0xff);
+					if(bits)
+					{
+						for (int i = 0 ; i < mono.length/2; ++i){
+							int HI = 1; int LO = 0;
+							int left = (data[i * 4 + HI] << 8) | (data[i * 4 + LO] & 0xff);
+							int right = (data[i * 4 + 2 + HI] << 8) | (data[i * 4 + 2 + LO] & 0xff);
+							int avg = (left + right) / 2;
+							mono[i * 2 + HI] = (byte)((avg >> 8) & 0xff);
+							mono[i * 2 + LO] = (byte)(avg & 0xff);
+						}
+					}else{
+						for (int i = 0 ; i < mono.length; ++i){
+							int left = (data[i * 2])&0xff;
+							int right = (data[i * 2 + 1])&0xff;
+							int avg = (left + right) / 2;
+							mono[i] = (byte)(avg);
+						}
 					}
 					try
 					{
@@ -351,13 +361,23 @@ public class JNIHandler {
 				if(monoop==0)
 				{
 					byte[] mono = new byte[length/2];
-					for (int i = 0 ; i < mono.length/2; ++i){
-						int HI = 1; int LO = 0;
-						int left = (data[i * 4 + HI] << 8) | (data[i * 4 + LO] & 0xff);
-						int right = (data[i * 4 + 2 + HI] << 8) | (data[i * 4 + 2 + LO] & 0xff);
-						int avg = (left + right) / 2;
-						mono[i * 2 + HI] = (byte)((avg >> 8) & 0xff);
-						mono[i * 2 + LO] = (byte)(avg & 0xff);
+					if(bits)
+					{
+						for (int i = 0 ; i < mono.length/2; ++i){
+							int HI = 1; int LO = 0;
+							int left = (data[i * 4 + HI] << 8) | (data[i * 4 + LO] & 0xff);
+							int right = (data[i * 4 + 2 + HI] << 8) | (data[i * 4 + 2 + LO] & 0xff);
+							int avg = (left + right) / 2;
+							mono[i * 2 + HI] = (byte)((avg >> 8) & 0xff);
+							mono[i * 2 + LO] = (byte)(avg & 0xff);
+						}
+					}else{
+						for (int i = 0 ; i < mono.length; ++i){
+							int left = (data[i * 2])&0xff;
+							int right = (data[i * 2 + 1])&0xff;
+							int avg = (left + right) / 2;
+							mono[i] = (byte)(avg);
+						}
 					}
 					try
 					{
@@ -378,15 +398,15 @@ public class JNIHandler {
 
 	}
 
-	public static int init(String path, String file,int mono, int resamp, boolean sixteen, int b, int r, boolean preserveSilence, boolean reloading)
+	public static int init(String path, String file,int mono, int resamp, boolean sixteen, int b, int r, boolean preserveSilence, boolean reloading, boolean freeInsts)
 	{
 		if (!prepared)
 		{
 			
 			 System.out.println(String.format("Opening Timidity: Path: %s cfgFile: %s resample: %s mono: %s sixteenBit: %s buffer: %d rate: %d",
 			 path, file,
-			 Globals.sampls[resamp],((mono==1)?"true":"false"),(sixteen?"true":"false"),b,
-			 r));
+			 Globals.sampls[resamp],((mono==1)?"true":"false"),(sixteen?"true":"false"),b,r));
+			 System.out.println("Max channels: "+MAX_CHANNELS);
 			for (int i = 0; i < MAX_CHANNELS; i++)
 			{
 				volumes.add(75); // Assuming not XG
@@ -404,7 +424,7 @@ public class JNIHandler {
 
 			prepared = true;
 			return prepareTimidity(path, path + file, (monoop==1) ? 1 : 0, resamp,
-					bits ? 1 : 0, preserveSilence ? 1 : 0, reloading ? 1:0);
+					bits ? 1 : 0, preserveSilence ? 1 : 0, reloading ? 1:0, freeInsts ? 1:0);
 		} else
 		{
 			// Log.w("Warning", "Attempt to prepare again cancelled.");
@@ -487,7 +507,6 @@ public class JNIHandler {
 						public void run()
 						{
 							alternativeCheck = 333333;
-
 							mAudioTrack = new AudioTrack(
 									AudioManager.STREAM_MUSIC, rate,
 									(monoop==2) ? AudioFormat.CHANNEL_OUT_STEREO
