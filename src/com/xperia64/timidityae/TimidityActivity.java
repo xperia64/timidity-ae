@@ -280,11 +280,11 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 										TimidityActivity.this.finish();
 									}
 									
-								}).show();
+								}).setCancelable(false).show();
 								
 							}
     						
-    					}).show();
+    					}).setCancelable(false).show();
     			
         // Show an expanation to the user *asynchronously* -- don't block
         // this thread waiting for the user's response! After the user
@@ -342,6 +342,7 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
                 if(!good) {
 
                     // permission denied, boo! Disable the app.
+                	//TODO: only disable if files are inaccessible
                 	new AlertDialog.Builder(TimidityActivity.this).setTitle("Error")
 					.setMessage("Timidity AE cannot proceed without these permissions")
 					.setPositiveButton("OK", new OnClickListener(){
@@ -352,7 +353,7 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 							TimidityActivity.this.finish();
 						}
 						
-					}).show();
+					}).setCancelable(false).show();
                 }else{
                 	if(!Environment.getExternalStorageDirectory().canRead())
                 	{

@@ -59,7 +59,6 @@
 #include "wrd.h"
 #include "aq.h"
 #include "freq.h"
-#include <android/log.h>
 #include "quantity.h"
 extern int convert_mod_to_midi_file(MidiEvent * ev);
 

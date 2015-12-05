@@ -118,7 +118,7 @@ public class SettingsActivity extends AppCompatActivity implements FileBrowserDi
                         mFragmentTransaction.commit();
                         abElevation = getSupportActionBar().getElevation();
             }
-	        @SuppressLint("NewApi")
+	        
 			public void setUpNestedScreen(PreferenceScreen preferenceScreen) {
 	            final Dialog dialog = preferenceScreen.getDialog();
 	            
@@ -131,8 +131,8 @@ public class SettingsActivity extends AppCompatActivity implements FileBrowserDi
 	                bar.setElevation(abElevation);
 	                root.addView(bar,0);
 	            }
-	            else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
-	                LinearLayout root = (LinearLayout) dialog.findViewById(android.R.id.list).getParent();
+	            else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+					LinearLayout root = (LinearLayout) dialog.findViewById(android.R.id.list).getParent();
 	                bar = (Toolbar) LayoutInflater.from(this).inflate(R.layout.settings_toolbar, root, false);
 	                root.addView(bar, 0); // insert at top
 	            } else {

@@ -991,7 +991,11 @@ static int set_gus_patchconf(char *name, int line,
 	{
 	    ctl->cmsg(CMSG_ERROR, VERB_NORMAL,
 		      "%s: line %d: Syntax error", name, line);
-	    return 1;
+#ifdef SET_GUS_PATCHCONF_COMMENT
+	if(old_name != NULL)
+	    free(old_name);
+#endif
+            return 1;
 	}
 	tone->name = safe_strdup(opts[0]);
 	tone->instype = 1;
@@ -1043,7 +1047,14 @@ static int set_gus_patchconf(char *name, int line,
     {
 	int err;
 	if((err = set_gus_patchconf_opts(name, line, opts[j], tone)) != 0)
-	    return err;
+	{
+#ifdef SET_GUS_PATCHCONF_COMMENT
+		if(old_name != NULL)
+			free(old_name);
+#endif
+		return err;
+	}    
+	
     }
 #ifdef SET_GUS_PATCHCONF_COMMENT
 		if(tone->comment == NULL ||
@@ -2669,8 +2680,7 @@ MAIN_INTERFACE int set_tim_opt_short(int c, char *optarg)
 	case 't':
 		return parse_opt_t(optarg);
 	case 'U':
-		free_instruments_afterwards = 1;
-		break;
+		return parse_opt_U(optarg);
 	case 'V':
 		return parse_opt_volume_curve(optarg);
 	case 'v':
@@ -5367,6 +5377,9 @@ MAIN_INTERFACE int timidity_pre_load_configuration(void)
 
 #endif
 
+#ifdef __ANDROID_API__
+	 free_instruments_afterwards = getFreeInsts();
+#endif	
     /* Try read configuration file which is in the
      * $HOME (or %HOME% for DOS) directory.
      * Please setup each user preference in $HOME/.timidity.cfg

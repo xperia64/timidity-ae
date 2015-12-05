@@ -78,9 +78,10 @@ public class TrackFragment extends Fragment {
 					long arg3) {
 				AlertDialog.Builder b = new AlertDialog.Builder(getActivity());
 				View v = getActivity().getLayoutInflater().inflate(R.layout.track_dialog, null);
-				final Spinner x = (Spinner) v.findViewById(R.id.instSpin);
-				x.setClickable(JNIHandler.custInst.get(arg2)&&!JNIHandler.drums.get(arg2));
-				x.setEnabled(JNIHandler.custInst.get(arg2)&&!JNIHandler.drums.get(arg2));
+				final Spinner instSpin = (Spinner) v.findViewById(R.id.instSpin);
+				instSpin.setClickable(JNIHandler.custInst.get(arg2)&&!JNIHandler.drums.get(arg2));
+				instSpin.setOnLongClickListener(null);
+				instSpin.setEnabled(JNIHandler.custInst.get(arg2)&&!JNIHandler.drums.get(arg2));
 				List<String> arrayAdapter = new ArrayList<String>();
 				 final int offset=(!JNIHandler.drums.get(arg2))?0:34;
 	                if(!JNIHandler.drums.get(arg2))
@@ -93,22 +94,30 @@ public class TrackFragment extends Fragment {
 	                }
 				ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(getActivity(),
 					android.R.layout.simple_spinner_item, arrayAdapter);
-				dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+				if(Build.VERSION.SDK_INT<Build.VERSION_CODES.ICE_CREAM_SANDWICH)
+				{
+					dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_item);
+				}else{
+					dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+				}
+				
+				dataAdapter.setNotifyOnChange(false);
 				if(!JNIHandler.drums.get(arg2))
-				{x.setAdapter(dataAdapter);
-				x.setSelection(localInst.get(arg2)-offset);
+				{
+					instSpin.setAdapter(dataAdapter);
+					instSpin.setSelection(localInst.get(arg2)-offset);
 				}
 				final EditText txtVol = (EditText) v.findViewById(R.id.txtVol);
 				txtVol.setText(Integer.toString(localVol.get(arg2)));
 				txtVol.setClickable(JNIHandler.custVol.get(arg2));
 				txtVol.setEnabled(JNIHandler.custVol.get(arg2));
 				
-				final SeekBar y = (SeekBar) v.findViewById(R.id.volSeek);
-				y.setClickable(JNIHandler.custVol.get(arg2));
-				y.setEnabled(JNIHandler.custVol.get(arg2));
-				y.setMax(127);
-				y.setProgress(localVol.get(arg2));
-				y.setOnSeekBarChangeListener(new OnSeekBarChangeListener()
+				final SeekBar volSeek = (SeekBar) v.findViewById(R.id.volSeek);
+				volSeek.setClickable(JNIHandler.custVol.get(arg2));
+				volSeek.setEnabled(JNIHandler.custVol.get(arg2));
+				volSeek.setMax(127);
+				volSeek.setProgress(localVol.get(arg2));
+				volSeek.setOnSeekBarChangeListener(new OnSeekBarChangeListener()
 				{
 
 					@Override
@@ -149,7 +158,7 @@ public class TrackFragment extends Fragment {
 			        			txtVol.setText(Integer.toString(numm));
 			        		}
 			        		fromUser=true;
-			            	y.setProgress(numm);
+			            	volSeek.setProgress(numm);
 			            	fromUser=false;
 			        		}
 			        	}else{
@@ -168,8 +177,8 @@ public class TrackFragment extends Fragment {
 					public void onCheckedChanged(CompoundButton arg0,
 							boolean arg1) {
 						
-						x.setClickable(!arg1);
-						x.setEnabled(!arg1);
+						instSpin.setClickable(!arg1);
+						instSpin.setEnabled(!arg1);
 					}
 					
 				});
@@ -182,8 +191,8 @@ public class TrackFragment extends Fragment {
 					public void onCheckedChanged(CompoundButton arg0,
 							boolean arg1) {
 						
-						y.setClickable(!arg1);
-						y.setEnabled(!arg1);
+						volSeek.setClickable(!arg1);
+						volSeek.setEnabled(!arg1);
 						txtVol.setClickable(!arg1);
 						txtVol.setEnabled(!arg1);
 					}
@@ -200,8 +209,8 @@ public class TrackFragment extends Fragment {
 						
 						JNIHandler.custInst.set(arg2, !inst.isChecked());
 						JNIHandler.custVol.set(arg2, !vol.isChecked());
-						JNIHandler.setChannelVolumeTimidity(arg2|(JNIHandler.custVol.get(arg2)?0x800:0x8000), y.getProgress());
-						JNIHandler.setChannelTimidity(arg2|(JNIHandler.custInst.get(arg2)?0x800:0x8000), x.getSelectedItemPosition());
+						JNIHandler.setChannelVolumeTimidity(arg2|(JNIHandler.custVol.get(arg2)?0x800:0x8000), volSeek.getProgress());
+						JNIHandler.setChannelTimidity(arg2|(JNIHandler.custInst.get(arg2)?0x800:0x8000), instSpin.getSelectedItemPosition());
 						if(!JNIHandler.paused&&Globals.isPlaying==0)
 							JNIHandler.seekTo(JNIHandler.currTime);
 						//bigCounter=12;

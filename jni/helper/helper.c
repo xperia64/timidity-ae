@@ -332,7 +332,9 @@ Java_com_xperia64_timidityae_JNIHandler_prepareTimidity(JNIEnv * env, jobject  o
     if (err) {
 	 return -121;
     }
-	(*preserve_silence) = (int)jPresSil;
+	
+	*preserve_silence = (int)jPresSil;
+	//__android_log_print(ANDROID_LOG_DEBUG, "TIMIDITY", "Preserve Silence: %d %d", *preserve_silence, jPresSil);
     	(*timidity_initplayer)();
 	(*set_resamp)(jcustResamp);
 	(*env)->ReleaseStringUTFChars(env, config, configFile);
@@ -418,6 +420,7 @@ char* getConfig2()
 }
 int getFreeInsts()
 {
+	//__android_log_print(ANDROID_LOG_DEBUG, "TIMIDITY", "%d", shouldFreeInsts);
 	return shouldFreeInsts;
 }
 int nativePush(char* buf, int nframes)

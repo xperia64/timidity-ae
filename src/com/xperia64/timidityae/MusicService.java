@@ -573,7 +573,6 @@ public class MusicService extends Service{
 						if(input2.endsWith(".tzf"))
 						{
 							InputStream fileStream = new FileInputStream(input2);
-							@SuppressWarnings("resource")
 							InputStream gzipStream = new GZIPInputStream(fileStream);
 							InputStreamReader decoder = new InputStreamReader(gzipStream, "US-ASCII");
 							br = new BufferedReader(decoder);
@@ -670,14 +669,14 @@ public class MusicService extends Service{
 	        			stop();
 	        			JNIHandler.waitForStop();
 	        		}
-	        		System.out.println("Unloading: "+JNIHandler.unloadLib());
+	        		//System.out.println("Unloading: "+JNIHandler.unloadLib());
 	        		JNIHandler.prepared = false;
 	        		JNIHandler.volumes = new ArrayList<Integer>();
 	        		JNIHandler.programs = new ArrayList<Integer>();
 	        		JNIHandler.drums = new ArrayList<Boolean>();
 	        		JNIHandler.custInst = new ArrayList<Boolean>();
 	        		JNIHandler.custVol = new ArrayList<Boolean>();
-	        		System.out.println("Reloading: "+JNIHandler.loadLib(Globals.getLibDir(MusicService.this)+"libtimidityplusplus.so"));
+	        		//System.out.println("Reloading: "+JNIHandler.loadLib(Globals.getLibDir(MusicService.this)+"libtimidityplusplus.so"));
 	        		int x = JNIHandler.init(Globals.dataFolder+"timidity/","timidity.cfg", Globals.mono, Globals.defSamp, Globals.sixteen, Globals.buff, Globals.aRate, Globals.preserveSilence, true, Globals.freeInsts);
 	        		if(x!=0&&x!=-99)
 	        		{

@@ -984,7 +984,6 @@ public static class DownloadTask extends AsyncTask<String, Integer, String> {
         else
         	((TimidityActivity)context).downloadFinished(theUrl, theFilename);
     }
-    @SuppressWarnings("resource")
 	@TargetApi(Build.VERSION_CODES.FROYO)
 	@Override
     protected String doInBackground(String... sUrl) {
