@@ -9,13 +9,17 @@
  * which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/gpl.html
  ******************************************************************************/
-package com.xperia64.timidityae;
+package com.xperia64.timidityae.gui.dialogs;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Locale;
+
 import com.xperia64.timidityae.R;
+import com.xperia64.timidityae.util.FileComparator;
+import com.xperia64.timidityae.util.Globals;
+
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -42,60 +46,58 @@ public class FileBrowserDialog implements OnItemClickListener {
 	Activity context;
 	int type;
 	String msg;
-	FileBrowserDialogListener mCallback;
+	FileBrowserDialogListener onSelectedCallback;
 	AlertDialog ddd;
 	public interface FileBrowserDialogListener {
 		public void setItem(String path, int type);
-
 		public void write();
-
 		public void ignore();
 	}
 
-	boolean closeImmediate;
+	boolean closeImmediately; // Should the dialog be closed immediately after selecting the file?
 
 	@SuppressLint("InflateParams")
-	public void create(int t, String fileFilter, FileBrowserDialogListener pf,
-			Activity c, LayoutInflater f, boolean ci, String path, String ms) // This is disgusting. Sorry.
+	public void create(int type, String extensions, FileBrowserDialogListener onSelectedCallback,
+			Activity context, LayoutInflater layoutInflater, boolean closeImmediately, String path, String msg)
 	{
-		mCallback = pf;
-		msg=ms;
-		context = c;
-		extensions = fileFilter;
-		type = t; // A command for later reference. 0 is files, otherwise
+		this.onSelectedCallback = onSelectedCallback;
+		this.msg=msg;
+		this.context = context;
+		this.extensions = extensions;
+		this.type = type; // A command for later reference. 0 is files, otherwise
 					// folders
-		closeImmediate = ci; // Close immediately after selecting a file/folder
+		this.closeImmediately = closeImmediately; // Close immediately after selecting a file/folder
 		AlertDialog.Builder b = new AlertDialog.Builder(context);
-		fbdLayout = (LinearLayout) f.inflate(R.layout.list, null);
+		fbdLayout = (LinearLayout) layoutInflater.inflate(R.layout.list, null);
 		fbdList = (ListView) fbdLayout.findViewById(android.R.id.list);
 		fbdList.setOnItemClickListener(this);
 		b.setView(fbdLayout);
 		b.setCancelable(false);
-		b.setTitle(c.getResources().getString(
+		b.setTitle(this.context.getResources().getString(
 				(type == 0) ? R.string.fb_chfi : R.string.fb_chfo));
-		if (!closeImmediate)
+		if (!closeImmediately)
 		{
-			b.setPositiveButton(c.getResources().getString(R.string.done),
+			b.setPositiveButton(this.context.getResources().getString(R.string.done),
 					new DialogInterface.OnClickListener() {
 						@Override
 						public void onClick(DialogInterface dialog, int which)
 						{
-							mCallback.write();
+							FileBrowserDialog.this.onSelectedCallback.write();
 						}
 					});
 		}
 		b.setNegativeButton(
-				c.getResources().getString(android.R.string.cancel),
+				context.getResources().getString(android.R.string.cancel),
 				new DialogInterface.OnClickListener() {
 					@Override
 					public void onClick(DialogInterface dialog, int which)
 					{
-						mCallback.ignore();
+						FileBrowserDialog.this.onSelectedCallback.ignore();
 					}
 				});
 		if (type != 0)
 		{
-			b.setNeutralButton(c.getResources().getString(R.string.fb_fold),
+			b.setNeutralButton(this.context.getResources().getString(R.string.fb_fold),
 					new DialogInterface.OnClickListener() {
 						@Override
 						public void onClick(DialogInterface dialog, int which)
@@ -116,8 +118,8 @@ public class FileBrowserDialog implements OnItemClickListener {
 				@Override
 				public void onClick(View v)
 				{
-					mCallback.setItem(currPath, type);
-					if (closeImmediate)
+					FileBrowserDialog.this.onSelectedCallback.setItem(currPath, FileBrowserDialog.this.type);
+					if (FileBrowserDialog.this.closeImmediately)
 					{
 						ddd.dismiss();
 					}
@@ -146,7 +148,14 @@ public class FileBrowserDialog implements OnItemClickListener {
 					if (!currPath.matches("[/]+"))
 					{
 						fname.add("../");
-						path.add(f.getParent() + "/");
+						// Thank you Marshmallow.
+						// Disallowing access to /storage/emulated has now prevent billions of hacking attempts daily.
+						if(new File(f.getParent()).canRead())
+						{
+							path.add(f.getParent() + "/");
+						}else{
+							path.add("/");
+						}
 					}
 					for (int i = 0; i < files.length; i++)
 
@@ -212,6 +221,7 @@ public class FileBrowserDialog implements OnItemClickListener {
 	{
 
 		File file = new File(path.get(arg2));
+		System.out.println(path.get(arg2));
 		if (file.isDirectory())
 		{
 			if (file.canRead())
@@ -221,33 +231,20 @@ public class FileBrowserDialog implements OnItemClickListener {
 			{
 				new AlertDialog.Builder(context)
 						.setIcon(R.drawable.ic_launcher)
-						.setTitle(
-								"["
-										+ file.getName()
-										+ "] "
-										+ (context.getResources()
-												.getString(R.string.fb_cread)))
-						.setPositiveButton(
-								context.getResources().getString(
-										android.R.string.ok),
+						.setTitle( String.format("[%1$s] %2$s", file.getName(), context.getResources().getString(R.string.fb_cread)))
+						.setPositiveButton(context.getResources().getString(android.R.string.ok),
 								new DialogInterface.OnClickListener() {
 									@Override
-									public void onClick(DialogInterface dialog,
-											int which)
-									{
-									}
+									public void onClick(DialogInterface dialog, int which){}
 								}).show();
 			}
 		} else
 		{
 			if (file.canRead())
 			{
-				Toast.makeText(
-						context,
-						msg+ " '" + fname.get(arg2) + '\'',
-						Toast.LENGTH_SHORT).show();
-				mCallback.setItem(file.getAbsolutePath(), type);
-				if(closeImmediate)
+				Toast.makeText(context, String.format("%1$s '%2$s'", msg, fname.get(arg2)),Toast.LENGTH_SHORT).show();
+				onSelectedCallback.setItem(file.getAbsolutePath(), type);
+				if(closeImmediately)
 					ddd.dismiss();
 			}
 		}

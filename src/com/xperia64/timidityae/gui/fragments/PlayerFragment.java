@@ -9,7 +9,7 @@
  * which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/gpl.html
  ******************************************************************************/
-package com.xperia64.timidityae;
+package com.xperia64.timidityae.gui.fragments;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -48,7 +48,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 
+import com.xperia64.timidityae.JNIHandler;
 import com.xperia64.timidityae.R;
+import com.xperia64.timidityae.TimidityActivity;
+import com.xperia64.timidityae.util.Globals;
 
 @SuppressLint("Recycle")
 public class PlayerFragment extends Fragment {
@@ -88,7 +91,7 @@ public class PlayerFragment extends Fragment {
 	boolean canEnablePlay=true;
 	boolean updaterPlacid = false;
 	//
-	AlertDialog ddd;
+	public AlertDialog ddd;
 	TextView tempo;
 	TextView pitch;
 	TextView voices;
@@ -795,7 +798,7 @@ public class PlayerFragment extends Fragment {
 
 			@Override
 			public void onClick(View arg0) {
-				mActivity.dynExport();
+				mActivity.dynExport(true);
 			}
 			
 		});
@@ -908,7 +911,7 @@ public class PlayerFragment extends Fragment {
 				        		new File(mActivity.currSongName+".def.tcf").delete();
 								  new File(mActivity.currSongName+".def.tzf").delete();
 				        	}
-				        	mActivity.localfinished=false;
+				        	mActivity.setLocalFinished(false);
 				        	mActivity.saveCfgPart2(finalval1, needToRename1);
 				        	deldefCfg.setEnabled(true);
 				        	/*Intent new_intent = new Intent();
@@ -934,7 +937,7 @@ public class PlayerFragment extends Fragment {
 			    	new_intent.putExtra(getResources().getString(R.string.msrv_outfile), mActivity.currSongName+".def.tcf");
 			    	getActivity().sendBroadcast(new_intent);
 			    	deldefCfg.setEnabled(true);*/
-					mActivity.localfinished=false;
+					mActivity.setLocalFinished(false);
 					mActivity.saveCfgPart2(finalval1, needToRename1);
 					deldefCfg.setEnabled(true);
 				}
@@ -1048,6 +1051,5 @@ public class PlayerFragment extends Fragment {
 			artsy.setArt(Globals.currArt, getActivity());
 		}
 	}
-	 
 
 }

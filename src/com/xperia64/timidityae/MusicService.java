@@ -29,6 +29,8 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 import com.xperia64.timidityae.R;
+import com.xperia64.timidityae.gui.TimidityAEWidgetProvider;
+import com.xperia64.timidityae.util.Globals;
 
 import android.annotation.SuppressLint;
 import android.app.Notification;
@@ -64,7 +66,7 @@ public class MusicService extends Service{
 
 	public ArrayList<String> playList;
 	public SparseIntArray shuffledIndices;
-	public SparseIntArray reverseShuffledIndices;
+	public SparseIntArray reverseShuffledIndices; // HashMap<Integer, Integer>
 	public int currSongNumber=-1;
 	public int realSongNumber=-1;
 	public boolean shouldStart;
@@ -80,24 +82,26 @@ public class MusicService extends Service{
 	boolean phonepause=false;
 	PowerManager.WakeLock wl;
 	boolean shouldDoWidget=true;
-	int[] ids;
+	int[] widgetIds;
 	String currTitle;
-	Notification n;
-	Notification q;
+	Notification mainNotification;
 	PowerManager pm;
 	RemoteViews remoteViews;
 	Random random = new Random(System.currentTimeMillis());
 	private final IBinder musicBind = new MusicBinder();
 	@Override
-	public IBinder onBind(Intent arg0) {
+	public IBinder onBind(Intent arg0)
+	{
 		return musicBind;
 	}
 	
-	public class MusicBinder extends Binder {
-		  MusicService getService() {
-		    return MusicService.this;
-		  }
+	public class MusicBinder extends Binder
+	{
+		MusicService getService() 
+		{
+			return MusicService.this;
 		}
+	}
 	
 	private Handler handler;
 	 
@@ -120,7 +124,7 @@ public class MusicService extends Service{
          public void onCallStateChanged(int state, String incomingNumber) {
              if (state == TelephonyManager.CALL_STATE_RINGING) {
                  //Incoming call: Pause music
-            	 if(Globals.isPlaying==0&&!JNIHandler.paused&&!phonepause&&!(JNIHandler.writeToFile&&!JNIHandler.finishedWriting))
+            	 if(Globals.isPlaying==0&&!JNIHandler.paused&&!phonepause&&!(JNIHandler.currentWavWriter!=null&&!JNIHandler.currentWavWriter.finishedWriting))
             	 {
             		 phonepause=true;
             		 pause();
@@ -138,8 +142,7 @@ public class MusicService extends Service{
              super.onCallStateChanged(state, incomingNumber);
          }
      };
-	 
-	// onHandleIntent ...
+
 	public void genShuffledPlist()
 	{
 		shuffledIndices = new SparseIntArray();
@@ -162,36 +165,37 @@ public class MusicService extends Service{
 			@SuppressWarnings("unchecked")
 			@Override
 	        public void onReceive(Context context, Intent intent) {
-	        	if (Intent.ACTION_MEDIA_BUTTON.equals(intent.getAction())) {
+	        	if (intent.getAction().equals(Intent.ACTION_MEDIA_BUTTON))
+	        	{
 	                KeyEvent event = (KeyEvent)intent.getParcelableExtra(Intent.EXTRA_KEY_EVENT);
-	                if (KeyEvent.KEYCODE_MEDIA_PLAY == event.getKeyCode()||KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE == event.getKeyCode()) {
-	                	if(Globals.isPlaying==0)
-	    				{
-	    					pause();
-	    				}else{
-	    					play();
-	    				}
-	                }else if(KeyEvent.KEYCODE_MEDIA_NEXT == event.getKeyCode())
+	                if(event.getAction() == KeyEvent.ACTION_DOWN)
 	                {
-	                	shouldAdvance=false;
-		        		next();
-	                }else if(KeyEvent.KEYCODE_MEDIA_PREVIOUS == event.getKeyCode())
-	                {
-	                	shouldAdvance=false;
-		        		previous();
-	                }else if(KeyEvent.KEYCODE_MEDIA_PAUSE == event.getKeyCode())
-	                {
-	                	if(Globals.isPlaying==0)
-	    				{
-	    					pause();
-	    				}else{
-	    					play();
-	    				}
-	                }else if(KeyEvent.KEYCODE_MEDIA_STOP == event.getKeyCode())
-	                {
-	                	fullStop=true;
-		        		shouldAdvance=false;
-		        		stop();
+	                	switch(event.getKeyCode())
+	                	{
+		                	case KeyEvent.KEYCODE_MEDIA_PLAY:
+		                	case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
+		                	case KeyEvent.KEYCODE_MEDIA_PAUSE:
+		                		if(Globals.isPlaying==0)
+			    				{
+			    					pause();
+			    				}else{
+			    					play();
+			    				}
+		                		break;
+		                	case KeyEvent.KEYCODE_MEDIA_NEXT:
+		                		shouldAdvance=false;
+				        		next();
+				        		break;
+		                	case KeyEvent.KEYCODE_MEDIA_PREVIOUS:
+		                		shouldAdvance=false;
+				        		previous();
+				        		break;
+		                	case KeyEvent.KEYCODE_MEDIA_STOP:
+		                		fullStop=true;
+				        		shouldAdvance=false;
+				        		stop();
+				        		break;
+	                	}
 	                }
 	            }else if(Intent.ACTION_HEADSET_PLUG.equals(intent.getAction()))
 	            {
@@ -210,38 +214,44 @@ public class MusicService extends Service{
         		//System.out.println("Cmd received: "+cmd);
 	        	
 	        	// Sigh. Here we go:
+	        	Intent outgoingIntent = new Intent();
 	        	switch(cmd)
 	        	{
 	        	case 0: // We have a new playlist. Load it and the immediate song to load.
 	        		death=true;
 	        		ArrayList<String> tmpList = Globals.plist;
 	        		if(tmpList==null)
+	        		{
 	        			break;
+	        		}
 	        		int tmpNum = intent.getIntExtra(getResources().getString(R.string.msrv_songnum), -1);
 	        		if(tmpNum<=-1)
+	        		{
 	        			break;
+	        		}
 	        		boolean shouldNotLoadPlist = intent.getBooleanExtra(getResources().getString(R.string.msrv_dlplist), false);
-	        		
-	        		if(!shouldNotLoadPlist) // mmm. Double negatives.
+	        		if(shouldNotLoadPlist)
 	        		{	
+	        			currSongNumber = tmpNum;
+	        			if(shuffleMode == 1)
+	        			{
+	        				realSongNumber = shuffledIndices.get(tmpNum);
+	        			}
+	        		}else{
 	        			currSongNumber=realSongNumber=tmpNum;
 	        			playList=tmpList;
 	        			genShuffledPlist();
-	        			
-	        		}else{
-	        			currSongNumber = tmpNum;
-	        			if(shuffleMode == 1)
-	        				realSongNumber = shuffledIndices.get(tmpNum);
 	        		}
 	        		Globals.plist=null;
 	        		tmpList=null;
 	        		currFold=intent.getStringExtra(getResources().getString(R.string.msrv_currfold));
 	        		
 	        		if(shuffleMode == 1 && !shouldNotLoadPlist)
+	        		{
 	        			currSongNumber = reverseShuffledIndices.get(realSongNumber);
-	        		Intent new_intent20 = new Intent(); // I should name these properly at some point. I could use a more global intent variable I guess.
-	                new_intent20.setAction(getResources().getString(R.string.ta_rec));
-	                new_intent20.putExtra(getResources().getString(R.string.ta_cmd), 4);
+	        		}
+	        		outgoingIntent.setAction(getResources().getString(R.string.ta_rec));
+	        		outgoingIntent.putExtra(getResources().getString(R.string.ta_cmd), 4);
 	                if(shuffleMode == 1)
 	                {
 	                	Globals.tmpplist=new ArrayList<String>();
@@ -252,7 +262,7 @@ public class MusicService extends Service{
 	                }else{
 	                	Globals.tmpplist=playList;
 	                }
-	                sendBroadcast(new_intent20);
+	                sendBroadcast(outgoingIntent);
 	        		//if(shouldStart=intent.getBooleanExtra(getResources().getString(R.string.msrv_begin),false)||true)
 	        	//	{
 	        			play();
@@ -302,9 +312,8 @@ public class MusicService extends Service{
 	        				fixedShuffle = true;
 	        			}
 	        		}
-	        		Intent new_intent19 = new Intent();
-	                new_intent19.setAction(getResources().getString(R.string.ta_rec));
-	                new_intent19.putExtra(getResources().getString(R.string.ta_cmd), 4);
+	        		outgoingIntent.setAction(getResources().getString(R.string.ta_rec));
+	        		outgoingIntent.putExtra(getResources().getString(R.string.ta_cmd), 4);
 	                if(shuffleMode == 1)
 	                {
 	                	Globals.tmpplist=new ArrayList<String>();
@@ -315,7 +324,7 @@ public class MusicService extends Service{
 	                }else{
 	                	Globals.tmpplist=playList;
 	                }
-	                sendBroadcast(new_intent19);
+	                sendBroadcast(outgoingIntent);
 	        		break;
 	        	case 8: // Request seekBar times
 	        		break;
@@ -323,34 +332,31 @@ public class MusicService extends Service{
 	        		JNIHandler.seekTo(intent.getIntExtra(getResources().getString(R.string.msrv_seektime), 1));
 	        		break;
 	        	case 10: // Request current folder
-	        		Intent new_intent10 = new Intent();
-	                new_intent10.setAction(getResources().getString(R.string.ta_rec));
-	                new_intent10.putExtra(getResources().getString(R.string.ta_cmd), 2);
+	        		outgoingIntent.setAction(getResources().getString(R.string.ta_rec));
+	        		outgoingIntent.putExtra(getResources().getString(R.string.ta_cmd), 2);
 	                
-	                new_intent10.putExtra(getResources().getString(R.string.ta_currpath), currFold);
-	                sendBroadcast(new_intent10);
+	        		outgoingIntent.putExtra(getResources().getString(R.string.ta_currpath), currFold);
+	                sendBroadcast(outgoingIntent);
 	        		break;
 	        	case 11: // Request player info
-	        		Intent new_intent11 = new Intent();
-	                new_intent11.setAction(getResources().getString(R.string.ta_rec));
-	                new_intent11.putExtra(getResources().getString(R.string.ta_cmd), 3);
-	        		new_intent11.putExtra(getResources().getString(R.string.ta_startt),JNIHandler.maxTime);
-	                new_intent11.putExtra(getResources().getString(R.string.ta_shufmode), shuffleMode);
-	                new_intent11.putExtra(getResources().getString(R.string.ta_loopmode), loopMode);
-	                new_intent11.putExtra(getResources().getString(R.string.ta_songttl),currTitle);
+	                outgoingIntent.setAction(getResources().getString(R.string.ta_rec));
+	                outgoingIntent.putExtra(getResources().getString(R.string.ta_cmd), 3);
+	        		outgoingIntent.putExtra(getResources().getString(R.string.ta_startt),JNIHandler.maxTime);
+	                outgoingIntent.putExtra(getResources().getString(R.string.ta_shufmode), shuffleMode);
+	                outgoingIntent.putExtra(getResources().getString(R.string.ta_loopmode), loopMode);
+	                outgoingIntent.putExtra(getResources().getString(R.string.ta_songttl),currTitle);
 	                if(shuffleMode == 1)
 	                {
-	                	new_intent11.putExtra(getResources().getString(R.string.ta_filename),playList.get(shuffledIndices.get(currSongNumber)));
+	                	outgoingIntent.putExtra(getResources().getString(R.string.ta_filename),playList.get(shuffledIndices.get(currSongNumber)));
 	                }else{
-	                	new_intent11.putExtra(getResources().getString(R.string.ta_filename),playList.get(currSongNumber));
+	                	outgoingIntent.putExtra(getResources().getString(R.string.ta_filename),playList.get(currSongNumber));
 	                }
 	                
-	                sendBroadcast(new_intent11);
+	                sendBroadcast(outgoingIntent);
 	        		break;
 	        	case 12: // Request player info
-	        		Intent new_intent12 = new Intent();
-	                new_intent12.setAction(getResources().getString(R.string.ta_rec));
-	                new_intent12.putExtra(getResources().getString(R.string.ta_cmd), 4);
+	                outgoingIntent.setAction(getResources().getString(R.string.ta_rec));
+	                outgoingIntent.putExtra(getResources().getString(R.string.ta_cmd), 4);
 	                if(shuffleMode == 1)
 	                {
 	                	Globals.tmpplist=new ArrayList<String>();
@@ -361,7 +367,7 @@ public class MusicService extends Service{
 	                }else{
 	                	Globals.tmpplist=playList;
 	                }
-	                sendBroadcast(new_intent12);
+	                sendBroadcast(outgoingIntent);
 	        		break;
 	        	case 13:
 	        		if(Globals.isPlaying==0)
@@ -372,6 +378,7 @@ public class MusicService extends Service{
     				}
 	        		break;
 	        	case 14: // We want to write an output file
+	        		System.out.println("Hello there");
 	        		fullStop=true;
 	        		shouldAdvance=false;
 	        		Globals.hardStop=true;
@@ -391,55 +398,58 @@ public class MusicService extends Service{
 		        			JNIHandler.setupOutputFile(output);
 		        			JNIHandler.play(input);
 		        		}
-	        		
-	        		
 	        		new Thread(new Runnable(){
 
 						@Override
 						public void run()
 						{
-							while(!death&&((Globals.isPlaying==1))){
+							while(!death&&((Globals.isPlaying==1)))
+							{
 								if(JNIHandler.alternativeCheck==555555)
-				    				  death=true;
-				      			  try {Thread.sleep(10);} catch (InterruptedException e){}}
-							 if(new File(input+".def.tcf").exists() || new File(input+".def.tzf").exists())
-			           		  {
-								 String suffix;
-								 if(new File(input+".def.tcf").exists() && new File(input+".def.tzf").exists())
-				           		  {
-				           		  	suffix = (Globals.compressCfg?".def.tzf":".def.tcf");
-				           		  }else if(new File(input+".def.tcf").exists()){
-				           			  suffix = ".def.tcf";
-				           		  }else{
-				           			  suffix = ".def.tzf";
-				           		  }
-			           			  JNIHandler.shouldPlayNow=false;
-			           			  JNIHandler.currTime=0;
-			           			  while(Globals.isPlaying==0&&!death&&!JNIHandler.dataWritten)
-			           			  {
-			           				  try
-			       					{
-			       						Thread.sleep(25);
-			       					} catch (InterruptedException e)
-			       					{
-			       						e.printStackTrace();
-			       					}
-			           			  }
-			           		  Intent new_intent = new Intent(); // silly, but should be done async. I think.
-			         	        new_intent.setAction(getResources().getString(R.string.msrv_rec));
-			         	        new_intent.putExtra(getResources().getString(R.string.msrv_cmd), 17);
-			         	        new_intent.putExtra(getResources().getString(R.string.msrv_infile),input+suffix);
-			         	        new_intent.putExtra(getResources().getString(R.string.msrv_reset),true);
-			         	        sendBroadcast(new_intent);
-			           		  }
-							
-				        		 while(((Globals.isPlaying==0))){
-				       	    	  try {Thread.sleep(25);} catch (InterruptedException e){}}
-				        		 Intent new_intent14 = new Intent();
-					                new_intent14.setAction(getResources().getString(R.string.ta_rec));
-					                new_intent14.putExtra(getResources().getString(R.string.ta_cmd), 7);
-					                sendBroadcast(new_intent14);
-					                death=false;
+								{
+									  death=true;
+								}
+								try {Thread.sleep(10);} catch (InterruptedException e){}}
+								if(new File(input+".def.tcf").exists() || new File(input+".def.tzf").exists())
+								{
+									String suffix;
+									if(new File(input+".def.tcf").exists() && new File(input+".def.tzf").exists())
+									{
+									  suffix = (Globals.compressCfg?".def.tzf":".def.tcf");
+									}else if(new File(input+".def.tcf").exists()){
+									  suffix = ".def.tcf";
+									}else{
+										  suffix = ".def.tzf";
+									}
+									JNIHandler.shouldPlayNow=false;
+									JNIHandler.currTime=0;
+									while(Globals.isPlaying==0&&!death&&!JNIHandler.dataWritten)
+									{
+										try
+										{
+											Thread.sleep(25);
+										} catch (InterruptedException e){
+											e.printStackTrace();
+										}
+									}
+									Intent outgoingIntent = new Intent(); // silly, but should be done async. I think.
+									outgoingIntent.setAction(getResources().getString(R.string.msrv_rec));
+									outgoingIntent.putExtra(getResources().getString(R.string.msrv_cmd), 17);
+									outgoingIntent.putExtra(getResources().getString(R.string.msrv_infile),input+suffix);
+									outgoingIntent.putExtra(getResources().getString(R.string.msrv_reset),true);
+									sendBroadcast(outgoingIntent);
+				           		}
+				        		while(((Globals.isPlaying==0)))
+				        		{
+				        			try {Thread.sleep(25);} catch (InterruptedException e){}
+				       	    	}
+				        		 
+				        		System.out.println("Finished playing");
+				        		Intent outgoingIntent = new Intent();
+				                outgoingIntent.setAction(getResources().getString(R.string.ta_rec));
+				                outgoingIntent.putExtra(getResources().getString(R.string.ta_cmd), 8);
+				                sendBroadcast(outgoingIntent);
+				                death=false;
 						}
 	        		}).start();
 	        		//play();
@@ -462,22 +472,25 @@ public class MusicService extends Service{
 	        			JNIHandler.pause();
 	        		}
 	        		new Thread(new Runnable(){
-
 						@Override
 						public void run()
 						{
-							while(((Globals.isPlaying==1))){
-				      			  try {Thread.sleep(10);} catch (InterruptedException e){}}
-				        		 while(((Globals.isPlaying==0))){
-				       	    	  try {Thread.sleep(25);} catch (InterruptedException e){}}
-				        		 Intent new_intent14 = new Intent();
-					                new_intent14.setAction(getResources().getString(R.string.ta_rec));
-					                new_intent14.putExtra(getResources().getString(R.string.ta_cmd), 8);
-					                sendBroadcast(new_intent14);
-					                new_intent14.setAction(getResources().getString(R.string.ta_rec));
-					                new_intent14.putExtra(getResources().getString(R.string.ta_cmd), 5);
-					                new_intent14.putExtra(getResources().getString(R.string.ta_pause), false);
-					                sendBroadcast(new_intent14);
+							while(((Globals.isPlaying==1)))
+							{
+				      			  try {Thread.sleep(10);} catch (InterruptedException e){}
+							}
+			        		while(((Globals.isPlaying==0)))
+			        		{
+			       	    	  try {Thread.sleep(25);} catch (InterruptedException e){}
+			       	    	}
+			        		Intent outgoingIntent = new Intent();
+			                outgoingIntent.setAction(getResources().getString(R.string.ta_rec));
+			                outgoingIntent.putExtra(getResources().getString(R.string.ta_cmd), 8);
+			                sendBroadcast(outgoingIntent);
+			                outgoingIntent.setAction(getResources().getString(R.string.ta_rec));
+			                outgoingIntent.putExtra(getResources().getString(R.string.ta_cmd), 5);
+			                outgoingIntent.putExtra(getResources().getString(R.string.ta_pause), false);
+			                sendBroadcast(outgoingIntent);
 						}
 	        		}).start();
 	                break;
@@ -549,10 +562,10 @@ public class MusicService extends Service{
 	        			JNIHandler.pause();
 	        			JNIHandler.waitUntilReady(50);
 	        		}
-	        		Intent new_intent15 = new Intent();
-	        		new_intent15.setAction(getResources().getString(R.string.ta_rec));
-	                new_intent15.putExtra(getResources().getString(R.string.ta_cmd), 8);
-	                sendBroadcast(new_intent15);
+	        		Intent outgoingIntent15 = new Intent();
+	        		outgoingIntent15.setAction(getResources().getString(R.string.ta_rec));
+	                outgoingIntent15.putExtra(getResources().getString(R.string.ta_cmd), 8);
+	                sendBroadcast(outgoingIntent15);
 	        		break;
 	        	case 17: // load midi settings
 	        		if(JNIHandler.paused)
@@ -704,10 +717,10 @@ public class MusicService extends Service{
 		  wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "Timidity AE");
 		  wl.setReferenceCounted(false);
 		  if(shouldDoWidget)
-			  ids = AppWidgetManager.getInstance(getApplication()).getAppWidgetIds(new ComponentName(getApplication(), TimidityAEWidgetProvider.class));
+			widgetIds = AppWidgetManager.getInstance(getApplication()).getAppWidgetIds(new ComponentName(getApplication(), TimidityAEWidgetProvider.class));
        
         TelephonyManager mgr = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
-        if(mgr != null) {
+        if(mgr != null && Globals.phoneState) {
             mgr.listen(phoneStateListener, PhoneStateListener.LISTEN_CALL_STATE);
         }
         //foreground=false;
@@ -745,82 +758,36 @@ public class MusicService extends Service{
 		
 		if(!death)
 		{
-		MediaMetadataRetriever mmr = new MediaMetadataRetriever();
-		String tmpTitle;
-		Globals.currArt=null;
-		final int songIndex;
-		if(shuffleMode == 1)
-		{
-			songIndex = realSongNumber = shuffledIndices.get(currSongNumber);
-		}else{
-			songIndex = realSongNumber = currSongNumber;
-		}
-		try{
-		mmr.setDataSource(playList.get(songIndex));
-		tmpTitle = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
-		if(tmpTitle!=null)
-		{
-			if(TextUtils.isEmpty(tmpTitle))
-				tmpTitle=playList.get(songIndex).substring(playList.get(songIndex).lastIndexOf('/')+1);
-		}else{
-			tmpTitle=playList.get(songIndex).substring(playList.get(songIndex).lastIndexOf('/')+1);
-		}
-		
-		}catch (RuntimeException e)
-		{
-			tmpTitle=playList.get(songIndex).substring(playList.get(songIndex).lastIndexOf('/')+1);
-		}
-		boolean goodart=false;
-		if(Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.GINGERBREAD_MR1) // Please work
-		{
-		try{
-			
-			byte[] art = mmr.getEmbeddedPicture();
-			if(art!=null)
+			final int songIndex;
+			if(shuffleMode == 1)
 			{
-				Globals.currArt=BitmapFactory.decodeByteArray(art, 0, art.length);
-				goodart=Globals.currArt!=null;
-			}
-		}catch (Exception e){}
-		}
-		if(!goodart)
-		{
-			String goodPath=playList.get(songIndex).substring(0,playList.get(songIndex).lastIndexOf('/')+1)+"folder.jpg";
-			if(new File(goodPath).exists())
-			{
-				try{
-				Globals.currArt=BitmapFactory.decodeFile(goodPath);
-				}catch (RuntimeException e){}
+				songIndex = realSongNumber = shuffledIndices.get(currSongNumber);
 			}else{
-				// Try albumart.jpg
-				goodPath=playList.get(songIndex).substring(0,playList.get(songIndex).lastIndexOf('/')+1)+"AlbumArt.jpg";
-				if(new File(goodPath).exists())
-				{
-					try{
-						Globals.currArt=BitmapFactory.decodeFile(goodPath);
-						}catch (RuntimeException e)
-						{
-							// 
-						}
-				}
+				songIndex = realSongNumber = currSongNumber;
 			}
-		}
-		if(shouldDoWidget)
-		{
-			Intent intent = new Intent(this,TimidityAEWidgetProvider.class);
-			intent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
-			// Use an array and EXTRA_APPWIDGET_IDS instead of AppWidgetManager.EXTRA_APPWIDGET_ID,
-			// since it seems the onUpdate() is only fired on that:
-			ids = AppWidgetManager.getInstance(getApplication()).getAppWidgetIds(new ComponentName(getApplication(), TimidityAEWidgetProvider.class));
-		
-			//intent.addFlags(Intent.FLAG_RECEIVER_FOREGROUND);
-			intent.putExtra("com.xperia64.timidityae.timidityaewidgetprovider.onlyart", true);
-			sendBroadcast(intent);
-		}
-		Intent new_intent = new Intent();
-        new_intent.setAction(getResources().getString(R.string.ta_rec));
-        new_intent.putExtra(getResources().getString(R.string.ta_cmd), 6);
-        sendBroadcast(new_intent);
+			MediaMetadataRetriever mmr = new MediaMetadataRetriever();
+
+			String tmpTitle;
+			String fileName = playList.get(songIndex);
+			try{
+				mmr.setDataSource(fileName);
+				tmpTitle = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
+			}catch (RuntimeException e)
+			{
+				tmpTitle=fileName.substring(playList.get(songIndex).lastIndexOf('/')+1);
+			}
+			if(tmpTitle!=null)
+			{
+				if(TextUtils.isEmpty(tmpTitle))
+					tmpTitle=fileName.substring(fileName.lastIndexOf('/')+1);
+			}else{
+				tmpTitle=fileName.substring(fileName.lastIndexOf('/')+1);
+			}
+			setupMediaArtAndWidget(fileName, mmr);
+			Intent outgoingIntent = new Intent();
+	        outgoingIntent.setAction(getResources().getString(R.string.ta_rec));
+	        outgoingIntent.putExtra(getResources().getString(R.string.ta_cmd), 6);
+	        sendBroadcast(outgoingIntent);
         
 		currTitle=tmpTitle;
 		shouldAdvance=true;
@@ -885,14 +852,14 @@ public class MusicService extends Service{
     			  try {Thread.sleep(10);} catch (InterruptedException e){}}
     		  if(!death)
     		  {
-    		  Intent new_intent = new Intent();
-    	        new_intent.setAction(getResources().getString(R.string.ta_rec));
-    	        new_intent.putExtra(getResources().getString(R.string.ta_cmd), 0);
-    	        new_intent.putExtra(getResources().getString(R.string.ta_startt),JNIHandler.maxTime);
-    	        new_intent.putExtra(getResources().getString(R.string.ta_songttl),currTitle);
-    	        new_intent.putExtra(getResources().getString(R.string.ta_filename),playList.get(songIndex));
-    	        new_intent.putExtra("stupidNumber",songIndex);
-    	        sendBroadcast(new_intent);
+    		  Intent outgoingIntent = new Intent();
+    	        outgoingIntent.setAction(getResources().getString(R.string.ta_rec));
+    	        outgoingIntent.putExtra(getResources().getString(R.string.ta_cmd), 0);
+    	        outgoingIntent.putExtra(getResources().getString(R.string.ta_startt),JNIHandler.maxTime);
+    	        outgoingIntent.putExtra(getResources().getString(R.string.ta_songttl),currTitle);
+    	        outgoingIntent.putExtra(getResources().getString(R.string.ta_filename),playList.get(songIndex));
+    	        outgoingIntent.putExtra("stupidNumber",songIndex);
+    	        sendBroadcast(outgoingIntent);
     		  }
     		  if(new File(playList.get(songIndex)+".def.tcf").exists()||new File(playList.get(songIndex)+".def.tzf").exists())
     		  {
@@ -910,7 +877,7 @@ public class MusicService extends Service{
     			  JNIHandler.currTime=0;
     			  while(Globals.isPlaying==0&&!death&&shouldAdvance&&!JNIHandler.dataWritten)
     			  {
-    				  try
+    				try
 					{
 						Thread.sleep(25);
 					} catch (InterruptedException e)
@@ -918,12 +885,12 @@ public class MusicService extends Service{
 						e.printStackTrace();
 					}
     			  }
-    		  Intent new_intent = new Intent(); // silly, but should be done async. I think.
-  	        new_intent.setAction(getResources().getString(R.string.msrv_rec));
-  	        new_intent.putExtra(getResources().getString(R.string.msrv_cmd), 17);
-  	        new_intent.putExtra(getResources().getString(R.string.msrv_infile),playList.get(songIndex)+suffix);
-  	        new_intent.putExtra(getResources().getString(R.string.msrv_reset),true);
-  	        sendBroadcast(new_intent);
+    		  Intent outgoingIntent = new Intent(); // silly, but should be done async. I think.
+  	        outgoingIntent.setAction(getResources().getString(R.string.msrv_rec));
+  	        outgoingIntent.putExtra(getResources().getString(R.string.msrv_cmd), 17);
+  	        outgoingIntent.putExtra(getResources().getString(R.string.msrv_infile),playList.get(songIndex)+suffix);
+  	        outgoingIntent.putExtra(getResources().getString(R.string.msrv_reset),true);
+  	        sendBroadcast(outgoingIntent);
     		  }
     	      while(!death&&(((Globals.isPlaying==0||JNIHandler.alternativeCheck==333333)&&shouldAdvance))){
     	    	  try {Thread.sleep(25);} catch (InterruptedException e){}}
@@ -1019,11 +986,11 @@ public class MusicService extends Service{
 		{
 
 			death=true;
-			Intent new_intent = new Intent();
-            new_intent.setAction(getResources().getString(R.string.ta_rec));
-            new_intent.putExtra(getResources().getString(R.string.ta_cmd), 5);
-            new_intent.putExtra(getResources().getString(R.string.ta_pause), false);
-            sendBroadcast(new_intent);
+			Intent stop_intent = new Intent();
+            stop_intent.setAction(getResources().getString(R.string.ta_rec));
+            stop_intent.putExtra(getResources().getString(R.string.ta_cmd), 5);
+            stop_intent.putExtra(getResources().getString(R.string.ta_pause), false);
+            sendBroadcast(stop_intent);
             
             
 			Globals.shouldRestore=false;
@@ -1031,7 +998,7 @@ public class MusicService extends Service{
 			if(fullStop)
 			{
 				TelephonyManager mgr = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
-				if(mgr != null) {
+				if(mgr != null && Globals.phoneState) {
 				    mgr.listen(phoneStateListener, PhoneStateListener.LISTEN_NONE);
 				}
 				Globals.shouldRestore=false;
@@ -1042,15 +1009,15 @@ public class MusicService extends Service{
 				// Fix the widget
 				if(shouldDoWidget)
 				{
-	            new_intent = new Intent(this, TimidityAEWidgetProvider.class);
-	            new_intent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
-	            //new_intent.addFlags(Intent.FLAG_RECEIVER_FOREGROUND);
-	            new_intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS,ids);
-	            new_intent.putExtra("com.xperia64.timidityae.timidityaewidgetprovider.paused", true);
-	            new_intent.putExtra("com.xperia64.timidityae.timidityaewidgetprovider.title", "");
-	            new_intent.putExtra("com.xperia64.timidityae.timidityaewidgetprovider.onlyart", false);
-	            new_intent.putExtra("com.xperia64.timidityae.timidityaewidgetprovider.death", true);
-	    		sendBroadcast(new_intent);
+		            stop_intent = new Intent(this, TimidityAEWidgetProvider.class);
+		            stop_intent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
+		            //stop_intent.addFlags(Intent.FLAG_RECEIVER_FOREGROUND);
+		            stop_intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS,widgetIds);
+		            stop_intent.putExtra("com.xperia64.timidityae.timidityaewidgetprovider.paused", true);
+		            stop_intent.putExtra("com.xperia64.timidityae.timidityaewidgetprovider.title", "");
+		            stop_intent.putExtra("com.xperia64.timidityae.timidityaewidgetprovider.onlyart", false);
+		            stop_intent.putExtra("com.xperia64.timidityae.timidityaewidgetprovider.death", true);
+		    		sendBroadcast(stop_intent);
 				}else{
 					Globals.nukedWidgets=true;
 				}
@@ -1106,45 +1073,105 @@ public class MusicService extends Service{
 				.setContentIntent(pendingIntent)
 				.setContent(remoteViews);
 				if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.LOLLIPOP)
+				{
 					mBuilder.setSmallIcon(R.drawable.ic_lol);
-				else
+				}else{
 					mBuilder.setSmallIcon(R.drawable.ic_launcher);
-				n=mBuilder.build();
-				n.flags|=Notification.FLAG_ONLY_ALERT_ONCE|Notification.FLAG_ONGOING_EVENT;
+				}
+					mainNotification=mBuilder.build();
+				mainNotification.flags|=Notification.FLAG_ONLY_ALERT_ONCE|Notification.FLAG_ONGOING_EVENT;
 				if(!foreground)
 				{
-				foreground=true;
-				startForeground(13901858, n);
-				if(!wl.isHeld())
-					wl.acquire();
-				 
-
-				TelephonyManager mgr = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
-				if(mgr != null) {
-				mgr.listen(phoneStateListener, PhoneStateListener.LISTEN_CALL_STATE);
-				}
+					foreground=true;
+					// Dear Google,
+					// Your terrible Marshmallow power management had better not break this.
+					// If it does, I am using REQUEST_IGNORE_BATTERY_OPTIMIZATIONS.
+					// If you ban me for using it, there will be consequences.
+					startForeground(Globals.NOTIFICATION_ID, mainNotification);
+					if(!wl.isHeld())
+					{
+						wl.acquire();
+					}
+	
+					TelephonyManager mgr = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
+					if(mgr != null && Globals.phoneState)
+					{
+						mgr.listen(phoneStateListener, PhoneStateListener.LISTEN_CALL_STATE);
+					}
 				}else{
 					if(!wl.isHeld())
-						wl.acquire();
-				NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-				mNotificationManager.notify(13901858, n);
+					{
+							wl.acquire();
+					}
+					NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+					mNotificationManager.notify(Globals.NOTIFICATION_ID, mainNotification);
 				}
 				if(shouldDoWidget)
 				{
-				Intent intent = new Intent(this, TimidityAEWidgetProvider.class);
-				//Intent intent = new Intent("Ilikepotatoes");
-				intent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
+					Intent intent = new Intent(this, TimidityAEWidgetProvider.class);
+					intent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
+					// Use an array and EXTRA_APPWIDGET_IDS instead of AppWidgetManager.EXTRA_APPWIDGET_ID,
+					// since it seems the onUpdate() is only fired on that:
+					//intent.addFlags(Intent.FLAG_RECEIVER_FOREGROUND);
+					intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS,widgetIds);
+					intent.putExtra("com.xperia64.timidityae.timidityaewidgetprovider.paused", paused);
+					intent.putExtra("com.xperia64.timidityae.timidityaewidgetprovider.title", currTitle);
+					intent.putExtra("com.xperia64.timidityae.timidityaewidgetprovider.onlyart", true);
+					sendBroadcast(intent);
+				}
+			}
+	
+	@SuppressLint("NewApi")
+	public void setupMediaArtAndWidget(String fileName, MediaMetadataRetriever mmr)
+	{
+		Globals.currArt=null;
+		boolean goodart=false;
+		if(Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.GINGERBREAD_MR1) // Please work
+		{
+			try{
+				
+				byte[] art = mmr.getEmbeddedPicture();
+				if(art!=null)
+				{
+					Globals.currArt=BitmapFactory.decodeByteArray(art, 0, art.length);
+					goodart=Globals.currArt!=null;
+				}
+			}catch (Exception e){}
+		}
+		if(!goodart)
+		{
+			String goodPath=fileName.substring(0,fileName.lastIndexOf('/')+1)+"folder.jpg";
+			if(new File(goodPath).exists())
+			{
+				try{
+				Globals.currArt=BitmapFactory.decodeFile(goodPath);
+				}catch (RuntimeException e){}
+			}else{
+				// Try albumart.jpg
+				goodPath=fileName.substring(0,fileName.lastIndexOf('/')+1)+"AlbumArt.jpg";
+				if(new File(goodPath).exists())
+				{
+					try{
+						Globals.currArt=BitmapFactory.decodeFile(goodPath);
+					}catch (RuntimeException e){
+						// 
+					}
+				}
+			}
+		}
+		if(shouldDoWidget)
+		{
+			Intent intent = new Intent(this,TimidityAEWidgetProvider.class);
+			intent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
 			// Use an array and EXTRA_APPWIDGET_IDS instead of AppWidgetManager.EXTRA_APPWIDGET_ID,
 			// since it seems the onUpdate() is only fired on that:
-				//intent.addFlags(Intent.FLAG_RECEIVER_FOREGROUND);
-				intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS,ids);
-				intent.putExtra("com.xperia64.timidityae.timidityaewidgetprovider.paused", paused);
-				intent.putExtra("com.xperia64.timidityae.timidityaewidgetprovider.title", currTitle);
-				intent.putExtra("com.xperia64.timidityae.timidityaewidgetprovider.onlyart", true);
-				sendBroadcast(intent);
-				}
-				}
-	
+			widgetIds = AppWidgetManager.getInstance(getApplication()).getAppWidgetIds(new ComponentName(getApplication(), TimidityAEWidgetProvider.class));
+		
+			//intent.addFlags(Intent.FLAG_RECEIVER_FOREGROUND);
+			intent.putExtra("com.xperia64.timidityae.timidityaewidgetprovider.onlyart", true);
+			sendBroadcast(intent);
+		}
 	}
+}
 
 

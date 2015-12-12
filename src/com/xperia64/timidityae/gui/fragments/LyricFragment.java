@@ -9,7 +9,7 @@
  * which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/gpl.html
  ******************************************************************************/
-package com.xperia64.timidityae;
+package com.xperia64.timidityae.gui.fragments;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -20,6 +20,7 @@ import android.view.ViewGroup;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import com.xperia64.timidityae.JNIHandler;
 import com.xperia64.timidityae.R;
 
 public class LyricFragment extends Fragment {
@@ -29,13 +30,10 @@ public class LyricFragment extends Fragment {
 
 	// TODO Make lyrics shiny-er
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container,
-			Bundle savedInstanceState)
-	{
+	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
 		ready = false;
-		View root = inflater.inflate(R.layout.lyrical_fragment, container,
-				false);
+		View root = inflater.inflate(R.layout.lyrical_fragment, container, false);
 		lyrics = (TextView) root.findViewById(R.id.lyrics);
 		scrollContainer = (ScrollView) root.findViewById(R.id.lyric_holder);
 
@@ -44,22 +42,17 @@ public class LyricFragment extends Fragment {
 	}
 
 	@Override
-	public void onViewCreated(View view, Bundle savedInstanceState)
-	{
+	public void onViewCreated(View view, Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 		ready = true;
 	}
 
-	public void updateLyrics()
-	{
-		if (ready && getActivity() != null)
-		{
+	public void updateLyrics() {
+		if (ready && getActivity() != null) {
 			getActivity().runOnUiThread(new Runnable() {
 				@Override
-				public void run()
-				{
-					lyrics.setText(TextUtils.isEmpty(JNIHandler.currentLyric) ? "(No Lyrics)"
-							: JNIHandler.currentLyric);
+				public void run() {
+					lyrics.setText(TextUtils.isEmpty(JNIHandler.currentLyric) ? "(No Lyrics)" : JNIHandler.currentLyric);
 					lyrics.invalidate();
 					if (scrollContainer != null)
 						scrollContainer.fullScroll(ScrollView.FOCUS_DOWN);

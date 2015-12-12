@@ -9,7 +9,11 @@
  * which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/gpl.html
  ******************************************************************************/
-package com.xperia64.timidityae;
+package com.xperia64.timidityae.gui;
+
+import com.xperia64.timidityae.R;
+import com.xperia64.timidityae.TimidityActivity;
+import com.xperia64.timidityae.util.Globals;
 
 import android.annotation.SuppressLint;
 import android.app.PendingIntent;
@@ -133,7 +137,7 @@ public class TimidityAEWidgetProvider extends AppWidgetProvider {
             // to the button
             RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget_layout);
             views.setTextViewText(R.id.titley_widget, currTitle);
-            views.setImageViewResource(R.id.notPause_widget, (paused)?R.drawable.ic_media_play:R.drawable.ic_media_pause);
+			views.setImageViewResource(R.id.notPause_widget, (paused)?R.drawable.ic_media_play:R.drawable.ic_media_pause);
             if(art)
             if(Globals.currArt!=null)
             {

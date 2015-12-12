@@ -9,7 +9,7 @@
  * which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/gpl.html
  ******************************************************************************/
-package com.xperia64.timidityae;
+package com.xperia64.timidityae.util;
 
 import java.io.BufferedReader;
 import java.io.DataInputStream;
@@ -31,8 +31,10 @@ import java.util.Locale;
 
 import javax.net.ssl.HttpsURLConnection;
 
+import com.xperia64.timidityae.JNIHandler;
+import com.xperia64.timidityae.ObjectSerializer;
 import com.xperia64.timidityae.R;
-
+import com.xperia64.timidityae.TimidityActivity;
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Activity;
@@ -154,6 +156,21 @@ public static int[] validRates(boolean stereo, boolean sixteen)
 		rates[i]=valid.get(i);
 	return rates;
 }
+public static SparseIntArray validBuffers(int[] rates, boolean stereo, boolean sixteen)
+{
+	SparseIntArray buffers = new SparseIntArray();
+	for(int rate : rates)
+	{
+		buffers.put(rate, AudioTrack.getMinBufferSize(rate, (stereo)?AudioFormat.CHANNEL_OUT_STEREO:AudioFormat.CHANNEL_OUT_MONO, (sixteen)?AudioFormat.ENCODING_PCM_16BIT:AudioFormat.ENCODING_PCM_8BIT));
+	}
+	return buffers;
+	/*HashMap<Integer, Integer> buffers = new HashMap<Integer, Integer>();
+	for(int rate : rates)
+	{
+		buffers.put(rate, AudioTrack.getMinBufferSize(rate, (stereo)?AudioFormat.CHANNEL_OUT_STEREO:AudioFormat.CHANNEL_OUT_MONO, (sixteen)?AudioFormat.ENCODING_PCM_16BIT:AudioFormat.ENCODING_PCM_8BIT));
+	}
+	return buffers;*/
+}
 /*public static boolean canWrite(String path)
 {
 	if(!path.endsWith("/"))
@@ -194,23 +211,10 @@ public static int[] validRates(boolean stereo, boolean sixteen)
 {
 	return false;
 }*/
-public static SparseIntArray validBuffers(int[] rates, boolean stereo, boolean sixteen)
-{
-	SparseIntArray buffers = new SparseIntArray();
-	for(int rate : rates)
-	{
-		buffers.put(rate, AudioTrack.getMinBufferSize(rate, (stereo)?AudioFormat.CHANNEL_OUT_STEREO:AudioFormat.CHANNEL_OUT_MONO, (sixteen)?AudioFormat.ENCODING_PCM_16BIT:AudioFormat.ENCODING_PCM_8BIT));
-	}
-	return buffers;
-	/*HashMap<Integer, Integer> buffers = new HashMap<Integer, Integer>();
-	for(int rate : rates)
-	{
-		buffers.put(rate, AudioTrack.getMinBufferSize(rate, (stereo)?AudioFormat.CHANNEL_OUT_STEREO:AudioFormat.CHANNEL_OUT_MONO, (sixteen)?AudioFormat.ENCODING_PCM_16BIT:AudioFormat.ENCODING_PCM_8BIT));
-	}
-	return buffers;*/
-}
+
 
 public static int probablyFresh=0;
+public static final int NOTIFICATION_ID = 13901858;
 //---------SETTINGS STORAGE----------
 public static SharedPreferences prefs;
 public static boolean firstRun;
@@ -238,6 +242,7 @@ public static Uri theFold=null;
 public static boolean reShuffle = false;
 public static boolean preserveSilence = true;
 public static boolean freeInsts = true;
+public static boolean phoneState = true;
 
 public static void reloadSettings(Activity c, AssetManager assets)
 {
@@ -1159,8 +1164,6 @@ public static class DownloadTask extends AsyncTask<String, Integer, String> {
 #define RC_TOGGLE_MUTE	31
 #define RC_SOLO_PLAY	32
 #define RC_MUTE_CLEAR	33*/
-//@formatter:on
+	// @formatter:on
 
-
- 
 }

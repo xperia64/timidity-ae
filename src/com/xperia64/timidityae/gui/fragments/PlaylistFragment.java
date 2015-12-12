@@ -9,7 +9,7 @@
  * which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/gpl.html
  ******************************************************************************/
-package com.xperia64.timidityae;
+package com.xperia64.timidityae.gui.fragments;
 
 import java.io.BufferedReader;
 import java.io.DataInputStream;
@@ -24,8 +24,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Locale;
 
-import com.xperia64.timidityae.FileBrowserDialog.FileBrowserDialogListener;
+import com.xperia64.timidityae.gui.dialogs.FileBrowserDialog;
+import com.xperia64.timidityae.gui.dialogs.FileBrowserDialog.FileBrowserDialogListener;
+import com.xperia64.timidityae.util.FileComparator;
+import com.xperia64.timidityae.util.Globals;
 import com.xperia64.timidityae.R;
+import com.xperia64.timidityae.TimidityActivity;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -53,13 +57,13 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 	ActionPlaylistBackListener mCallback;
 	ArrayList<String> path;
 	ArrayList<String> fname;
-	ArrayList<String> currPlist;
+	public ArrayList<String> currPlist;
 	ArrayList<String> vola;
-	String plistName;
+	public String plistName;
 	String tmpName;
 	int loki=-1;
-	int highlightMe = -1;
-	boolean mode=false;
+	public int highlightMe = -1;
+	public boolean mode=false;
 	boolean dontReloadPlist = false;
 	public interface ActionPlaylistBackListener{
 		public void needPlaylistBackCallback(boolean yes, boolean current);
@@ -725,6 +729,6 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 			}
 		 
 		 getPlaylists(plistName);
-	 }
-	
+	}
+
 }
