@@ -828,7 +828,7 @@ android:finishOnTaskLaunch="true"
 	            android:name="com.xperia64.timidityae.MusicService">
         </service>
         
-        <receiver android:name="TimidityAEWidgetProvider" 
+        <receiver android:name="com.xperia64.timidityae.gui.TimidityAEWidgetProvider" 
             android:icon="@drawable/ic_launcher"
        android:label="Timidity AE Widget">
     <intent-filter>

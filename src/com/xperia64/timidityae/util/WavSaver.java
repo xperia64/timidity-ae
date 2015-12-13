@@ -18,7 +18,7 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Environment;
 import android.text.InputFilter;
-import android.text.Spanned;
+import android.util.Log;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -37,25 +37,14 @@ public class WavSaver implements TimidityActivity.SpecialAction {
 
 	public void dynExport() {
 		localfinished = false;
-		if (Globals.isMidi(currSongName) && (Globals.isPlaying == 0 || !playingExport)) {
+		if (Globals.isMidi(currSongName) && (JNIHandler.isPlaying || !playingExport)) {
 
 			AlertDialog.Builder alert = new AlertDialog.Builder(context);
 
 			alert.setTitle(context.getResources().getString(R.string.dynex_alert1));
 			alert.setMessage(context.getResources().getString(R.string.dynex_alert1_msg));
-			InputFilter filter = new InputFilter() {
-				public CharSequence filter(CharSequence source, int start, int end, Spanned dest, int dstart, int dend) {
-					for (int i = start; i < end; i++) {
-						String IC = "*/*\n*\r*\t*\0*\f*`*?***\\*<*>*|*\"*:*";
-						if (IC.contains("*" + source.charAt(i) + "*")) {
-							return "";
-						}
-					}
-					return null;
-				}
-			};
 			final EditText input = new EditText(context);
-			input.setFilters(new InputFilter[] { filter });
+			input.setFilters(new InputFilter[] { Globals.fileNameInputFilter });
 			alert.setView(input);
 
 			alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
@@ -82,12 +71,14 @@ public class WavSaver implements TimidityActivity.SpecialAction {
 
 					if (aWrite && new File(parent).canWrite()) {
 						value = parent + value;
-					} else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && Globals.theFold != null) {
-						String[] tmp = Globals.getDocFilePaths(context, parent);
+					} else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && DocumentFileUtils.docFileDevice != null) {
+						String[] tmp = DocumentFileUtils.getExternalFilePaths(context, parent);
 						probablyTheDirectory = tmp[0];
 						probablyTheRoot = tmp[1];
+						
 						if (probablyTheDirectory.length() > 1) {
 							needRename = parent.substring(parent.indexOf(probablyTheRoot) + probablyTheRoot.length()) + value;
+							Log.i("WavSaver","needRename is "+needRename);
 							value = probablyTheDirectory + '/' + value;
 						} else {
 							value = Environment.getExternalStorageDirectory().getAbsolutePath() + '/' + value;
@@ -108,10 +99,10 @@ public class WavSaver implements TimidityActivity.SpecialAction {
 							public void onClick(DialogInterface dialog, int buttonId) {
 								if (!canWrite && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
 									if (needToRename != null) {
-										Globals.tryToDeleteFile(context, probRoot + needToRename);
-										Globals.tryToDeleteFile(context, finalval);
+										DocumentFileUtils.tryToDeleteFile(context, probRoot + needToRename);
+										DocumentFileUtils.tryToDeleteFile(context, finalval);
 									} else {
-										Globals.tryToDeleteFile(context, finalval);
+										DocumentFileUtils.tryToDeleteFile(context, finalval);
 									}
 								} else {
 									new File(finalval).delete();
@@ -144,12 +135,12 @@ public class WavSaver implements TimidityActivity.SpecialAction {
 
 	public void saveWavPart2(final String finalval, final String needToRename) {
 		Intent new_intent = new Intent();
-		new_intent.setAction(context.getResources().getString(R.string.msrv_rec));
-		new_intent.putExtra(context.getResources().getString(R.string.msrv_cmd), playingExport ? 15 : 14);
+		new_intent.setAction(CommandStrings.msrv_rec);
+		new_intent.putExtra(CommandStrings.msrv_cmd, playingExport ? CommandStrings.msrv_cmd_write_curr : CommandStrings.msrv_cmd_write_new);
 		if (!playingExport) {
-			new_intent.putExtra(context.getResources().getString(R.string.msrv_infile), currSongName);
+			new_intent.putExtra(CommandStrings.msrv_infile, currSongName);
 		}
-		new_intent.putExtra(context.getResources().getString(R.string.msrv_outfile), finalval);
+		new_intent.putExtra(CommandStrings.msrv_outfile, finalval);
 		context.sendBroadcast(new_intent);
 		final ProgressDialog prog;
 		prog = new ProgressDialog(context);
@@ -182,13 +173,13 @@ public class WavSaver implements TimidityActivity.SpecialAction {
 					context.runOnUiThread(new Runnable() {
 						public void run() {
 							Toast.makeText(context, "Conversion canceled", Toast.LENGTH_SHORT).show();
-							if (!Globals.keepWav) {
+							if (!SettingsStorage.keepPartialWav) {
 								if (new File(finalval).exists())
 									new File(finalval).delete();
 							} else {
 								Intent outgoingIntent = new Intent();
-								outgoingIntent.setAction(context.getResources().getString(R.string.ta_rec));
-								outgoingIntent.putExtra(context.getResources().getString(R.string.ta_cmd), 1);
+								outgoingIntent.setAction(CommandStrings.ta_rec);
+								outgoingIntent.putExtra(CommandStrings.ta_cmd, CommandStrings.ta_cmd_refresh_filebrowser);
 								context.sendBroadcast(outgoingIntent);
 							}
 						}
@@ -198,8 +189,8 @@ public class WavSaver implements TimidityActivity.SpecialAction {
 					context.runOnUiThread(new Runnable() {
 						public void run() {
 							String trueName = finalval;
-							if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && Globals.theFold != null && needToRename != null) {
-								if (Globals.renameDocumentFile(context, finalval, needToRename)) {
+							if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && DocumentFileUtils.docFileDevice != null && needToRename != null) {
+								if (DocumentFileUtils.renameDocumentFile(context, finalval, needToRename)) {
 									trueName = needToRename;
 								} else {
 									trueName = "Error";
@@ -208,8 +199,8 @@ public class WavSaver implements TimidityActivity.SpecialAction {
 							Toast.makeText(context, "Wrote " + trueName, Toast.LENGTH_SHORT).show();
 							prog.dismiss();
 							Intent outgoingIntent = new Intent();
-							outgoingIntent.setAction(context.getResources().getString(R.string.ta_rec));
-							outgoingIntent.putExtra(context.getResources().getString(R.string.ta_cmd), 1);
+							outgoingIntent.setAction(CommandStrings.ta_rec);
+							outgoingIntent.putExtra(CommandStrings.ta_cmd, CommandStrings.ta_cmd_refresh_filebrowser);
 							context.sendBroadcast(outgoingIntent);
 						}
 					});

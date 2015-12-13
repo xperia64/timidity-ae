@@ -64,7 +64,10 @@ import com.xperia64.timidityae.gui.fragments.FileBrowserFragment;
 import com.xperia64.timidityae.gui.fragments.PlayerFragment;
 import com.xperia64.timidityae.gui.fragments.PlaylistFragment;
 import com.xperia64.timidityae.util.ConfigSaver;
+import com.xperia64.timidityae.util.DocumentFileUtils;
 import com.xperia64.timidityae.util.Globals;
+import com.xperia64.timidityae.util.CommandStrings;
+import com.xperia64.timidityae.util.SettingsStorage;
 import com.xperia64.timidityae.util.WavSaver;
 
 // Eclipse Stahp
@@ -101,25 +104,23 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 
 		@Override
 		public void onReceive(Context context, Intent intent) {
-			int cmd = intent.getIntExtra(getResources().getString(R.string.ta_cmd), -5); // -V
+			int cmd = intent.getIntExtra(CommandStrings.ta_cmd, CommandStrings.ta_cmd_error); // -V
 			switch (cmd) {
-			case -5:
-				break;
-			case 0:
-				currSongName = intent.getStringExtra(getResources().getString(R.string.ta_filename));
+			case CommandStrings.ta_cmd_gui_play:
+				currSongName = intent.getStringExtra(CommandStrings.ta_filename);
 				if (viewPager.getCurrentItem() == 1) {
 					menuButton.setIcon(R.drawable.ic_menu_agenda);
 					menuButton.setTitle(getResources().getString(R.string.view));
 					menuButton.setTitleCondensed(getResources().getString(R.string.viewcon));
-					menuButton.setVisible((!JNIHandler.type) && Globals.isPlaying == 0);
-					menuButton.setEnabled((!JNIHandler.type) && Globals.isPlaying == 0);
+					menuButton.setVisible((!JNIHandler.isMediaPlayerFormat) && JNIHandler.isPlaying);
+					menuButton.setEnabled((!JNIHandler.isMediaPlayerFormat) && JNIHandler.isPlaying);
 					menuButton2.setIcon(R.drawable.ic_menu_info_details);
 					menuButton2.setTitle(getResources().getString(R.string.playback));
 					menuButton2.setTitleCondensed(getResources().getString(R.string.playbackcon));
-					menuButton2.setVisible((!JNIHandler.type) && Globals.isPlaying == 0);
-					menuButton2.setEnabled((!JNIHandler.type) && Globals.isPlaying == 0);
+					menuButton2.setVisible((!JNIHandler.isMediaPlayerFormat) && JNIHandler.isPlaying);
+					menuButton2.setEnabled((!JNIHandler.isMediaPlayerFormat) && JNIHandler.isPlaying);
 				}
-				playFrag.play(intent.getIntExtra(getResources().getString(R.string.ta_startt), 0), intent.getStringExtra(getResources().getString(R.string.ta_songttl)));
+				playFrag.play(intent.getIntExtra(CommandStrings.ta_startt, 0), intent.getStringExtra(CommandStrings.ta_songttl));
 				if (plistFrag != null) {
 					plistFrag.highlightMe = intent.getIntExtra("stupidNumber", -1);
 					try {
@@ -134,38 +135,38 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 				}
 
 				break;
-			case 1:
+			case CommandStrings.ta_cmd_refresh_filebrowser:
 				fileFrag.getDir(fileFrag.currPath);
 				break;
-			case 2:
+			case CommandStrings.ta_cmd_load_filebrowser:
 				try {
-					fileFrag.getDir(intent.getStringExtra(getResources().getString(R.string.ta_currpath)));
+					fileFrag.getDir(intent.getStringExtra(CommandStrings.ta_currpath));
 				} catch (IllegalStateException e) {
 
 				}
 				break;
-			case 3:
-				currSongName = intent.getStringExtra(getResources().getString(R.string.ta_filename));
+			case CommandStrings.ta_cmd_gui_play_full:
+				currSongName = intent.getStringExtra(CommandStrings.ta_filename);
 				if (viewPager.getCurrentItem() == 1) {
 					menuButton.setIcon(R.drawable.ic_menu_agenda);
 					menuButton.setTitle(getResources().getString(R.string.view));
 					menuButton.setTitleCondensed(getResources().getString(R.string.viewcon));
-					menuButton.setVisible((!JNIHandler.type) && Globals.isPlaying == 0);
-					menuButton.setEnabled((!JNIHandler.type) && Globals.isPlaying == 0);
+					menuButton.setVisible((!JNIHandler.isMediaPlayerFormat) && JNIHandler.isPlaying);
+					menuButton.setEnabled((!JNIHandler.isMediaPlayerFormat) && JNIHandler.isPlaying);
 					menuButton2.setIcon(R.drawable.ic_menu_info_details);
 					menuButton2.setTitle(getResources().getString(R.string.playback));
 					menuButton2.setTitleCondensed(getResources().getString(R.string.playbackcon));
-					menuButton2.setVisible((!JNIHandler.type) && Globals.isPlaying == 0);
-					menuButton2.setEnabled((!JNIHandler.type) && Globals.isPlaying == 0);
+					menuButton2.setVisible((!JNIHandler.isMediaPlayerFormat) && JNIHandler.isPlaying);
+					menuButton2.setEnabled((!JNIHandler.isMediaPlayerFormat) && JNIHandler.isPlaying);
 				}
-				playFrag.play(intent.getIntExtra(getResources().getString(R.string.ta_startt), 0), intent.getStringExtra(getResources().getString(R.string.ta_songttl)), intent.getIntExtra(getResources().getString(R.string.ta_shufmode), 0), intent.getIntExtra(getResources().getString(R.string.ta_loopmode), 1));
+				playFrag.play(intent.getIntExtra(CommandStrings.ta_startt, 0), intent.getStringExtra(CommandStrings.ta_songttl), intent.getIntExtra(CommandStrings.ta_shufmode, 0), intent.getIntExtra(CommandStrings.ta_loopmode, 1));
 				break;
-			case 4:
+			case CommandStrings.ta_cmd_copy_plist:
 				plistFrag.currPlist = Globals.tmpplist;
 				Globals.tmpplist = null;
 				break;
-			case 5: // Notifiy pause/stop
-				if (!intent.getBooleanExtra(getResources().getString(R.string.ta_pause), false) && Globals.hardStop) {
+			case CommandStrings.ta_cmd_pause_stop: // Notifiy pause/stop
+				if (!intent.getBooleanExtra(CommandStrings.ta_pause, false) && Globals.hardStop) {
 					Globals.hardStop = false;
 					if (viewPager.getCurrentItem() == 1) {
 						menuButton.setIcon(R.drawable.ic_menu_agenda);
@@ -198,18 +199,18 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 						}
 					});
 				}
-				playFrag.pauseStop(intent.getBooleanExtra(getResources().getString(R.string.ta_pause), false), intent.getBooleanExtra(getResources().getString(R.string.ta_pausea), false));
+				playFrag.pauseStop(intent.getBooleanExtra(CommandStrings.ta_pause, false), intent.getBooleanExtra(CommandStrings.ta_pausea, false));
 				break;
-			case 6: // notify art
+			case CommandStrings.ta_cmd_update_art: // notify art
 				// currSongName =
-				// intent.getStringExtra(getResources().getString(R.string.ta_filename));
+				// intent.getStringExtra(ServiceStrings.ta_filename));
 				if (playFrag != null)
 					playFrag.setArt();
 				break;
-			// case 7:
+			// case ServiceStrings.ta_cmd_unused_7:
 			// fileFrag.localfinished=true;
 			// break;
-			case 8:
+			case CommandStrings.ta_cmd_special_notification_finished:
 				if (special != null) {
 					special.setLocalFinished(true);
 				}
@@ -295,7 +296,7 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 	}
 
 	public void yetAnotherInit() {
-		needInit = Globals.initialize(TimidityActivity.this);
+		needInit = SettingsStorage.initialize(TimidityActivity.this);
 	}
 
 	@Override
@@ -324,8 +325,7 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 			if (!good) {
 
 				// permission denied, boo! Disable the app.
-				// TODO: only disable if files are inaccessible
-				new AlertDialog.Builder(TimidityActivity.this).setTitle("Error").setMessage("Timidity AE cannot proceed without these permissions").setPositiveButton("OK", new OnClickListener() {
+				new AlertDialog.Builder(TimidityActivity.this).setTitle("Error").setMessage("Timidity AE cannot proceed without these permissions.").setPositiveButton("OK", new OnClickListener() {
 
 					@Override
 					public void onClick(DialogInterface dialog, int which) {
@@ -355,28 +355,28 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 	protected void onCreate(Bundle savedInstanceState) {
 		deadlyDeath = false;
 		if (savedInstanceState == null) {
-			Globals.reloadSettings(this, getAssets());
+			SettingsStorage.reloadSettings(this, getAssets());
 		} else {
 			// For some reason when I kill the activity and restart it,
 			// justtheme is true, but Globals.theme = 0
-			if (!savedInstanceState.getBoolean("justtheme", false) || Globals.theme == 0) {
-				Globals.reloadSettings(this, getAssets());
+			if (!savedInstanceState.getBoolean("justtheme", false) || SettingsStorage.theme == 0) {
+				SettingsStorage.reloadSettings(this, getAssets());
 			}
 		}
 		try {
 			System.loadLibrary("timidityhelper");
 		} catch (UnsatisfiedLinkError e) {
 			Log.e("Bad:", "Cannot load timidityhelper");
-			Globals.nativeMidi = Globals.onlyNative = true;
+			SettingsStorage.nativeMidi = SettingsStorage.onlyNative = true;
 		}
 		if (JNIHandler.loadLib(Globals.getLibDir(this) + "libtimidityplusplus.so") < 0) {
 			Log.e("Bad:", "Cannot load timidityplusplus");
-			Globals.nativeMidi = Globals.onlyNative = true;
+			SettingsStorage.nativeMidi = SettingsStorage.onlyNative = true;
 		} else {
 			Globals.libLoaded = true;
 		}
-		oldTheme = Globals.theme;
-		this.setTheme((Globals.theme == 1) ? android.support.v7.appcompat.R.style.Theme_AppCompat_Light_DarkActionBar : android.support.v7.appcompat.R.style.Theme_AppCompat);
+		oldTheme = SettingsStorage.theme;
+		this.setTheme((SettingsStorage.theme == 1) ? android.support.v7.appcompat.R.style.Theme_AppCompat_Light_DarkActionBar : android.support.v7.appcompat.R.style.Theme_AppCompat);
 		super.onCreate(savedInstanceState);
 		if (savedInstanceState == null) {
 			Log.i("Timidity", "Initializing");
@@ -401,7 +401,7 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 			if (tmp != null)
 				fileFrag = (FileBrowserFragment) tmp;
 			if (!isMyServiceRunning(MusicService.class)) {
-				Globals.reloadSettings(this, getAssets());
+				SettingsStorage.reloadSettings(this, getAssets());
 				initCallback2();
 				if (viewPager != null) {
 					if (viewPager.getCurrentItem() == 1) {
@@ -429,7 +429,7 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 		if (activityReceiver != null) {
 			// Create an intent filter to listen to the broadcast sent with the
 			// action "ACTION_STRING_ACTIVITY"
-			IntentFilter intentFilter = new IntentFilter(getResources().getString(R.string.ta_rec));
+			IntentFilter intentFilter = new IntentFilter(CommandStrings.ta_rec);
 			// Map the intent filter to the receiver
 			registerReceiver(activityReceiver, intentFilter);
 		}
@@ -482,15 +482,15 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 							menuButton.setIcon(R.drawable.ic_menu_agenda);
 							menuButton.setTitle(getResources().getString(R.string.view));
 							menuButton.setTitleCondensed(getResources().getString(R.string.viewcon));
-							menuButton.setVisible((!JNIHandler.type) && Globals.isPlaying == 0);
-							menuButton.setEnabled((!JNIHandler.type) && Globals.isPlaying == 0);
+							menuButton.setVisible((!JNIHandler.isMediaPlayerFormat) && JNIHandler.isPlaying);
+							menuButton.setEnabled((!JNIHandler.isMediaPlayerFormat) && JNIHandler.isPlaying);
 						}
 						if (menuButton2 != null) {
 							menuButton2.setIcon(R.drawable.ic_menu_info_details);
 							menuButton2.setTitle(getResources().getString(R.string.playback));
 							menuButton2.setTitleCondensed(getResources().getString(R.string.playbackcon));
-							menuButton2.setVisible((!JNIHandler.type) && Globals.isPlaying == 0);
-							menuButton2.setEnabled((!JNIHandler.type) && Globals.isPlaying == 0);
+							menuButton2.setVisible((!JNIHandler.isMediaPlayerFormat) && JNIHandler.isPlaying);
+							menuButton2.setEnabled((!JNIHandler.isMediaPlayerFormat) && JNIHandler.isPlaying);
 						}
 						getSupportActionBar().setDisplayHomeAsUpEnabled(false);
 						getSupportActionBar().setHomeButtonEnabled(false);
@@ -551,7 +551,7 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 				if (f != null)
 					trueExt++;
 			}
-			if ((permissions == null || permissions.isEmpty()) && Globals.shouldLolNag && trueExt > 1) {
+			if ((permissions == null || permissions.isEmpty()) && SettingsStorage.shouldExtStorageNag && trueExt > 1) {
 				new AlertDialog.Builder(this).setTitle("SD Card Access").setCancelable(false).setMessage("Would you like to give Timidity AE write access to your external sd card? This is recommended if you're converting files or would like to place Timidity AE's data directory there. Problems may occur if a directory other than the root of your SD card is selected.").setPositiveButton("Yes", new OnClickListener() {
 
 					@Override
@@ -564,7 +564,7 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 
 					@Override
 					public void onClick(DialogInterface dialog, int which) {
-						Globals.prefs.edit().putBoolean("shouldLolNag", Globals.shouldLolNag = false).commit();
+						SettingsStorage.disableLollipopStorageNag();
 						initCallback2();
 					}
 
@@ -578,7 +578,7 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 			} else {
 				for (UriPermission permission : permissions) {
 					if (permission.isReadPermission() && permission.isWritePermission()) {
-						Globals.theFold = permission.getUri();
+						DocumentFileUtils.docFileDevice = permission.getUri();
 					}
 				}
 
@@ -590,9 +590,9 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 	}
 
 	public void initCallback2() {
-		int x = JNIHandler.init(Globals.dataFolder + "timidity/", "timidity.cfg", Globals.mono, Globals.defSamp, Globals.sixteen, Globals.buff, Globals.aRate, Globals.preserveSilence, false, Globals.freeInsts);
+		int x = JNIHandler.init(SettingsStorage.dataFolder + "timidity/", "timidity.cfg", SettingsStorage.channelMode, SettingsStorage.defaultResamp, SettingsStorage.sixteenBit, SettingsStorage.bufferSize, SettingsStorage.audioRate, SettingsStorage.preserveSilence, false, SettingsStorage.freeInsts);
 		if (x != 0 && x != -99) {
-			Globals.nativeMidi = true;
+			SettingsStorage.nativeMidi = true;
 			Toast.makeText(this, String.format(getResources().getString(R.string.tcfg_error), x), Toast.LENGTH_LONG).show();
 		}
 		handleIntentData(getIntent());
@@ -617,7 +617,7 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 										if (dotPosition != -1) {
 											extension = (ff.getName().substring(dotPosition)).toLowerCase(Locale.US);
 											if (extension != null) {
-												if ((Globals.showVideos ? Globals.musicVideoFiles : Globals.musicFiles).contains("*" + extension + "*")) {
+												if ((SettingsStorage.showVideos ? Globals.musicVideoFiles : Globals.musicFiles).contains("*" + extension + "*")) {
 
 													files.add(ff.getPath());
 													if (ff.getPath().equals(data))
@@ -694,7 +694,7 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 									if (dotPosition != -1) {
 										extension = (ff.getName().substring(dotPosition)).toLowerCase(Locale.US);
 										if (extension != null) {
-											if ((Globals.showVideos ? Globals.musicVideoFiles : Globals.musicFiles).contains("*" + extension + "*")) {
+											if ((SettingsStorage.showVideos ? Globals.musicVideoFiles : Globals.musicFiles).contains("*" + extension + "*")) {
 
 												files.add(ff.getPath());
 												if (ff.getPath().equals(Globals.getExternalCacheDir(this).getAbsolutePath() + '/' + filename))
@@ -716,7 +716,6 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 					}
 
 				} else {
-					System.out.println(in.getDataString());
 					Toast.makeText(this, getResources().getString(R.string.intErr2) + " (" + in.getData().getScheme() + ")", Toast.LENGTH_SHORT).show();
 				}
 			}
@@ -732,7 +731,7 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 		if (dotPosition != -1) {
 			extension = (name.substring(dotPosition)).toLowerCase(Locale.US);
 			if (extension != null) {
-				if ((Globals.showVideos ? Globals.musicVideoFiles : Globals.musicFiles).contains("*" + extension + "*")) {
+				if ((SettingsStorage.showVideos ? Globals.musicVideoFiles : Globals.musicFiles).contains("*" + extension + "*")) {
 
 					files.add(name);
 					stop();
@@ -796,7 +795,7 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 				fileFrag.setSelection(x);
 				break;
 			case 1:
-				if (playFrag != null && !JNIHandler.type) {
+				if (playFrag != null && !JNIHandler.isMediaPlayerFormat) {
 					playFrag.incrementInterface();
 				} /*
 					 * else{ Toast.makeText(this, "Non midi file",
@@ -813,11 +812,11 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 			switch (mode) {
 			case 0:
 				if (fileFrag != null)
-					fileFrag.getDir(Globals.defaultFolder);
+					fileFrag.getDir(SettingsStorage.homeFolder);
 				break;
 			case 1:
 				if (playFrag != null) {
-					if ((!JNIHandler.type) && Globals.isPlaying == 0) {
+					if ((!JNIHandler.isMediaPlayerFormat) && JNIHandler.isPlaying) {
 						playFrag.showMidiDialog();
 					} /*
 						 * else{ Toast.makeText(this, "Non midi file",
@@ -835,8 +834,8 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 		} else if (item.getItemId() == R.id.quit) {
 			deadlyDeath = true;
 			Intent new_intent = new Intent();
-			new_intent.setAction(getResources().getString(R.string.msrv_rec));
-			new_intent.putExtra(getResources().getString(R.string.msrv_cmd), 5);
+			new_intent.setAction(CommandStrings.msrv_rec);
+			new_intent.putExtra(CommandStrings.msrv_cmd, CommandStrings.msrv_cmd_stop);
 			sendBroadcast(new_intent);
 			stopService(new Intent(this, MusicService.class));
 			unregisterReceiver(activityReceiver);
@@ -871,7 +870,7 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 					if (!fileFrag.currPath.matches("[/]+")) {
 						fileFrag.getDir(new File(fileFrag.currPath).getParent().toString());
 					} else {
-						if (Globals.useDefaultBack) {
+						if (SettingsStorage.useDefaultBack) {
 							super.onBackPressed();
 							return;
 						}
@@ -879,7 +878,7 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 					}
 			break;
 		case 1:
-			if (Globals.useDefaultBack) {
+			if (SettingsStorage.useDefaultBack) {
 				super.onBackPressed();
 				return;
 			}
@@ -889,7 +888,7 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 			if (plistFrag.mode)
 				plistFrag.getPlaylists(null);
 			else {
-				if (Globals.useDefaultBack) {
+				if (SettingsStorage.useDefaultBack) {
 					super.onBackPressed();
 					return;
 				}
@@ -911,19 +910,19 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 
 		// plistFrag.getListView().setItemChecked(songNumber, true);
 		Intent new_intent = new Intent();
-		new_intent.setAction(getResources().getString(R.string.msrv_rec));
-		new_intent.putExtra(getResources().getString(R.string.msrv_cmd), 5);
+		new_intent.setAction(CommandStrings.msrv_rec);
+		new_intent.putExtra(CommandStrings.msrv_cmd, CommandStrings.msrv_cmd_stop);
 		sendBroadcast(new_intent);
 		new_intent = new Intent();
-		new_intent.setAction(getResources().getString(R.string.msrv_rec));
-		new_intent.putExtra(getResources().getString(R.string.msrv_cmd), 0);
+		new_intent.setAction(CommandStrings.msrv_rec);
+		new_intent.putExtra(CommandStrings.msrv_cmd, CommandStrings.msrv_cmd_load_plist_play);
 
 		if (fileFrag != null) {
-			new_intent.putExtra(getResources().getString(R.string.msrv_currfold), fileFrag.currPath);
+			new_intent.putExtra(CommandStrings.msrv_currfold, fileFrag.currPath);
 		}
-		new_intent.putExtra(getResources().getString(R.string.msrv_songnum), songNumber);
-		new_intent.putExtra(getResources().getString(R.string.msrv_begin), begin);
-		new_intent.putExtra(getResources().getString(R.string.msrv_dlplist), dontloadplist);
+		new_intent.putExtra(CommandStrings.msrv_songnum, songNumber);
+		new_intent.putExtra(CommandStrings.msrv_begin, begin);
+		new_intent.putExtra(CommandStrings.msrv_dlplist, dontloadplist);
 		sendBroadcast(new_intent);
 	}
 
@@ -943,13 +942,13 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 		public Fragment getItem(int position) {
 			switch (position) {
 			case 0:
-				fileFrag = FileBrowserFragment.create(Globals.defaultFolder);
+				fileFrag = FileBrowserFragment.create(SettingsStorage.homeFolder);
 				return fileFrag;
 			case 1:
 				playFrag = PlayerFragment.create();
 				return playFrag;
 			case 2:
-				plistFrag = PlaylistFragment.create(Globals.dataFolder + "playlists/");
+				plistFrag = PlaylistFragment.create(SettingsStorage.dataFolder + "playlists/");
 				return plistFrag;
 			default:
 				return null;
@@ -1000,69 +999,69 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 	// This is painful.
 	public void play() {
 		Intent new_intent = new Intent();
-		new_intent.setAction(getResources().getString(R.string.msrv_rec));
-		new_intent.putExtra(getResources().getString(R.string.msrv_cmd), 1);
+		new_intent.setAction(CommandStrings.msrv_rec);
+		new_intent.putExtra(CommandStrings.msrv_cmd, CommandStrings.msrv_cmd_play);
 		sendBroadcast(new_intent);
 	}
 
 	public void pause() {
 		Intent new_intent = new Intent();
-		new_intent.setAction(getResources().getString(R.string.msrv_rec));
-		new_intent.putExtra(getResources().getString(R.string.msrv_cmd), 2);
+		new_intent.setAction(CommandStrings.msrv_rec);
+		new_intent.putExtra(CommandStrings.msrv_cmd, CommandStrings.msrv_cmd_pause);
 		sendBroadcast(new_intent);
 	}
 
 	public void next() {
 		Intent new_intent = new Intent();
-		new_intent.setAction(getResources().getString(R.string.msrv_rec));
-		new_intent.putExtra(getResources().getString(R.string.msrv_cmd), 3);
+		new_intent.setAction(CommandStrings.msrv_rec);
+		new_intent.putExtra(CommandStrings.msrv_cmd, CommandStrings.msrv_cmd_next);
 		sendBroadcast(new_intent);
 	}
 
 	public void prev() {
 		Intent new_intent = new Intent();
-		new_intent.setAction(getResources().getString(R.string.msrv_rec));
-		new_intent.putExtra(getResources().getString(R.string.msrv_cmd), 4);
+		new_intent.setAction(CommandStrings.msrv_rec);
+		new_intent.putExtra(CommandStrings.msrv_cmd, CommandStrings.msrv_cmd_prev);
 		sendBroadcast(new_intent);
 	}
 
 	public void stop() {
 		Intent new_intent = new Intent();
-		new_intent.setAction(getResources().getString(R.string.msrv_rec));
-		new_intent.putExtra(getResources().getString(R.string.msrv_cmd), 5);
+		new_intent.setAction(CommandStrings.msrv_rec);
+		new_intent.putExtra(CommandStrings.msrv_cmd, CommandStrings.msrv_cmd_stop);
 		sendBroadcast(new_intent);
 	}
 
 	public void loop(int mode) {
 		Intent new_intent = new Intent();
-		new_intent.setAction(getResources().getString(R.string.msrv_rec));
-		new_intent.putExtra(getResources().getString(R.string.msrv_cmd), 6);
-		new_intent.putExtra(getResources().getString(R.string.msrv_loopmode), mode);
+		new_intent.setAction(CommandStrings.msrv_rec);
+		new_intent.putExtra(CommandStrings.msrv_cmd, CommandStrings.msrv_cmd_loop_mode);
+		new_intent.putExtra(CommandStrings.msrv_loopmode, mode);
 		sendBroadcast(new_intent);
 	}
 
 	public void shuffle(int mode) {
 		Intent new_intent = new Intent();
-		new_intent.setAction(getResources().getString(R.string.msrv_rec));
-		new_intent.putExtra(getResources().getString(R.string.msrv_cmd), 7);
-		new_intent.putExtra(getResources().getString(R.string.msrv_shufmode), mode);
+		new_intent.setAction(CommandStrings.msrv_rec);
+		new_intent.putExtra(CommandStrings.msrv_cmd, CommandStrings.msrv_cmd_shuf_mode);
+		new_intent.putExtra(CommandStrings.msrv_shufmode, mode);
 		sendBroadcast(new_intent);
 	}
 
 	public void seek(int time) {
 		Intent new_intent = new Intent();
-		new_intent.setAction(getResources().getString(R.string.msrv_rec));
-		new_intent.putExtra(getResources().getString(R.string.msrv_cmd), 9);
-		new_intent.putExtra(getResources().getString(R.string.msrv_seektime), time);
+		new_intent.setAction(CommandStrings.msrv_rec);
+		new_intent.putExtra(CommandStrings.msrv_cmd, CommandStrings.msrv_cmd_seek);
+		new_intent.putExtra(CommandStrings.msrv_seektime, time);
 		sendBroadcast(new_intent);
 	}
 
 	public void writeFile(String input, String output) {
 		Intent new_intent = new Intent();
-		new_intent.setAction(getResources().getString(R.string.msrv_rec));
-		new_intent.putExtra(getResources().getString(R.string.msrv_cmd), 14);
-		new_intent.putExtra(getResources().getString(R.string.msrv_infile), input);
-		new_intent.putExtra(getResources().getString(R.string.msrv_outfile), output);
+		new_intent.setAction(CommandStrings.msrv_rec);
+		new_intent.putExtra(CommandStrings.msrv_cmd, CommandStrings.msrv_cmd_write_new);
+		new_intent.putExtra(CommandStrings.msrv_infile, input);
+		new_intent.putExtra(CommandStrings.msrv_outfile, output);
 		sendBroadcast(new_intent);
 	}
 
@@ -1071,7 +1070,7 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		// Check which request we're responding to
 		if (requestCode == 1) {
-			if (oldTheme != Globals.theme) {
+			if (oldTheme != SettingsStorage.theme) {
 				Intent intent = getIntent();
 				intent.putExtra("justtheme", true);
 				intent.putExtra("needservice", false);
@@ -1099,9 +1098,9 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 
 	public void loadCfg(String path) {
 		Intent new_intent = new Intent();
-		new_intent.setAction(getResources().getString(R.string.msrv_rec));
-		new_intent.putExtra(getResources().getString(R.string.msrv_cmd), 17);
-		new_intent.putExtra(getResources().getString(R.string.msrv_infile), path);
+		new_intent.setAction(CommandStrings.msrv_rec);
+		new_intent.putExtra(CommandStrings.msrv_cmd, CommandStrings.msrv_cmd_load_cfg);
+		new_intent.putExtra(CommandStrings.msrv_infile, path);
 		sendBroadcast(new_intent);
 	}
 

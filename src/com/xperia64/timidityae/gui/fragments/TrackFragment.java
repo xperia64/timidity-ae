@@ -39,24 +39,23 @@ import android.widget.AdapterView.OnItemClickListener;
 
 import com.xperia64.timidityae.JNIHandler;
 import com.xperia64.timidityae.R;
-import com.xperia64.timidityae.util.Globals;
+import com.xperia64.timidityae.util.SettingsStorage;
 
 public class TrackFragment extends Fragment {
-	ArrayList<Integer> localInst = new ArrayList<Integer>();
 
-	ArrayList<Integer> localVol = new ArrayList<Integer>();
+	private ArrayList<Integer> localInst = new ArrayList<Integer>();
+	private ArrayList<Integer> localVol = new ArrayList<Integer>();
 
-	// ArrayList<Boolean> JNIHandler.drums = new ArrayList<Boolean>();
-	ArrayAdapter<String> fileList;
-	boolean fromUser;
-	ListView channelList;
+	private ArrayAdapter<String> trackListAdapter;
+	private boolean fromUser;
+	private ListView trackList;
 	// int bigCounter=6;
-	AlertDialog ddd;
+	private AlertDialog ddd;
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View v = inflater.inflate(R.layout.track_fragment, container, false);
-		channelList = (ListView) v.findViewById(R.id.trackList);
+		trackList = (ListView) v.findViewById(R.id.trackList);
 		return v;
 
 	}
@@ -65,12 +64,12 @@ public class TrackFragment extends Fragment {
 	public void onViewCreated(View view, Bundle savedInstanceState) {
 		reset();
 
-		fileList = new ArrayAdapter<String>(getActivity(), R.layout.row);
+		trackListAdapter = new ArrayAdapter<String>(getActivity(), R.layout.row);
 		for (int i = 0; i < JNIHandler.MAX_CHANNELS; i++) {
-			fileList.add(String.format(getActivity().getResources().getString(R.string.trk_form), (getActivity().getResources().getString(JNIHandler.drums.get(i) ? R.string.trk_drum : R.string.trk_inst2)), (i + 1), JNIHandler.drums.get(i) ? 0 : localInst.get(i) + 1, localVol.get(i)));
+			trackListAdapter.add(String.format(getActivity().getResources().getString(R.string.trk_form), (getActivity().getResources().getString(JNIHandler.drums.get(i) ? R.string.trk_drum : R.string.trk_inst2)), (i + 1), JNIHandler.drums.get(i) ? 0 : localInst.get(i) + 1, localVol.get(i)));
 		}
-		channelList.setAdapter(fileList);
-		channelList.setOnItemClickListener(new OnItemClickListener() {
+		trackList.setAdapter(trackListAdapter);
+		trackList.setOnItemClickListener(new OnItemClickListener() {
 
 			@SuppressLint("InflateParams")
 			@Override
@@ -196,7 +195,7 @@ public class TrackFragment extends Fragment {
 
 				});
 				if (Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH)
-					v.setBackgroundColor(Globals.theme == 1 ? Color.WHITE : Color.BLACK);
+					v.setBackgroundColor(SettingsStorage.theme == 1 ? Color.WHITE : Color.BLACK);
 				b.setView(v);
 				b.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
 
@@ -207,7 +206,7 @@ public class TrackFragment extends Fragment {
 						JNIHandler.custVol.set(arg2, !vol.isChecked());
 						JNIHandler.setChannelVolumeTimidity(arg2 | (JNIHandler.custVol.get(arg2) ? 0x800 : 0x8000), volSeek.getProgress());
 						JNIHandler.setChannelTimidity(arg2 | (JNIHandler.custInst.get(arg2) ? 0x800 : 0x8000), instSpin.getSelectedItemPosition());
-						if (!JNIHandler.paused && Globals.isPlaying == 0)
+						if (!JNIHandler.paused && JNIHandler.isPlaying)
 							JNIHandler.seekTo(JNIHandler.currTime);
 						// bigCounter=12;
 						updateList();
@@ -245,7 +244,7 @@ public class TrackFragment extends Fragment {
 	}
 
 	public void updateList() {
-		if (!JNIHandler.type) {
+		if (!JNIHandler.isMediaPlayerFormat) {
 			// if(++bigCounter>4)
 			// {
 			// bigCounter=0;
@@ -267,14 +266,16 @@ public class TrackFragment extends Fragment {
 			}
 			if (needUpdate) {
 				// System.out.println("Need an update");
-				fileList.setNotifyOnChange(false); // Prevents 'clear()' from
-													// clearing/resetting the
-													// listview
-				fileList.clear();
+				// Prevents 'clear()' from clearing/resetting the listview
+				trackListAdapter.setNotifyOnChange(false); 
+				trackListAdapter.clear();
 				for (int i = 0; i < JNIHandler.MAX_CHANNELS; i++) {
-					fileList.add(String.format(getActivity().getResources().getString(R.string.trk_form), (getActivity().getResources().getString(JNIHandler.drums.get(i) ? R.string.trk_drum : R.string.trk_inst2)), (i + 1), JNIHandler.drums.get(i) ? 0 : localInst.get(i) + 1, localVol.get(i)));
+					trackListAdapter.add(String.format(getActivity().getResources().getString(R.string.trk_form),
+							(getActivity().getResources().getString(JNIHandler.drums.get(i) ? R.string.trk_drum : R.string.trk_inst2)),
+							(i + 1), JNIHandler.drums.get(i) ? 0 : localInst.get(i) + 1, 
+									localVol.get(i)));
 				}
-				fileList.notifyDataSetChanged();
+				trackListAdapter.notifyDataSetChanged();
 			}
 			// }
 		}

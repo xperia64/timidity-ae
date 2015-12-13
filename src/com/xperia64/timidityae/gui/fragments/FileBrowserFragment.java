@@ -21,6 +21,8 @@ import com.xperia64.timidityae.R;
 import com.xperia64.timidityae.TimidityActivity;
 import com.xperia64.timidityae.util.FileComparator;
 import com.xperia64.timidityae.util.Globals;
+import com.xperia64.timidityae.util.CommandStrings;
+import com.xperia64.timidityae.util.SettingsStorage;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -51,7 +53,7 @@ public class FileBrowserFragment extends ListFragment {
 
 	public static FileBrowserFragment create(String fold) {
 		Bundle args = new Bundle();
-		args.putString(Globals.currFoldKey, fold);
+		args.putString(CommandStrings.currFoldKey, fold);
 		FileBrowserFragment fragment = new FileBrowserFragment();
 		fragment.setArguments(args);
 		return fragment;
@@ -61,7 +63,7 @@ public class FileBrowserFragment extends ListFragment {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		if (getArguments() != null)
-			currPath = getArguments().getString(Globals.currFoldKey);
+			currPath = getArguments().getString(CommandStrings.currFoldKey);
 		if (currPath == null)
 			currPath = Environment.getExternalStorageDirectory().getAbsolutePath();
 		else if (!new File(currPath).exists())
@@ -93,8 +95,8 @@ public class FileBrowserFragment extends ListFragment {
 		}
 		if (Globals.shouldRestore) {
 			Intent new_intent = new Intent();
-			new_intent.setAction(getActivity().getResources().getString(R.string.msrv_rec));
-			new_intent.putExtra(getActivity().getResources().getString(R.string.msrv_cmd), 10);
+			new_intent.setAction(CommandStrings.msrv_rec);
+			new_intent.putExtra(CommandStrings.msrv_cmd, CommandStrings.msrv_cmd_get_fold);
 			getActivity().sendBroadcast(new_intent);
 		}
 	}
@@ -112,15 +114,15 @@ public class FileBrowserFragment extends ListFragment {
 					Arrays.sort(files, new FileComparator());
 
 					// System.out.println(currPath);
-					if (!currPath.matches("[/]+")) {
-						fname.add("../");
+					if (!currPath.matches(Globals.repeatedSeparatorString)) {
+						fname.add(Globals.parentString);
 						// Thank you Marshmallow.
 						// Disallowing access to /storage/emulated has now
 						// prevent billions of hacking attempts daily.
 						if (new File(f.getParent()).canRead()) {
-							path.add(f.getParent() + "/");
+							path.add(f.getParent() + File.separator);
 						} else {
-							path.add("/");
+							path.add(File.separator);
 						}
 						mCallback.needFileBackCallback(true);
 					} else {
@@ -128,7 +130,7 @@ public class FileBrowserFragment extends ListFragment {
 					}
 					for (int i = 0; i < files.length; i++) {
 						File file = files[i];
-						if ((!file.getName().startsWith(".") && !Globals.showHiddenFiles) || Globals.showHiddenFiles) {
+						if ((!file.getName().startsWith(".") && !SettingsStorage.showHiddenFiles) || SettingsStorage.showHiddenFiles) {
 							if (file.isFile()) {
 								int dotPosition = file.getName().lastIndexOf(".");
 								String extension = "";
@@ -136,26 +138,26 @@ public class FileBrowserFragment extends ListFragment {
 									extension = (file.getName().substring(dotPosition)).toLowerCase(Locale.US);
 									if (extension != null) {
 
-										if ((Globals.showVideos ? Globals.musicVideoFiles : Globals.musicFiles).contains("*" + extension + "*")) {
+										if ((SettingsStorage.showVideos ? Globals.musicVideoFiles : Globals.musicFiles).contains("*" + extension + "*")) {
 
 											path.add(file.getAbsolutePath());
 											fname.add(file.getName());
 										}
-									} else if (file.getName().endsWith("/")) {
-										path.add(file.getAbsolutePath() + "/");
-										fname.add(file.getName() + "/");
+									} else if (file.getName().endsWith(File.separator)) {
+										path.add(file.getAbsolutePath() + File.separator);
+										fname.add(file.getName() + File.separator);
 									}
 								}
 							} else {
-								path.add(file.getAbsolutePath() + "/");
-								fname.add(file.getName() + "/");
+								path.add(file.getAbsolutePath() + File.separator);
+								fname.add(file.getName() + File.separator);
 							}
 						}
 					}
 				} else {
-					if (!currPath.matches("[/]+")) {
-						fname.add("../");
-						path.add(f.getParent() + "/");
+					if (!currPath.matches(Globals.repeatedSeparatorString)) {
+						fname.add(Globals.parentString);
+						path.add(f.getParent() + File.separator);
 
 					}
 				}
@@ -165,7 +167,6 @@ public class FileBrowserFragment extends ListFragment {
 
 					@Override
 					public boolean onItemLongClick(AdapterView<?> l, View v, final int position, long id) {
-						System.out.println("Derp" + "Drip");
 						if (Globals.isMidi(path.get(position))) {
 							((TimidityActivity) getActivity()).dynExport(path.get(position), false);
 							return true;
@@ -182,23 +183,26 @@ public class FileBrowserFragment extends ListFragment {
 	@Override
 	public void onListItemClick(ListView l, View v, int position, long id) {
 		File file = new File(path.get(position));
-		System.out.println(path.get(position));
 		if (file.isDirectory()) {
 			if (file.canRead()) {
 				getDir(path.get(position));
 			} else {
-				new AlertDialog.Builder(getActivity()).setIcon(R.drawable.ic_launcher).setTitle(String.format("[%1$s] %2$s", file.getName(), getResources().getString(R.string.fb_cread))).setPositiveButton(getResources().getString(android.R.string.ok), new DialogInterface.OnClickListener() {
+				AlertDialog.Builder unreadableDialog = new AlertDialog.Builder(getActivity());
+				unreadableDialog = unreadableDialog.setIcon(R.drawable.ic_launcher);
+				unreadableDialog = unreadableDialog.setTitle(String.format("[%1$s] %2$s", file.getName(), getActivity().getResources().getString(R.string.fb_cread)));
+				unreadableDialog = unreadableDialog.setPositiveButton(getActivity().getResources().getString(android.R.string.ok), new DialogInterface.OnClickListener() {
 					@Override
 					public void onClick(DialogInterface dialog, int which) {
 					}
-				}).show();
+				});
+				unreadableDialog.show();
 			}
 		} else {
 			if (file.canRead()) {
 				ArrayList<String> files = new ArrayList<String>();
 				int firstFile = -1;
 				for (int i = 0; i < path.size(); i++) {
-					if (!path.get(i).endsWith("/")) {
+					if (!path.get(i).endsWith(File.separator)) {
 						files.add(path.get(i));
 						if (firstFile == -1) {
 							firstFile = i;
@@ -213,6 +217,6 @@ public class FileBrowserFragment extends ListFragment {
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
-		outState.putString(Globals.currFoldKey, currPath);
+		outState.putString(CommandStrings.currFoldKey, currPath);
 	}
 }

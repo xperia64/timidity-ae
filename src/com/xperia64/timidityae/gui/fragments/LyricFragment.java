@@ -24,21 +24,18 @@ import com.xperia64.timidityae.JNIHandler;
 import com.xperia64.timidityae.R;
 
 public class LyricFragment extends Fragment {
-	TextView lyrics;
-	ScrollView scrollContainer;
-	boolean ready;
+	private TextView lyrics;
+	private ScrollView scrollContainer;
+	private boolean ready;
 
 	// TODO Make lyrics shiny-er
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-
 		ready = false;
 		View root = inflater.inflate(R.layout.lyrical_fragment, container, false);
 		lyrics = (TextView) root.findViewById(R.id.lyrics);
 		scrollContainer = (ScrollView) root.findViewById(R.id.lyric_holder);
-
 		return root;
-
 	}
 
 	@Override

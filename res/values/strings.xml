@@ -181,31 +181,7 @@
 	    
 	</string>
 	
-<!-- MusicService Commands (DO NOT TRANSLATE) -->
-<!-- (these really should go in Globals, shouldn't they...) -->
-<string name = "msrv_rec" translatable="false">com.xperia64.timidityae.MusicService_RECEIVER</string>
-<string name = "msrv_cmd" translatable="false">com.xperia64.timidityae.MusicService_CMD</string>
-<string name = "msrv_songnum" translatable="false">com.xperia64.timidityae.MusicService_SONGNUM</string>
-<string name = "msrv_currfold" translatable="false">com.xperia64.timidityae.MusicService_CURRFOLD</string>
-<string name = "msrv_begin" translatable="false">com.xperia64.timidityae.MusicService_Begin</string>
-<string name = "msrv_loopmode" translatable="false">com.xperia64.timidityae.MusicService_LoopMode</string>
-<string name = "msrv_shufmode" translatable="false">com.xperia64.timidityae.MusicService_ShuffleMode</string>
-<string name = "msrv_seektime" translatable="false">com.xperia64.timidityae.MusicService_SeekTime</string>
-<string name = "msrv_infile" translatable="false">com.xperia64.timidityae.MusicService_InputFile</string>
-<string name = "msrv_outfile" translatable="false">com.xperia64.timidityae.MusicService_OutputFile</string>
-<string name = "msrv_reset" translatable="false">com.xperia64.timidityae.MusicService_Reset</string>
-<string name = "msrv_dlplist" translatable="false">com.xperia64.timidityae.MusicService_DontLoadPlist</string>
-<!-- TimidityActivity Commands (DO NOT TRANSLATE) -->
-<string name = "ta_rec" translatable="false">com.xperia64.timidityae.TimidityActivity_RECEIVER</string>
-<string name = "ta_cmd" translatable="false">com.xperia64.timidityae.TimidityActivity_CMD</string>
-<string name = "ta_filename" translatable="false">com.xperia64.timidityae.TimidityActivity_FileName</string>
-<string name = "ta_startt" translatable="false">com.xperia64.timidityae.TimidityActivity_StartTime</string>
-<string name = "ta_songttl" translatable="false">com.xperia64.timidityae.TimidityActivity_SongTitle</string>
-<string name = "ta_currpath" translatable="false">com.xperia64.timidityae.TimidityActivity_CurrPath</string>
-<string name = "ta_shufmode" translatable="false">com.xperia64.timidityae.TimidityActivity_ShuffleMode</string>
-<string name = "ta_loopmode" translatable="false">com.xperia64.timidityae.TimidityActivity_LoopMode</string>
-<string name = "ta_pause" translatable="false">com.xperia64.timidityae.TimidityActivity_Pause</string>
-<string name = "ta_pausea" translatable="false">com.xperia64.timidityae.TimidityActivity_PauseArg</string>
+
 
 
 

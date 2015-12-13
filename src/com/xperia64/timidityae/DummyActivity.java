@@ -10,8 +10,9 @@ public class DummyActivity extends Activity {
 		// Really Google? This bug is still present in Lollipop.
 		// I should not have to create an Activity just to keep my service alive.
 		super.onCreate( potato );
-		this.finish(); // With and without this something breaks. With, it
-						// closes the task manager. Without, volume buttons
-						// break and lag occurs.
+		// With and without this something breaks. 
+		// With, it closes the task manager. 
+		// Without, volume buttons break and lag occurs.
+		this.finish(); 
 	}
 }

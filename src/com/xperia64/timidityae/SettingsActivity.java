@@ -15,7 +15,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.xperia64.timidityae.util.DocumentFileUtils;
 import com.xperia64.timidityae.util.Globals;
+import com.xperia64.timidityae.util.ObjectSerializer;
+import com.xperia64.timidityae.util.CommandStrings;
+import com.xperia64.timidityae.util.SettingsStorage;
 import com.xperia64.timidityae.R;
 import com.xperia64.timidityae.gui.dialogs.FileBrowserDialog;
 import com.xperia64.timidityae.gui.dialogs.SoundfontDialog;
@@ -106,7 +110,7 @@ public class SettingsActivity extends AppCompatActivity implements FileBrowserDi
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ECLAIR && Build.VERSION.SDK_INT < Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
 			this.setTheme(android.support.v7.appcompat.R.style.Theme_AppCompat);
 		} else {
-			this.setTheme((Globals.theme == 1) ? android.support.v7.appcompat.R.style.Theme_AppCompat_Light_DarkActionBar : android.support.v7.appcompat.R.style.Theme_AppCompat);
+			this.setTheme((SettingsStorage.theme == 1) ? android.support.v7.appcompat.R.style.Theme_AppCompat_Light_DarkActionBar : android.support.v7.appcompat.R.style.Theme_AppCompat);
 		}
 		super.onCreate(savedInstanceState);
 		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -184,15 +188,15 @@ public class SettingsActivity extends AppCompatActivity implements FileBrowserDi
 			e.printStackTrace();
 		}
 		if (needUpdateSf) {
-			Globals.writeCfg(SettingsActivity.this, Globals.dataFolder + "/timidity/timidity.cfg", tmpSounds); // TODO
+			SettingsStorage.writeCfg(SettingsActivity.this, SettingsStorage.dataFolder + "/timidity/timidity.cfg", tmpSounds); // TODO
 																												// ??
 		}
 
-		Globals.reloadSettings(this, this.getAssets());
+		SettingsStorage.reloadSettings(this, this.getAssets());
 		if (needRestart) {
 			Intent new_intent = new Intent();
-			new_intent.setAction(getResources().getString(R.string.msrv_rec));
-			new_intent.putExtra(getResources().getString(R.string.msrv_cmd), 18);
+			new_intent.setAction(CommandStrings.msrv_rec);
+			new_intent.putExtra(CommandStrings.msrv_cmd, CommandStrings.msrv_cmd_reload_libs);
 			sendBroadcast(new_intent);
 		}
 		Intent returnIntent = new Intent();
@@ -209,7 +213,7 @@ public class SettingsActivity extends AppCompatActivity implements FileBrowserDi
 				case 3:
 					prefs.edit().putString("defaultPath", path).commit();
 					manHomeFolder.setText(path);
-					Globals.defaultFolder = path;
+					SettingsStorage.homeFolder = path;
 					((BaseAdapter) pf.getPreferenceScreen().getRootAdapter()).notifyDataSetChanged();
 					break;
 				case 4:
@@ -235,9 +239,9 @@ public class SettingsActivity extends AppCompatActivity implements FileBrowserDi
 			if (resultCode == RESULT_OK) {
 				Uri treeUri = data.getData();
 				getContentResolver().takePersistableUriPermission(treeUri, Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-				Globals.theFold = treeUri;
+				DocumentFileUtils.docFileDevice = treeUri;
 			} else {
-				Globals.theFold = null;
+				DocumentFileUtils.docFileDevice = null;
 			}
 
 		}
@@ -316,7 +320,7 @@ public class SettingsActivity extends AppCompatActivity implements FileBrowserDi
 
 				@Override
 				public boolean onPreferenceChange(Preference arg0, Object arg1) {
-					Globals.showHiddenFiles = (Boolean) arg1;
+					SettingsStorage.showHiddenFiles = (Boolean) arg1;
 					return true;
 				}
 
@@ -325,7 +329,7 @@ public class SettingsActivity extends AppCompatActivity implements FileBrowserDi
 
 				@Override
 				public boolean onPreferenceChange(Preference arg0, Object arg1) {
-					Globals.showVideos = (Boolean) arg1;
+					SettingsStorage.showVideos = (Boolean) arg1;
 					return true;
 				}
 
@@ -334,10 +338,10 @@ public class SettingsActivity extends AppCompatActivity implements FileBrowserDi
 
 				@Override
 				public boolean onPreferenceChange(Preference arg0, Object arg1) {
-					if (!Globals.onlyNative)
-						Globals.nativeMidi = (Boolean) arg1;
+					if (!SettingsStorage.onlyNative)
+						SettingsStorage.nativeMidi = (Boolean) arg1;
 					else
-						Globals.nativeMidi = true;
+						SettingsStorage.nativeMidi = true;
 					return true;
 				}
 
@@ -346,7 +350,7 @@ public class SettingsActivity extends AppCompatActivity implements FileBrowserDi
 
 				@Override
 				public boolean onPreferenceChange(Preference arg0, Object arg1) {
-					Globals.keepWav = (Boolean) arg1;
+					SettingsStorage.keepPartialWav = (Boolean) arg1;
 					return true;
 				}
 
@@ -463,7 +467,7 @@ public class SettingsActivity extends AppCompatActivity implements FileBrowserDi
 						String sixteen = "16";// s.bitMode.getValue();
 						boolean sb = (stereo != null) ? stereo.equals("2") : true;
 						boolean sxb = (sixteen != null) ? sixteen.equals("16") : true;
-						SparseIntArray mmm = Globals.validBuffers(Globals.validRates(sb, sxb), sb, sxb);
+						SparseIntArray mmm = SettingsStorage.validBuffers(SettingsStorage.validRates(sb, sxb), sb, sxb);
 						if (mmm != null) {
 							int minBuff = mmm.get(Integer.parseInt((String) newValue));
 
@@ -542,8 +546,8 @@ public class SettingsActivity extends AppCompatActivity implements FileBrowserDi
 			// buffSize = Integer.parseInt(prefs.getString("tplusBuff",
 			// "192000"));
 			// System.out.println("Buffsize is: "+buffSize);
-			Globals.updateBuffers(Globals.updateRates());
-			int[] values = Globals.updateRates();
+			SettingsStorage.updateBuffers(SettingsStorage.updateRates());
+			int[] values = SettingsStorage.updateRates();
 			if (values != null) {
 				CharSequence[] hz = new CharSequence[values.length];
 				CharSequence[] hzItems = new CharSequence[values.length];
@@ -570,7 +574,7 @@ public class SettingsActivity extends AppCompatActivity implements FileBrowserDi
 								String sixteen = "16"; // s.bitMode.getValue();
 								boolean sb = (stereo != null) ? stereo.equals("2") : true;
 								boolean sxb = (sixteen != null) ? sixteen.equals("16") : true;
-								SparseIntArray mmm = Globals.validBuffers(Globals.validRates(sb, sxb), sb, sxb);
+								SparseIntArray mmm = SettingsStorage.validBuffers(SettingsStorage.validRates(sb, sxb), sb, sxb);
 								if (mmm != null) {
 
 									int minBuff = mmm.get(Integer.parseInt(s.rates.getValue()));
@@ -604,7 +608,7 @@ public class SettingsActivity extends AppCompatActivity implements FileBrowserDi
 						String sixteen = "16"; // s.bitMode.getValue();
 						boolean sb = (stereo != null) ? stereo.equals("2") : true;
 						boolean sxb = (sixteen != null) ? sixteen.equals("16") : true;
-						SparseIntArray mmm = Globals.validBuffers(Globals.validRates(sb, sxb), sb, sxb);
+						SparseIntArray mmm = SettingsStorage.validBuffers(SettingsStorage.validRates(sb, sxb), sb, sxb);
 						if (mmm != null) {
 
 							int minBuff = mmm.get(Integer.parseInt(s.rates.getValue()));
@@ -653,7 +657,7 @@ public class SettingsActivity extends AppCompatActivity implements FileBrowserDi
 
 				@Override
 				public boolean onPreferenceChange(Preference preference, Object newValue) {
-					Globals.theme = Integer.parseInt((String) newValue);
+					SettingsStorage.theme = Integer.parseInt((String) newValue);
 					Intent intent = s.getIntent();
 					s.finish();
 					startActivity(intent);
@@ -669,7 +673,7 @@ public class SettingsActivity extends AppCompatActivity implements FileBrowserDi
 			if (Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
 
 				if (preference instanceof PreferenceScreen) {
-					s.setTheme((Globals.theme == 1) ? android.support.v7.appcompat.R.style.Theme_AppCompat_Light_DarkActionBar : android.support.v7.appcompat.R.style.Theme_AppCompat);
+					s.setTheme((SettingsStorage.theme == 1) ? android.support.v7.appcompat.R.style.Theme_AppCompat_Light_DarkActionBar : android.support.v7.appcompat.R.style.Theme_AppCompat);
 					s.setUpNestedScreen((PreferenceScreen) preference);
 				}
 			}

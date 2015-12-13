@@ -18,7 +18,7 @@ import java.util.Locale;
 
 import com.xperia64.timidityae.R;
 import com.xperia64.timidityae.util.FileComparator;
-import com.xperia64.timidityae.util.Globals;
+import com.xperia64.timidityae.util.SettingsStorage;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -48,24 +48,25 @@ public class FileBrowserDialog implements OnItemClickListener {
 	String msg;
 	FileBrowserDialogListener onSelectedCallback;
 	AlertDialog ddd;
+
 	public interface FileBrowserDialogListener {
 		public void setItem(String path, int type);
+
 		public void write();
+
 		public void ignore();
 	}
 
 	boolean closeImmediately; // Should the dialog be closed immediately after selecting the file?
 
 	@SuppressLint("InflateParams")
-	public void create(int type, String extensions, FileBrowserDialogListener onSelectedCallback,
-			Activity context, LayoutInflater layoutInflater, boolean closeImmediately, String path, String msg)
-	{
+	public void create(int type, String extensions, FileBrowserDialogListener onSelectedCallback, Activity context, LayoutInflater layoutInflater, boolean closeImmediately, String path, String msg) {
 		this.onSelectedCallback = onSelectedCallback;
-		this.msg=msg;
+		this.msg = msg;
 		this.context = context;
 		this.extensions = extensions;
 		this.type = type; // A command for later reference. 0 is files, otherwise
-					// folders
+		// folders
 		this.closeImmediately = closeImmediately; // Close immediately after selecting a file/folder
 		AlertDialog.Builder b = new AlertDialog.Builder(context);
 		fbdLayout = (LinearLayout) layoutInflater.inflate(R.layout.list, null);
@@ -73,41 +74,31 @@ public class FileBrowserDialog implements OnItemClickListener {
 		fbdList.setOnItemClickListener(this);
 		b.setView(fbdLayout);
 		b.setCancelable(false);
-		b.setTitle(this.context.getResources().getString(
-				(type == 0) ? R.string.fb_chfi : R.string.fb_chfo));
-		if (!closeImmediately)
-		{
-			b.setPositiveButton(this.context.getResources().getString(R.string.done),
-					new DialogInterface.OnClickListener() {
-						@Override
-						public void onClick(DialogInterface dialog, int which)
-						{
-							FileBrowserDialog.this.onSelectedCallback.write();
-						}
-					});
+		b.setTitle(this.context.getResources().getString((type == 0) ? R.string.fb_chfi : R.string.fb_chfo));
+		if (!closeImmediately) {
+			b.setPositiveButton(this.context.getResources().getString(R.string.done), new DialogInterface.OnClickListener() {
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					FileBrowserDialog.this.onSelectedCallback.write();
+				}
+			});
 		}
-		b.setNegativeButton(
-				context.getResources().getString(android.R.string.cancel),
-				new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which)
-					{
-						FileBrowserDialog.this.onSelectedCallback.ignore();
-					}
-				});
-		if (type != 0)
-		{
-			b.setNeutralButton(this.context.getResources().getString(R.string.fb_fold),
-					new DialogInterface.OnClickListener() {
-						@Override
-						public void onClick(DialogInterface dialog, int which)
-						{
-						}
-					});
+		b.setNegativeButton(context.getResources().getString(android.R.string.cancel), new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				FileBrowserDialog.this.onSelectedCallback.ignore();
+			}
+		});
+		if (type != 0) {
+			b.setNeutralButton(this.context.getResources().getString(R.string.fb_fold), new DialogInterface.OnClickListener() {
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+				}
+			});
 		}
-		if(path==null)
+		if (path == null)
 			path = Environment.getExternalStorageDirectory().getAbsolutePath();
-		else if(!new File(path).exists())
+		else if (!new File(path).exists())
 			path = Environment.getExternalStorageDirectory().getAbsolutePath();
 		getDir(path);
 		ddd = b.create();
@@ -116,44 +107,35 @@ public class FileBrowserDialog implements OnItemClickListener {
 		if (theButton != null)
 			theButton.setOnClickListener(new View.OnClickListener() {
 				@Override
-				public void onClick(View v)
-				{
+				public void onClick(View v) {
 					FileBrowserDialog.this.onSelectedCallback.setItem(currPath, FileBrowserDialog.this.type);
-					if (FileBrowserDialog.this.closeImmediately)
-					{
+					if (FileBrowserDialog.this.closeImmediately) {
 						ddd.dismiss();
 					}
 				}
 			});
 	}
 
-	public void getDir(String dirPath)
-	{
+	public void getDir(String dirPath) {
 		currPath = dirPath;
 		fname = new ArrayList<String>();
 		path = new ArrayList<String>();
-		if (currPath != null)
-		{
+		if (currPath != null) {
 			File f = new File(currPath);
-			if (f.exists())
-			{
+			if (f.exists()) {
 				File[] files = f.listFiles();
 
-				if (files.length > 0)
-				{
-					if (files != null)
-					{
+				if (files.length > 0) {
+					if (files != null) {
 						Arrays.sort(files, new FileComparator());
 					}
-					if (!currPath.matches("[/]+"))
-					{
+					if (!currPath.matches("[/]+")) {
 						fname.add("../");
 						// Thank you Marshmallow.
 						// Disallowing access to /storage/emulated has now prevent billions of hacking attempts daily.
-						if(new File(f.getParent()).canRead())
-						{
+						if (new File(f.getParent()).canRead()) {
 							path.add(f.getParent() + "/");
-						}else{
+						} else {
 							path.add("/");
 						}
 					}
@@ -162,54 +144,39 @@ public class FileBrowserDialog implements OnItemClickListener {
 					{
 						File file = files[i];
 
-						if ((!file.getName().startsWith(".") && !Globals.showHiddenFiles)
-								|| Globals.showHiddenFiles)
-						{
-							if (file.isFile() && type == 0)
-							{
-								int dotPosition = file.getName().lastIndexOf(
-										".");
+						if ((!file.getName().startsWith(".") && !SettingsStorage.showHiddenFiles) || SettingsStorage.showHiddenFiles) {
+							if (file.isFile() && type == 0) {
+								int dotPosition = file.getName().lastIndexOf(".");
 								String extension = "";
-								if (dotPosition != -1)
-								{
-									extension = (file.getName()
-											.substring(dotPosition))
-											.toLowerCase(Locale.US);
-									if (extension != null)
-									{
+								if (dotPosition != -1) {
+									extension = (file.getName().substring(dotPosition)).toLowerCase(Locale.US);
+									if (extension != null) {
 
-										if (extensions.contains("*" + extension
-												+ "*"))
-										{
+										if (extensions.contains("*" + extension + "*")) {
 
 											path.add(file.getAbsolutePath());
 											fname.add(file.getName());
 										}
-									} else if (file.getName().endsWith("/"))
-									{
+									} else if (file.getName().endsWith("/")) {
 										path.add(file.getAbsolutePath() + "/");
 										fname.add(file.getName() + "/");
 									}
 								}
-							} else if (file.isDirectory())
-							{
+							} else if (file.isDirectory()) {
 								path.add(file.getAbsolutePath() + "/");
 								fname.add(file.getName() + "/");
 							}
 						}
 					}
-				} else
-				{
-					if (!currPath.matches("[/]+"))
-					{
+				} else {
+					if (!currPath.matches("[/]+")) {
 						fname.add("../");
 						path.add(f.getParent() + "/");
 
 					}
 				}
 
-				ArrayAdapter<String> fileList = new ArrayAdapter<String>(
-						context, R.layout.row, fname);
+				ArrayAdapter<String> fileList = new ArrayAdapter<String>(context, R.layout.row, fname);
 				fbdList.setFastScrollEnabled(true);
 				fbdList.setAdapter(fileList);
 			}
@@ -217,34 +184,29 @@ public class FileBrowserDialog implements OnItemClickListener {
 	}
 
 	@Override
-	public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3)
-	{
+	public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
 
 		File file = new File(path.get(arg2));
 		System.out.println(path.get(arg2));
-		if (file.isDirectory())
-		{
-			if (file.canRead())
-			{
+		if (file.isDirectory()) {
+			if (file.canRead()) {
 				getDir(path.get(arg2));
-			} else
-			{
-				new AlertDialog.Builder(context)
-						.setIcon(R.drawable.ic_launcher)
-						.setTitle( String.format("[%1$s] %2$s", file.getName(), context.getResources().getString(R.string.fb_cread)))
-						.setPositiveButton(context.getResources().getString(android.R.string.ok),
-								new DialogInterface.OnClickListener() {
-									@Override
-									public void onClick(DialogInterface dialog, int which){}
-								}).show();
+			} else {
+				AlertDialog.Builder unreadableDialog = new AlertDialog.Builder(context);
+				unreadableDialog = unreadableDialog.setIcon(R.drawable.ic_launcher);
+				unreadableDialog = unreadableDialog.setTitle(String.format("[%1$s] %2$s", file.getName(), context.getResources().getString(R.string.fb_cread)));
+				unreadableDialog = unreadableDialog.setPositiveButton(context.getResources().getString(android.R.string.ok), new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+					}
+				});
+				unreadableDialog.show();
 			}
-		} else
-		{
-			if (file.canRead())
-			{
-				Toast.makeText(context, String.format("%1$s '%2$s'", msg, fname.get(arg2)),Toast.LENGTH_SHORT).show();
+		} else {
+			if (file.canRead()) {
+				Toast.makeText(context, String.format("%1$s '%2$s'", msg, fname.get(arg2)), Toast.LENGTH_SHORT).show();
 				onSelectedCallback.setItem(file.getAbsolutePath(), type);
-				if(closeImmediately)
+				if (closeImmediately)
 					ddd.dismiss();
 			}
 		}
