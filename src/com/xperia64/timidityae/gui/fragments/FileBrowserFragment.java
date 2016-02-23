@@ -15,7 +15,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
 
 import com.xperia64.timidityae.R;
 import com.xperia64.timidityae.TimidityActivity;
@@ -101,6 +100,10 @@ public class FileBrowserFragment extends ListFragment {
 		}
 	}
 
+	public void refresh()
+	{
+		getDir(currPath);
+	}
 	public void getDir(String dirPath) {
 		currPath = dirPath;
 		fname = new ArrayList<String>();
@@ -132,13 +135,10 @@ public class FileBrowserFragment extends ListFragment {
 						File file = files[i];
 						if ((!file.getName().startsWith(".") && !SettingsStorage.showHiddenFiles) || SettingsStorage.showHiddenFiles) {
 							if (file.isFile()) {
-								int dotPosition = file.getName().lastIndexOf(".");
-								String extension = "";
-								if (dotPosition != -1) {
-									extension = (file.getName().substring(dotPosition)).toLowerCase(Locale.US);
+								String extension = Globals.getFileExtension(file);
 									if (extension != null) {
 
-										if ((SettingsStorage.showVideos ? Globals.musicVideoFiles : Globals.musicFiles).contains("*" + extension + "*")) {
+										if (Globals.getSupportedExtensions().contains("*" + extension + "*")) {
 
 											path.add(file.getAbsolutePath());
 											fname.add(file.getName());
@@ -147,7 +147,7 @@ public class FileBrowserFragment extends ListFragment {
 										path.add(file.getAbsolutePath() + File.separator);
 										fname.add(file.getName() + File.separator);
 									}
-								}
+								
 							} else {
 								path.add(file.getAbsolutePath() + File.separator);
 								fname.add(file.getName() + File.separator);
@@ -186,6 +186,19 @@ public class FileBrowserFragment extends ListFragment {
 		if (file.isDirectory()) {
 			if (file.canRead()) {
 				getDir(path.get(position));
+			} else if (file.getAbsolutePath().equals("/storage/emulated")&&
+					((new File("/storage/emulated/0").exists()&&new File("/storage/emulated/0").canRead())||
+							(new File("/storage/emulated/legacy").exists()&&new File("/storage/emulated/legacy").canRead())||
+							(new File("/storage/self/primary").exists()&&new File("/storage/self/primary").canRead())))
+			{
+				if(new File("/storage/emulated/0").exists()&&new File("/storage/emulated/0").canRead())
+				{
+					getDir("/storage/emulated/0");
+				}else if((new File("/storage/emulated/legacy").exists()&&new File("/storage/emulated/legacy").canRead())){
+					getDir("/storage/emulated/legacy");
+				}else{
+					getDir("/storage/self/primary");
+				}
 			} else {
 				AlertDialog.Builder unreadableDialog = new AlertDialog.Builder(getActivity());
 				unreadableDialog = unreadableDialog.setIcon(R.drawable.ic_launcher);
@@ -209,7 +222,7 @@ public class FileBrowserFragment extends ListFragment {
 						}
 					}
 				}
-				((TimidityActivity) getActivity()).selectedSong(files, position - firstFile, true, false, false);
+				((TimidityActivity) getActivity()).selectedSong(files, position - firstFile, true, false, true);
 			}
 		}
 	}

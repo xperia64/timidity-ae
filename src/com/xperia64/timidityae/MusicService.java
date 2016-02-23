@@ -110,12 +110,17 @@ public class MusicService extends Service {
 	@SuppressLint("NewApi")
 	@Override
 	public void onTaskRemoved(Intent rootIntent) {
-		Intent intent = new Intent(this, DummyActivity.class);
-		intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-		startActivity(intent);
-		super.onTaskRemoved(rootIntent);
+		
+		// Android versions less than M kill the Service if the app is removed for some reason.
+		if(Build.VERSION.SDK_INT < Build.VERSION_CODES.M)
+		{
+			Intent intent = new Intent(this, DummyActivity.class);
+			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+			startActivity(intent);
+			super.onTaskRemoved(rootIntent);
+		}
 	}
-
+	
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		handler = new Handler();
@@ -217,22 +222,23 @@ public class MusicService extends Service {
 					if (tmpNum <= -1) {
 						break;
 					}
-					boolean shouldNotLoadPlist = intent.getBooleanExtra(CommandStrings.msrv_dlplist, false);
-					if (shouldNotLoadPlist) {
+					boolean shouldCopyPlist = intent.getBooleanExtra(CommandStrings.msrv_cpplist, true);
+					if (shouldCopyPlist) {
+						currSongNumber = realSongNumber = tmpNum;
+						playList = tmpList;
+						genShuffledPlist();
+						
+					} else {
 						currSongNumber = tmpNum;
 						if (shuffleMode == 1) {
 							realSongNumber = shuffledIndices.get(tmpNum);
 						}
-					} else {
-						currSongNumber = realSongNumber = tmpNum;
-						playList = tmpList;
-						genShuffledPlist();
 					}
 					Globals.plist = null;
 					tmpList = null;
 					currFold = intent.getStringExtra(CommandStrings.msrv_currfold);
 
-					if (shuffleMode == 1 && !shouldNotLoadPlist) {
+					if (shuffleMode == 1 && shouldCopyPlist) {
 						currSongNumber = reverseShuffledIndices.get(realSongNumber);
 					}
 					outgoingIntent.setAction(CommandStrings.ta_rec);
@@ -309,8 +315,9 @@ public class MusicService extends Service {
 					}
 					sendBroadcast(outgoingIntent);
 					break;
-				/*case ServiceStrings.msrv_cmd_req_time: // Request seekBar times
-					break;*/
+				/*
+				 * case ServiceStrings.msrv_cmd_req_time: // Request seekBar times break;
+				 */
 				case CommandStrings.msrv_cmd_seek: // Actually seek
 					JNIHandler.seekTo(intent.getIntExtra(CommandStrings.msrv_seektime, 1));
 					break;
@@ -404,12 +411,12 @@ public class MusicService extends Service {
 										e.printStackTrace();
 									}
 								}
-								Intent outgoingIntent = new Intent(); // silly, but should be done async. I think.
-								outgoingIntent.setAction(CommandStrings.msrv_rec);
-								outgoingIntent.putExtra(CommandStrings.msrv_cmd, CommandStrings.msrv_cmd_load_cfg);
-								outgoingIntent.putExtra(CommandStrings.msrv_infile, input + suffix);
-								outgoingIntent.putExtra(CommandStrings.msrv_reset, true);
-								sendBroadcast(outgoingIntent);
+								Intent loadCfgIntent = new Intent(); // silly, but should be done async. I think.
+								loadCfgIntent.setAction(CommandStrings.msrv_rec);
+								loadCfgIntent.putExtra(CommandStrings.msrv_cmd, CommandStrings.msrv_cmd_load_cfg);
+								loadCfgIntent.putExtra(CommandStrings.msrv_infile, input + suffix);
+								loadCfgIntent.putExtra(CommandStrings.msrv_reset, true);
+								sendBroadcast(loadCfgIntent);
 							}
 							while (((JNIHandler.isPlaying))) {
 								try {
@@ -590,29 +597,29 @@ public class MusicService extends Service {
 					}
 					int newtb = newnumbers[0] - JNIHandler.tb;
 					if (newtb > 0) {
-						JNIHandler.controlTimidity(17, newtb);
+						JNIHandler.controlTimidity(CommandStrings.jni_speedup, newtb);
 						JNIHandler.waitUntilReady();
 					} else if (newtb < 0) {
-						JNIHandler.controlTimidity(18, -1 * newtb);
+						JNIHandler.controlTimidity(CommandStrings.jni_speeddown, -1 * newtb);
 						JNIHandler.waitUntilReady();
 					}
 					JNIHandler.tb = newnumbers[0];
 
 					int newko = newnumbers[1] - JNIHandler.keyOffset;
 					if (newko > 0) {
-						JNIHandler.controlTimidity(15, newko);
+						JNIHandler.controlTimidity(CommandStrings.jni_keyup, newko);
 						JNIHandler.waitUntilReady();
 					} else if (newko < 0) {
-						JNIHandler.controlTimidity(16, newko);
+						JNIHandler.controlTimidity(CommandStrings.jni_keydown, newko);
 						JNIHandler.waitUntilReady();
 					}
 					JNIHandler.keyOffset = newnumbers[1];
 					int newvoice = newnumbers[2] - JNIHandler.maxvoice;
 					if (newvoice != 0) {
 						if (newvoice > 0) {
-							JNIHandler.controlTimidity(19, newvoice);
+							JNIHandler.controlTimidity(CommandStrings.jni_voiceincr, newvoice);
 						} else {
-							JNIHandler.controlTimidity(20, -1 * newvoice);
+							JNIHandler.controlTimidity(CommandStrings.jni_voicedecr, -1 * newvoice);
 						}
 						JNIHandler.waitUntilReady();
 					}
@@ -623,30 +630,32 @@ public class MusicService extends Service {
 					}
 					break;
 				case CommandStrings.msrv_cmd_reload_libs: // Reload native libs
-					if(!JNIHandler.isMediaPlayerFormat)
-	        		{
-	        			fullStop=true;
-		        		Globals.hardStop=true;
-		        		shouldAdvance=false;
-	        			stop();
-	        			JNIHandler.waitForStop();
-	        		}
-	        		int logRet = JNIHandler.unloadLib();
-	        		Log.d("TIMIDITY", "Unloading: "+logRet);
-	        		JNIHandler.prepared = false;
-	        		JNIHandler.volumes = new ArrayList<Integer>();
-	        		JNIHandler.programs = new ArrayList<Integer>();
-	        		JNIHandler.drums = new ArrayList<Boolean>();
-	        		JNIHandler.custInst = new ArrayList<Boolean>();
-	        		JNIHandler.custVol = new ArrayList<Boolean>();
-	        		logRet = JNIHandler.loadLib(Globals.getLibDir(MusicService.this)+"libtimidityplusplus.so");
-	        		Log.d("TIMIDITY", "Reloading: "+logRet);
-	        		int x = JNIHandler.init(SettingsStorage.dataFolder+"timidity/","timidity.cfg", SettingsStorage.channelMode, SettingsStorage.defaultResamp, SettingsStorage.sixteenBit, SettingsStorage.bufferSize, SettingsStorage.audioRate, SettingsStorage.preserveSilence, true, SettingsStorage.freeInsts);
-	        		if(x!=0&&x!=-99)
-	        		{
-	        			SettingsStorage.nativeMidi=true;
-	        			Toast.makeText(MusicService.this, String.format(getResources().getString(R.string.tcfg_error), x), Toast.LENGTH_LONG).show();
-	        		}
+					if (!JNIHandler.isMediaPlayerFormat) {
+						fullStop = true;
+						Globals.hardStop = true;
+						shouldAdvance = false;
+						stop();
+						JNIHandler.waitForStop();
+					}
+					int logRet = JNIHandler.unloadLib();
+					Log.d("TIMIDITY", "Unloading: " + logRet);
+					JNIHandler.prepared = false;
+					JNIHandler.volumes = new ArrayList<Integer>();
+					JNIHandler.programs = new ArrayList<Integer>();
+					JNIHandler.drums = new ArrayList<Boolean>();
+					JNIHandler.custInst = new ArrayList<Boolean>();
+					JNIHandler.custVol = new ArrayList<Boolean>();
+					logRet = JNIHandler.loadLib(Globals.getLibDir(MusicService.this) + "libtimidityplusplus.so");
+					Log.d("TIMIDITY", "Reloading: " + logRet);
+					int x = JNIHandler.init(SettingsStorage.dataFolder + "timidity/", "timidity.cfg", SettingsStorage.channelMode, SettingsStorage.defaultResamp, SettingsStorage.sixteenBit, SettingsStorage.bufferSize, SettingsStorage.audioRate, SettingsStorage.preserveSilence, true, SettingsStorage.freeInsts);
+					if (x != 0 && x != -99) {
+						SettingsStorage.nativeMidi = true;
+						Toast.makeText(MusicService.this, String.format(getResources().getString(R.string.tcfg_error), x), Toast.LENGTH_LONG).show();
+						Intent outgoingIntent16 = new Intent();
+						outgoingIntent16.setAction(CommandStrings.ta_rec);
+						outgoingIntent16.putExtra(CommandStrings.ta_cmd, CommandStrings.ta_cmd_refresh_filebrowser);
+						sendBroadcast(outgoingIntent16);
+					}
 					break;
 				}
 			}
@@ -687,7 +696,67 @@ public class MusicService extends Service {
 		unregisterReceiver(serviceReceiver);
 	}
 
+	public void toastErrorCode(final int code)
+	{
+		switch (code) {
+		case -1:
+			handler.post(new Runnable() {
+				@Override
+				public void run() {
+					Toast.makeText(getApplicationContext(), getResources().getString(R.string.srv_fnf), Toast.LENGTH_SHORT).show();
+				}
+			});
+
+			break;
+		case -3:
+			handler.post(new Runnable() {
+				@Override
+				public void run() {
+					Toast.makeText(getApplicationContext(), "Error initializing AudioTrack. Try decreasing the buffer size.", Toast.LENGTH_LONG).show();
+				}
+			});
+
+			break;
+		case -9:
+			handler.post(new Runnable() {
+				@Override
+				public void run() {
+					Toast.makeText(getApplicationContext(), getResources().getString(R.string.srv_loading), Toast.LENGTH_SHORT).show();
+				}
+			});
+			break;
+		default:
+			handler.post(new Runnable() {
+				@Override
+				public void run() {
+					Toast.makeText(getApplicationContext(), String.format(getResources().getString(R.string.srv_unk), code), Toast.LENGTH_SHORT).show();
+				}
+			});
+			break;
+		}
+	}
+	
 	@SuppressLint("NewApi")
+	public String handleMetadata(String fileName) {
+		MediaMetadataRetriever mmr = new MediaMetadataRetriever();
+
+		String tmpTitle;
+		try {
+			mmr.setDataSource(fileName);
+			tmpTitle = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
+		} catch (RuntimeException e) {
+			tmpTitle = fileName.substring(fileName.lastIndexOf('/') + 1);
+		}
+		if (tmpTitle != null) {
+			if (TextUtils.isEmpty(tmpTitle))
+				tmpTitle = fileName.substring(fileName.lastIndexOf('/') + 1);
+		} else {
+			tmpTitle = fileName.substring(fileName.lastIndexOf('/') + 1);
+		}
+		setupMediaArtAndWidget(fileName, mmr);
+		return tmpTitle;
+	}
+
 	public void play() {
 		if (playList != null && currSongNumber >= 0) {
 			shouldAdvance = false;
@@ -696,13 +765,10 @@ public class MusicService extends Service {
 			stop();
 			death = false;
 			Globals.shouldRestore = true;
-			while (!death && ((JNIHandler.isPlaying || JNIHandler.isBlocking == true))) {
-				try {
-					Thread.sleep(10);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}
+			JNIHandler.waitForStop();
+			/*
+			 * while (!death && ((JNIHandler.isPlaying || JNIHandler.isBlocking == true))) { try { Thread.sleep(10); } catch (InterruptedException e) { e.printStackTrace(); } }
+			 */
 
 			if (!death) {
 				final int songIndex;
@@ -711,70 +777,20 @@ public class MusicService extends Service {
 				} else {
 					songIndex = realSongNumber = currSongNumber;
 				}
-				MediaMetadataRetriever mmr = new MediaMetadataRetriever();
 
-				String tmpTitle;
-				String fileName = playList.get(songIndex);
-				try {
-					mmr.setDataSource(fileName);
-					tmpTitle = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
-				} catch (RuntimeException e) {
-					tmpTitle = fileName.substring(playList.get(songIndex).lastIndexOf('/') + 1);
-				}
-				if (tmpTitle != null) {
-					if (TextUtils.isEmpty(tmpTitle))
-						tmpTitle = fileName.substring(fileName.lastIndexOf('/') + 1);
-				} else {
-					tmpTitle = fileName.substring(fileName.lastIndexOf('/') + 1);
-				}
-				setupMediaArtAndWidget(fileName, mmr);
 				Intent outgoingIntent = new Intent();
 				outgoingIntent.setAction(CommandStrings.ta_rec);
 				outgoingIntent.putExtra(CommandStrings.ta_cmd, CommandStrings.ta_cmd_update_art);
 				sendBroadcast(outgoingIntent);
 
-				currTitle = tmpTitle;
+				final String fileName = playList.get(songIndex);
+				currTitle = handleMetadata(fileName);
 				shouldAdvance = true;
 				paused = false;
 
-				final int x = JNIHandler.play(playList.get(songIndex));
+				final int x = JNIHandler.play(fileName);
 				if (x != 0) {
-					switch (x) {
-					case -1:
-						handler.post(new Runnable() {
-							@Override
-							public void run() {
-								Toast.makeText(getApplicationContext(), getResources().getString(R.string.srv_fnf), Toast.LENGTH_SHORT).show();
-							}
-						});
-
-						break;
-					case -3:
-						handler.post(new Runnable() {
-							@Override
-							public void run() {
-								Toast.makeText(getApplicationContext(), "Error initializing AudioTrack. Try decreasing the buffer size.", Toast.LENGTH_LONG).show();
-							}
-						});
-
-						break;
-					case -9:
-						handler.post(new Runnable() {
-							@Override
-							public void run() {
-								Toast.makeText(getApplicationContext(), getResources().getString(R.string.srv_loading), Toast.LENGTH_SHORT).show();
-							}
-						});
-						break;
-					default:
-						handler.post(new Runnable() {
-							@Override
-							public void run() {
-								Toast.makeText(getApplicationContext(), String.format(getResources().getString(R.string.srv_unk), x), Toast.LENGTH_SHORT).show();
-							}
-						});
-						break;
-					}
+					toastErrorCode(x);
 
 					JNIHandler.isPlaying = false;
 					JNIHandler.isMediaPlayerFormat = true;
@@ -785,6 +801,7 @@ public class MusicService extends Service {
 					updateNotification(currTitle, paused);
 					new Thread(new Runnable() {
 						public void run() {
+							// Wait for timidity to actually start playing
 							while (!death && ((!JNIHandler.isPlaying && shouldAdvance))) {
 								if (!JNIHandler.isBlocking)
 									death = true;
@@ -796,20 +813,20 @@ public class MusicService extends Service {
 								}
 							}
 							if (!death) {
-								Intent outgoingIntent = new Intent();
-								outgoingIntent.setAction(CommandStrings.ta_rec);
-								outgoingIntent.putExtra(CommandStrings.ta_cmd, CommandStrings.ta_cmd_gui_play);
-								outgoingIntent.putExtra(CommandStrings.ta_startt, JNIHandler.maxTime);
-								outgoingIntent.putExtra(CommandStrings.ta_songttl, currTitle);
-								outgoingIntent.putExtra(CommandStrings.ta_filename, playList.get(songIndex));
-								outgoingIntent.putExtra("stupidNumber", songIndex);
-								sendBroadcast(outgoingIntent);
+								final Intent guiIntent = new Intent();
+								guiIntent.setAction(CommandStrings.ta_rec);
+								guiIntent.putExtra(CommandStrings.ta_cmd, CommandStrings.ta_cmd_gui_play);
+								guiIntent.putExtra(CommandStrings.ta_startt, JNIHandler.maxTime);
+								guiIntent.putExtra(CommandStrings.ta_songttl, currTitle);
+								guiIntent.putExtra(CommandStrings.ta_filename, fileName);
+								guiIntent.putExtra("stupidNumber", songIndex);
+								sendBroadcast(guiIntent);
 							}
-							if (new File(playList.get(songIndex) + ".def.tcf").exists() || new File(playList.get(songIndex) + ".def.tzf").exists()) {
+							if (new File(fileName + ".def.tcf").exists() || new File(fileName + ".def.tzf").exists()) {
 								String suffix;
-								if (new File(playList.get(songIndex) + ".def.tcf").exists() && new File(playList.get(songIndex) + ".def.tzf").exists()) {
+								if (new File(fileName + ".def.tcf").exists() && new File(fileName + ".def.tzf").exists()) {
 									suffix = (SettingsStorage.compressCfg ? ".def.tzf" : ".def.tcf");
-								} else if (new File(playList.get(songIndex) + ".def.tcf").exists()) {
+								} else if (new File(fileName + ".def.tcf").exists()) {
 									suffix = ".def.tcf";
 								} else {
 									suffix = ".def.tzf";
@@ -823,40 +840,41 @@ public class MusicService extends Service {
 										e.printStackTrace();
 									}
 								}
-								Intent outgoingIntent = new Intent(); // silly, but should be done async. I think.
-								outgoingIntent.setAction(CommandStrings.msrv_rec);
-								outgoingIntent.putExtra(CommandStrings.msrv_cmd, CommandStrings.msrv_cmd_load_cfg);
-								outgoingIntent.putExtra(CommandStrings.msrv_infile, playList.get(songIndex) + suffix);
-								outgoingIntent.putExtra(CommandStrings.msrv_reset, true);
-								sendBroadcast(outgoingIntent);
+								final Intent cfgLoadIntent = new Intent(); // silly, but should be done async. I think.
+								cfgLoadIntent.setAction(CommandStrings.msrv_rec);
+								cfgLoadIntent.putExtra(CommandStrings.msrv_cmd, CommandStrings.msrv_cmd_load_cfg);
+								cfgLoadIntent.putExtra(CommandStrings.msrv_infile, fileName + suffix);
+								cfgLoadIntent.putExtra(CommandStrings.msrv_reset, true);
+								sendBroadcast(cfgLoadIntent);
 							}
-							while (!death && (((JNIHandler.isPlaying || JNIHandler.isBlocking) && shouldAdvance))) {
+							JNIHandler.waitForStop();
+							/*while (!death && (((JNIHandler.isPlaying || JNIHandler.isBlocking) && shouldAdvance))) {
 								try {
 									Thread.sleep(25);
 								} catch (InterruptedException e) {
 								}
-							}
+							}*/
 							if (shouldAdvance && !death) {
 								shouldAdvance = false;
-								new Thread(new Runnable() {
-									public void run() {
-										if (playList.size() > 1 && (((songIndex + 1 < playList.size() && loopMode == 0)) || loopMode == 1)) {
-											next();
-										} else if (loopMode == 2 || playList.size() == 1) {
-											play();
-										} else if (loopMode == 0) {
-											Globals.hardStop = true;
-											Intent new_intent = new Intent();
-											new_intent.setAction(CommandStrings.ta_rec);
-											new_intent.putExtra(CommandStrings.ta_cmd, CommandStrings.ta_cmd_pause_stop);
-											new_intent.putExtra(CommandStrings.ta_pause, false);
-											sendBroadcast(new_intent);
-										}
-									}
-								}).start();
-
+								if (playList.size() > 1 && (((songIndex + 1 < playList.size() && loopMode == 0)) || loopMode == 1)) {
+									final Intent nextIntent = new Intent();
+									nextIntent.setAction(CommandStrings.msrv_rec);
+									nextIntent.putExtra(CommandStrings.msrv_cmd, CommandStrings.msrv_cmd_next);
+									sendBroadcast(nextIntent);
+								} else if (loopMode == 2 || playList.size() == 1) {
+									final Intent playIntent = new Intent();
+									playIntent.setAction(CommandStrings.msrv_rec);
+									playIntent.putExtra(CommandStrings.msrv_cmd, CommandStrings.msrv_cmd_play);
+									sendBroadcast(playIntent);
+								} else if (loopMode == 0) {
+									Globals.hardStop = true;
+									final Intent stopIntent = new Intent();
+									stopIntent.setAction(CommandStrings.ta_rec);
+									stopIntent.putExtra(CommandStrings.ta_cmd, CommandStrings.ta_cmd_pause_stop);
+									stopIntent.putExtra(CommandStrings.ta_pause, false);
+									sendBroadcast(stopIntent);
+								}
 							}
-
 						}
 					}).start();
 				}
@@ -869,12 +887,12 @@ public class MusicService extends Service {
 			if (JNIHandler.isPlaying) {
 				paused = !paused;
 				JNIHandler.pause();
-				Intent new_intent = new Intent();
-				new_intent.setAction(CommandStrings.ta_rec);
-				new_intent.putExtra(CommandStrings.ta_cmd, CommandStrings.ta_cmd_pause_stop);
-				new_intent.putExtra(CommandStrings.ta_pause, true);
-				new_intent.putExtra(CommandStrings.ta_pausea, paused);
-				sendBroadcast(new_intent);
+				Intent newIntent = new Intent();
+				newIntent.setAction(CommandStrings.ta_rec);
+				newIntent.putExtra(CommandStrings.ta_cmd, CommandStrings.ta_cmd_pause_stop);
+				newIntent.putExtra(CommandStrings.ta_pause, true);
+				newIntent.putExtra(CommandStrings.ta_pausea, paused);
+				sendBroadcast(newIntent);
 				updateNotification(currTitle, paused);
 
 			}
@@ -889,12 +907,12 @@ public class MusicService extends Service {
 				if (shuffleMode == 2) {
 					int tmpNum = currSongNumber;
 					while (tmpNum == currSongNumber) {
+						tmpNum = random.nextInt(playList.size());
 						try {
 							Thread.sleep(10); // Don't hog CPU. Please.
 						} catch (InterruptedException e) {
 							e.printStackTrace();
 						}
-						tmpNum = random.nextInt(playList.size());
 					}
 					currSongNumber = tmpNum;
 				} else {
@@ -922,11 +940,11 @@ public class MusicService extends Service {
 		if (JNIHandler.isPlaying) {
 
 			death = true;
-			Intent stop_intent = new Intent();
-			stop_intent.setAction(CommandStrings.ta_rec);
-			stop_intent.putExtra(CommandStrings.ta_cmd, CommandStrings.ta_cmd_pause_stop);
-			stop_intent.putExtra(CommandStrings.ta_pause, false);
-			sendBroadcast(stop_intent);
+			Intent stopIntent = new Intent();
+			stopIntent.setAction(CommandStrings.ta_rec);
+			stopIntent.putExtra(CommandStrings.ta_cmd, CommandStrings.ta_cmd_pause_stop);
+			stopIntent.putExtra(CommandStrings.ta_pause, false);
+			sendBroadcast(stopIntent);
 
 			Globals.shouldRestore = false;
 			JNIHandler.stop();
@@ -942,15 +960,15 @@ public class MusicService extends Service {
 				fullStop = false;
 				// Fix the widget
 				if (shouldDoWidget) {
-					stop_intent = new Intent(this, TimidityAEWidgetProvider.class);
-					stop_intent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
-					// stop_intent.addFlags(Intent.FLAG_RECEIVER_FOREGROUND);
-					stop_intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, widgetIds);
-					stop_intent.putExtra("com.xperia64.timidityae.timidityaewidgetprovider.paused", true);
-					stop_intent.putExtra("com.xperia64.timidityae.timidityaewidgetprovider.title", "");
-					stop_intent.putExtra("com.xperia64.timidityae.timidityaewidgetprovider.onlyart", false);
-					stop_intent.putExtra("com.xperia64.timidityae.timidityaewidgetprovider.death", true);
-					sendBroadcast(stop_intent);
+					stopIntent = new Intent(this, TimidityAEWidgetProvider.class);
+					stopIntent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
+					// stopIntent.addFlags(Intent.FLAG_RECEIVER_FOREGROUND);
+					stopIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, widgetIds);
+					stopIntent.putExtra("com.xperia64.timidityae.timidityaewidgetprovider.paused", true);
+					stopIntent.putExtra("com.xperia64.timidityae.timidityaewidgetprovider.title", "");
+					stopIntent.putExtra("com.xperia64.timidityae.timidityaewidgetprovider.onlyart", false);
+					stopIntent.putExtra("com.xperia64.timidityae.timidityaewidgetprovider.death", true);
+					sendBroadcast(stopIntent);
 				} else {
 					SettingsStorage.nukedWidgets = true;
 				}
@@ -968,32 +986,32 @@ public class MusicService extends Service {
 		remoteViews.setTextViewText(R.id.titley, currTitle);
 		remoteViews.setImageViewResource(R.id.notPause, (paused) ? R.drawable.ic_media_play : R.drawable.ic_media_pause);
 		// Previous
-		Intent new_intent = new Intent();
-		// new_intent.addFlags(Intent.FLAG_RECEIVER_FOREGROUND);
-		new_intent.setAction(CommandStrings.msrv_rec);
-		new_intent.putExtra(CommandStrings.msrv_cmd, CommandStrings.msrv_cmd_prev);
-		PendingIntent pendingNotificationIntent = PendingIntent.getBroadcast(this, 1, new_intent, 0);
+		final Intent prevIntent = new Intent();
+		// newIntent.addFlags(Intent.FLAG_RECEIVER_FOREGROUND);
+		prevIntent.setAction(CommandStrings.msrv_rec);
+		prevIntent.putExtra(CommandStrings.msrv_cmd, CommandStrings.msrv_cmd_prev);
+		PendingIntent pendingNotificationIntent = PendingIntent.getBroadcast(this, 1, prevIntent, 0);
 		remoteViews.setOnClickPendingIntent(R.id.notPrev, pendingNotificationIntent);
 		// Play/Pause
-		new_intent = new Intent();
-		// new_intent.addFlags(Intent.FLAG_RECEIVER_FOREGROUND);
-		new_intent.setAction(CommandStrings.msrv_rec);
-		new_intent.putExtra(CommandStrings.msrv_cmd, CommandStrings.msrv_cmd_pause);
-		pendingNotificationIntent = PendingIntent.getBroadcast(this, 2, new_intent, 0);
+		final Intent playPauseIntent = new Intent();
+		// newIntent.addFlags(Intent.FLAG_RECEIVER_FOREGROUND);
+		playPauseIntent.setAction(CommandStrings.msrv_rec);
+		playPauseIntent.putExtra(CommandStrings.msrv_cmd, CommandStrings.msrv_cmd_pause);
+		pendingNotificationIntent = PendingIntent.getBroadcast(this, 2, playPauseIntent, 0);
 		remoteViews.setOnClickPendingIntent(R.id.notPause, pendingNotificationIntent);
 		// Next
-		new_intent = new Intent();
-		// new_intent.addFlags(Intent.FLAG_RECEIVER_FOREGROUND);
-		new_intent.setAction(CommandStrings.msrv_rec);
-		new_intent.putExtra(CommandStrings.msrv_cmd, CommandStrings.msrv_cmd_next);
-		pendingNotificationIntent = PendingIntent.getBroadcast(this, 3, new_intent, 0);
+		final Intent nextIntent = new Intent();
+		// newIntent.addFlags(Intent.FLAG_RECEIVER_FOREGROUND);
+		nextIntent.setAction(CommandStrings.msrv_rec);
+		nextIntent.putExtra(CommandStrings.msrv_cmd, CommandStrings.msrv_cmd_next);
+		pendingNotificationIntent = PendingIntent.getBroadcast(this, 3, nextIntent, 0);
 		remoteViews.setOnClickPendingIntent(R.id.notNext, pendingNotificationIntent);
 		// Stop
-		new_intent = new Intent();
-		// new_intent.addFlags(Intent.FLAG_RECEIVER_FOREGROUND);
-		new_intent.setAction(CommandStrings.msrv_rec);
-		new_intent.putExtra(CommandStrings.msrv_cmd, CommandStrings.msrv_cmd_stop);
-		pendingNotificationIntent = PendingIntent.getBroadcast(this, 4, new_intent, 0);
+		final Intent stopIntent = new Intent();
+		// newIntent.addFlags(Intent.FLAG_RECEIVER_FOREGROUND);
+		stopIntent.setAction(CommandStrings.msrv_rec);
+		stopIntent.putExtra(CommandStrings.msrv_cmd, CommandStrings.msrv_cmd_stop);
+		pendingNotificationIntent = PendingIntent.getBroadcast(this, 4, stopIntent, 0);
 		remoteViews.setOnClickPendingIntent(R.id.notStop, pendingNotificationIntent);
 		final Intent emptyIntent = new Intent(this, TimidityActivity.class);
 		// emptyIntent.addFlags(Intent.FLAG_RECEIVER_FOREGROUND);

@@ -1,185 +1,181 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/mainact"
+    android:id="@+id/midi_opt_dlg"
     android:layout_width="fill_parent"
-    android:layout_height="fill_parent" 
+    android:layout_height="fill_parent"
     android:descendantFocusability="beforeDescendants"
-android:focusableInTouchMode="true" >
-<RelativeLayout
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content" >
-
-    <Spinner
-        android:id="@+id/resampSpinner"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_below="@+id/resampTitle" />
-
-    <Button
-        android:id="@+id/vplus"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-		android:minWidth="50dp"
-        android:layout_alignBaseline="@+id/vminus"
-        android:layout_alignBottom="@+id/vminus"
-        android:layout_alignParentRight="true"
-        android:text="+" />
-
-    <Button
-        android:id="@+id/vminus"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-		android:minWidth="50dp"
-        android:layout_below="@+id/keyUp"
-        android:layout_toLeftOf="@+id/vplus"
-        android:text="-" />
-
-    <Button
-        android:id="@+id/keyUp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-		android:minWidth="50dp"
-        android:layout_alignBaseline="@+id/keyDown"
-        android:layout_alignBottom="@+id/keyDown"
-        android:layout_alignParentRight="true"
-        android:text="+" />
-
-    <Button
-        android:id="@+id/keyDown"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/vminus"
-        android:layout_below="@+id/speedUp"
-        android:layout_toLeftOf="@+id/keyUp"
-        android:minWidth="50dp"
-        android:text="-" />
-
-    <Button
-        android:id="@+id/speedUp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-		android:minWidth="50dp"
-        android:layout_alignParentTop="true"
-        android:layout_toRightOf="@+id/keyDown"
-        android:text="+" />
-
-    <Button
-        android:id="@+id/slowDown"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/keyUp"
-        android:layout_alignLeft="@+id/keyDown"
-        android:layout_toLeftOf="@+id/keyUp"
-        android:minWidth="50dp"
-        android:text="-" />
-
-    <TextView
-        android:id="@+id/resampTitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/vminus"
-        android:layout_centerHorizontal="true"
-        android:text="@string/mop_resamp"
-        android:textAppearance="?android:attr/textAppearanceMedium" />
-
-    <TextView
-        android:id="@+id/tempoText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/slowDown"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentTop="true"
-        android:layout_toLeftOf="@+id/slowDown"
-        android:gravity="center_vertical"
-        android:text=""
-        android:paddingLeft="20dp"
-        android:textAppearance="?android:attr/textAppearanceMedium" />
-
-    <TextView
-        android:id="@+id/pitchText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/keyDown"
-        android:layout_alignParentLeft="true"
-        android:layout_alignRight="@+id/tempoText"
-        android:layout_alignTop="@+id/keyDown"
-        android:gravity="center_vertical"
-        android:text=""
-        android:paddingLeft="20dp"
-        android:textAppearance="?android:attr/textAppearanceMedium" />
-
-    <TextView
-        android:id="@+id/voiceText"
-        style="@style/AppTheme"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/vminus"
-        android:layout_alignParentLeft="true"
-        android:layout_alignRight="@+id/pitchText"
-        android:layout_below="@+id/pitchText"
-        android:gravity="center_vertical"
-        android:paddingLeft="20dp"
-        android:text=""
-        android:textAppearance="?android:attr/textAppearanceMedium"  />
-
-    <Button
-        android:id="@+id/exportButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentRight="true"
-        android:layout_below="@+id/resampSpinner"
-        android:text="@string/mop_export" />
+    android:focusableInTouchMode="true"
+    android:padding="3dp" >
 
     <LinearLayout
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="horizontal"
-    android:id="@+id/sav1"
-    android:layout_below="@+id/exportButton"
-    android:baselineAligned="false">
-<Button
-            android:id="@+id/saveCfg"
-            android:layout_width="0dp"
+        android:id="@+id/rootMidiView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingEnd="5dp"
+        android:paddingLeft="5dp"
+        android:paddingRight="5dp"
+        android:paddingStart="5dp" >
+
+        <LinearLayout
+            android:id="@+id/speedRow"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:baselineAligned="false"
+            android:orientation="horizontal" >
+
+            <TextView
+                android:id="@+id/tempoText"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1.30"
+                android:gravity="center_vertical"
+                android:paddingLeft="5dp"
+                android:paddingStart="5dp"
+                android:textAppearance="?android:attr/textAppearanceMedium" />
+
+            <Button
+                android:id="@+id/slowDown"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minWidth="50dp"
+                android:text="-" />
+
+            <Button
+                android:id="@+id/speedUp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minWidth="50dp"
+                android:text="+" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/pitchRow"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:baselineAligned="false"
+            android:orientation="horizontal" >
+
+            <TextView
+                android:id="@+id/pitchText"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1.30"
+                android:gravity="center_vertical"
+                android:paddingLeft="5dp"
+                android:paddingStart="5dp"
+                android:textAppearance="?android:attr/textAppearanceMedium" />
+
+            <Button
+                android:id="@+id/keyDown"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minWidth="50dp"
+                android:text="-" />
+
+            <Button
+                android:id="@+id/keyUp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minWidth="50dp"
+                android:text="+" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/voiceRow"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:baselineAligned="false"
+            android:orientation="horizontal" >
+
+            <TextView
+                android:id="@+id/voiceText"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1.30"
+                android:gravity="center_vertical"
+                android:paddingLeft="5dp"
+                android:paddingStart="5dp"
+                android:textAppearance="?android:attr/textAppearanceMedium" />
+
+            <Button
+                android:id="@+id/vminus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minWidth="50dp"
+                android:text="-" />
+
+            <Button
+                android:id="@+id/vplus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minWidth="50dp"
+                android:text="+" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/resampTitle"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Save Cfg" />
+            android:gravity="center_horizontal"
+            android:text="@string/mop_resamp"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <Spinner
+            android:id="@+id/resampSpinner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
         <Button
-            android:id="@+id/loadCfg"
-            android:layout_width="0dp"
+            android:id="@+id/exportButton"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Load Cfg" />
+            android:text="@string/mop_export" />
 
-        
+        <LinearLayout
+            android:id="@+id/sav1"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:baselineAligned="false"
+            android:orientation="horizontal" >
 
-</LinearLayout>
-<LinearLayout
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="horizontal"
-    android:id="@+id/sav2"
-    android:layout_below="@+id/sav1"
-    android:baselineAligned="false">
-<Button
-            android:id="@+id/savedefCfg"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Save Default" />
-        <Button
-            android:id="@+id/deldefCfg"
-            android:layout_width="0dp"
-            android:enabled="false"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Delete Default" />
+            <Button
+                android:id="@+id/saveCfg"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Save Cfg" />
 
-        
+            <Button
+                android:id="@+id/loadCfg"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Load Cfg" />
+        </LinearLayout>
 
-</LinearLayout>
+        <LinearLayout
+            android:id="@+id/sav2"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:baselineAligned="false"
+            android:orientation="horizontal" >
 
+            <Button
+                android:id="@+id/savedefCfg"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Save Default" />
 
-</RelativeLayout>
+            <Button
+                android:id="@+id/deldefCfg"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:enabled="false"
+                android:text="Delete Default" />
+        </LinearLayout>
+    </LinearLayout>
+
 </ScrollView>

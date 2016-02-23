@@ -1,19 +1,23 @@
 package com.xperia64.timidityae.util;
 
 public class CommandStrings {
+	
+	public static final String pkg_name = "com.xperia64.timidityae";
 	// MusicService Broadcast Arguments
-	public static final String msrv_rec = "com.xperia64.timidityae.MusicService_RECEIVER";
-	public static final String msrv_cmd = "com.xperia64.timidityae.MusicService_CMD";
-	public static final String msrv_songnum = "com.xperia64.timidityae.MusicService_SONGNUM";
-	public static final String msrv_currfold = "com.xperia64.timidityae.MusicService_CURRFOLD";
-	public static final String msrv_begin = "com.xperia64.timidityae.MusicService_Begin";
-	public static final String msrv_loopmode = "com.xperia64.timidityae.MusicService_LoopMode";
-	public static final String msrv_shufmode = "com.xperia64.timidityae.MusicService_ShuffleMode";
-	public static final String msrv_seektime = "com.xperia64.timidityae.MusicService_SeekTime";
-	public static final String msrv_infile = "com.xperia64.timidityae.MusicService_InputFile";
-	public static final String msrv_outfile = "com.xperia64.timidityae.MusicService_OutputFile";
-	public static final String msrv_reset = "com.xperia64.timidityae.MusicService_Reset";
-	public static final String msrv_dlplist = "com.xperia64.timidityae.MusicService_DontLoadPlist";
+	private static final String msrv_PRFX = ".MusicService";
+	private static final String msrv = pkg_name + msrv_PRFX;
+	public static final String msrv_rec = msrv+"_RECEIVER";
+	public static final String msrv_cmd = msrv+"_CMD";
+	public static final String msrv_songnum = msrv+"_SONGNUM";
+	public static final String msrv_currfold = msrv+"_CURRFOLD";
+	public static final String msrv_begin = msrv+"_Begin";
+	public static final String msrv_loopmode = msrv+"_LoopMode";
+	public static final String msrv_shufmode = msrv+"_ShuffleMode";
+	public static final String msrv_seektime = msrv+"_SeekTime";
+	public static final String msrv_infile = msrv+"_InputFile";
+	public static final String msrv_outfile = msrv+"_OutputFile";
+	public static final String msrv_reset = msrv+"_Reset";
+	public static final String msrv_cpplist = msrv+"_CopyPlist";
 
 	// MusicService Broadcast Commands
 	public static final int msrv_cmd_error = -5;
@@ -38,16 +42,18 @@ public class CommandStrings {
 	public static final int msrv_cmd_reload_libs = 18;
 
 	// TimidityActivity Broadcast Arguments
-	public static final String ta_rec = "com.xperia64.timidityae.TimidityActivity_RECEIVER";
-	public static final String ta_cmd = "com.xperia64.timidityae.TimidityActivity_CMD";
-	public static final String ta_filename = "com.xperia64.timidityae.TimidityActivity_FileName";
-	public static final String ta_startt = "com.xperia64.timidityae.TimidityActivity_StartTime";
-	public static final String ta_songttl = "com.xperia64.timidityae.TimidityActivity_SongTitle";
-	public static final String ta_currpath = "com.xperia64.timidityae.TimidityActivity_CurrPath";
-	public static final String ta_shufmode = "com.xperia64.timidityae.TimidityActivity_ShuffleMode";
-	public static final String ta_loopmode = "com.xperia64.timidityae.TimidityActivity_LoopMode";
-	public static final String ta_pause = "com.xperia64.timidityae.TimidityActivity_Pause";
-	public static final String ta_pausea = "com.xperia64.timidityae.TimidityActivity_PauseArg";
+	private static final String ta_PRFX = ".TimidityActivity";
+	private static final String ta = pkg_name + ta_PRFX;
+	public static final String ta_rec = ta+"_RECEIVER";
+	public static final String ta_cmd = ta+"_CMD";
+	public static final String ta_filename = ta+"_FileName";
+	public static final String ta_startt = ta+"_StartTime";
+	public static final String ta_songttl = ta+"_SongTitle";
+	public static final String ta_currpath = ta+"_CurrPath";
+	public static final String ta_shufmode = ta+"_ShuffleMode";
+	public static final String ta_loopmode = ta+"_LoopMode";
+	public static final String ta_pause = ta+"_Pause";
+	public static final String ta_pausea = ta+"_PauseArg";
 
 	// TimidityActivity Broadcast Commands
 	public static final int ta_cmd_error = -5;
@@ -81,9 +87,97 @@ public class CommandStrings {
 	public static final String sett_free_insts = "tplusUnload";
 	public static final String sett_preserve_silence = "tplusSilKey";
 	public static final String sett_native_midi = "nativeMidiSwitch";
-
+	public static final String sett_fancy_plist = "fpSwitch";
+	
 	// Fragment Keys
 	public static final String currFoldKey = "CURRENT_FOLDER";
 	public static final String currPlistDirectory = "CURRENT_PLIST_DIR";
 
+	
+	// controlTimidity commands
+	public static final int jni_none = 0;
+	public static final int jni_quit = 1;
+	public static final int jni_next = 2;
+	public static final int jni_previous = 3;
+	public static final int jni_forward = 4;
+	public static final int jni_back = 5;
+	public static final int jni_jump = 6;
+	public static final int jni_toggle_pause = 7;
+	public static final int jni_restart = 8;
+	public static final int jni_pause = 9;
+	public static final int jni_continue = 10;
+	public static final int jni_really_previous = 11;
+	public static final int jni_change_volume = 12;
+	public static final int jni_load_file = 13;
+	public static final int jni_tune_end = 14;
+	public static final int jni_keyup = 15;
+	public static final int jni_keydown = 16;
+	public static final int jni_speedup = 17;
+	public static final int jni_speeddown = 18;
+	public static final int jni_voiceincr = 19;
+	public static final int jni_voicedecr = 20;
+	public static final int jni_toggle_drumchan = 21;
+	public static final int jni_reload = 22;
+	public static final int jni_toggle_sndspec = 23;
+	public static final int jni_change_rev_effb = 24;
+	public static final int jni_change_rev_time = 25;
+	public static final int jni_sync_restart = 26;
+	public static final int jni_toggle_ctl_speana = 27;
+	public static final int jni_change_rate = 28;
+	public static final int jni_output_changed = 29;
+	public static final int jni_stop = 30;
+	public static final int jni_toggle_mute = 31;
+	public static final int jni_solo_play = 32;
+	public static final int jni_mute_clear = 33;
+	// @formatter:off
+	/*
+	 * RESAMPLE_CSPLINE, 0
+		RESAMPLE_LAGRANGE, 1
+		RESAMPLE_GAUSS, 2
+		RESAMPLE_NEWTON, 3
+		RESAMPLE_LINEAR, 4
+		RESAMPLE_NONE 5
+	 
+	/*
+	 * #define RC_ERROR	-1
+	#ifdef RC_NONE
+	#undef RC_NONE
+	#endif
+	#define RC_NONE		0
+	#define RC_QUIT		1
+	#define RC_NEXT		2
+	#define RC_PREVIOUS	3 // Restart this song at beginning, or the previous
+				     song if we're less than a second into this one. 
+	#define RC_FORWARD	4
+	#define RC_BACK		5
+	#define RC_JUMP		6
+	#define RC_TOGGLE_PAUSE 7	Pause/continue 
+	#define RC_RESTART	8	/* Restart song at beginning 
+	#define RC_PAUSE	9	/* Really pause playing 
+	#define RC_CONTINUE	10	/* Continue if paused 
+	#define RC_REALLY_PREVIOUS 11	/* Really go to the previous song 
+	#define RC_CHANGE_VOLUME 12
+	#define RC_LOAD_FILE	13	/* Load a new midifile 
+	#define RC_TUNE_END	14	/* The tune is over, play it again sam? 
+	#define RC_KEYUP	15	/* Key up 
+	#define RC_KEYDOWN	16	/* Key down 
+	#define RC_SPEEDUP	17	/* Speed up 
+	#define RC_SPEEDDOWN	18	/* Speed down 
+	#define RC_VOICEINCR	19	/* Increase voices 
+	#define RC_VOICEDECR	20	/* Decrease voices 
+	#define RC_TOGGLE_DRUMCHAN 21	/* Toggle drum channel 
+	#define RC_RELOAD	22	/* Reload & Play 
+	#define RC_TOGGLE_SNDSPEC 23	/* Open/Close Sound Spectrogram Window 
+	#define RC_CHANGE_REV_EFFB 24
+	#define RC_CHANGE_REV_TIME 25
+	#define RC_SYNC_RESTART 26
+	#define RC_TOGGLE_CTL_SPEANA 27
+	#define RC_CHANGE_RATE	28
+	#define RC_OUTPUT_CHANGED      29
+	#define RC_STOP		30	/* Stop to play 
+	#define RC_TOGGLE_MUTE	31
+	#define RC_SOLO_PLAY	32
+	#define RC_MUTE_CLEAR	33*/
+		// @formatter:on
+	
 }

@@ -18,7 +18,6 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Environment;
 import android.text.InputFilter;
-import android.util.Log;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -26,7 +25,7 @@ public class WavSaver implements TimidityActivity.SpecialAction {
 	Activity context;
 	String currSongName;
 	boolean localfinished;
-	AlertDialog alerty;
+	AlertDialog exportAlert;
 	boolean playingExport; // export while playing
 
 	public WavSaver(Activity context, String currSongName, boolean playingExport) {
@@ -54,22 +53,22 @@ public class WavSaver implements TimidityActivity.SpecialAction {
 						value += ".wav";
 					String parent = currSongName.substring(0, currSongName.lastIndexOf('/') + 1);
 					boolean alreadyExists = new File(parent + value).exists();
-					boolean aWrite = true;
+					boolean normalWrite = true;
 					String needRename = null;
 					String probablyTheRoot = "";
 					String probablyTheDirectory = "";
 					try {
 						new FileOutputStream(parent + value, true).close();
 					} catch (FileNotFoundException e) {
-						aWrite = false;
+						normalWrite = false;
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
 
-					if (aWrite && !alreadyExists)
+					if (normalWrite && !alreadyExists)
 						new File(parent + value).delete();
 
-					if (aWrite && new File(parent).canWrite()) {
+					if (normalWrite && new File(parent).canWrite()) {
 						value = parent + value;
 					} else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && DocumentFileUtils.docFileDevice != null) {
 						String[] tmp = DocumentFileUtils.getExternalFilePaths(context, parent);
@@ -78,7 +77,6 @@ public class WavSaver implements TimidityActivity.SpecialAction {
 						
 						if (probablyTheDirectory.length() > 1) {
 							needRename = parent.substring(parent.indexOf(probablyTheRoot) + probablyTheRoot.length()) + value;
-							Log.i("WavSaver","needRename is "+needRename);
 							value = probablyTheDirectory + '/' + value;
 						} else {
 							value = Environment.getExternalStorageDirectory().getAbsolutePath() + '/' + value;
@@ -87,7 +85,7 @@ public class WavSaver implements TimidityActivity.SpecialAction {
 						value = Environment.getExternalStorageDirectory().getAbsolutePath() + '/' + value;
 					}
 					final String finalval = value;
-					final boolean canWrite = aWrite;
+					final boolean canWrite = normalWrite;
 					final String needToRename = needRename;
 					final String probRoot = probablyTheRoot;
 					if (new File(finalval).exists() || (new File(probRoot + needRename).exists() && needToRename != null)) {
@@ -128,7 +126,7 @@ public class WavSaver implements TimidityActivity.SpecialAction {
 				}
 			});
 
-			alerty = alert.show();
+			exportAlert = alert.show();
 
 		}
 	}
@@ -212,7 +210,7 @@ public class WavSaver implements TimidityActivity.SpecialAction {
 	@Override
 	public AlertDialog getAlertDialog() {
 		// TODO Auto-generated method stub
-		return alerty;
+		return exportAlert;
 	}
 
 	@Override

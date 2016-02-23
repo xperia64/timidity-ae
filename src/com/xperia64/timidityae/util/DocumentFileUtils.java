@@ -3,7 +3,7 @@ package com.xperia64.timidityae.util;
 import java.io.File;
 import java.io.IOException;
 
-import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Build;
@@ -156,7 +156,7 @@ public class DocumentFileUtils {
 	 * @param parent the parent directory of the file we want
 	 * @return
 	 */
-	@SuppressLint("NewApi")
+	@TargetApi(Build.VERSION_CODES.KITKAT)
 	public static String[] getExternalFilePaths(Context context, String parent) {
 		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP)
 			return null; // Error.

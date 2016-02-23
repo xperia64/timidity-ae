@@ -17,7 +17,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
@@ -40,7 +39,6 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.Spinner;
@@ -59,45 +57,44 @@ import com.xperia64.timidityae.util.SettingsStorage;
 @SuppressLint("Recycle")
 public class PlayerFragment extends Fragment {
 
-	public boolean shouldAdvance = true;
-	public int loopMode = 1;
-	public int shuffleMode = 0;
-	boolean firstSelection;
-	boolean sliding = false;
+	//private boolean shouldAdvance = true;
+	private int loopMode = 1;
+	private int shuffleMode = 0;
+	private boolean firstSelection;
+	private boolean changingTime = false;
 	//
-	public TimidityActivity mActivity;
+	private TimidityActivity mActivity;
 	//
-	Random random = new Random(System.currentTimeMillis());
+	//private Random random = new Random(System.currentTimeMillis());
 	// UI Elements
-	ImageButton previousButton; // |<
-	ImageButton rewindButton; // <<
-	ImageButton playButton; // >
-	ImageButton fastForwardButton; // >>
-	ImageButton nextButton; // >|
-	ImageButton shuffleButton;
-	ImageButton loopButton;
-	ImageButton stopButton;
-	SeekBar trackBar;
-	TextView songTitle;
-	TextView timeCounter;
-	FrameLayout subContainer;
-	ArtFragment artsy;
-	TrackFragment tracky;
-	LyricFragment lyrical;
-	int totalMinutes;
-	int totalSeconds;
-	int currMinutes;
-	int currSeconds;
-	int fragMode = 0; // 0 = AlbumArt, 1 = midi controls, 2 = Kareoke
-	boolean ffrw = false;
-	boolean enabledControls = false;
-	boolean canEnablePlay = true;
-	boolean updaterPlacid = false;
+	private ImageButton previousButton; // |<
+	private ImageButton rewindButton; // <<
+	private ImageButton playButton; // >
+	private ImageButton fastForwardButton; // >>
+	private ImageButton nextButton; // >|
+	private ImageButton shuffleButton;
+	private ImageButton loopButton;
+	private ImageButton stopButton;
+	private SeekBar trackBar;
+	private TextView songTitle;
+	private TextView timeCounter;
+	private ArtFragment artsy;
+	private TrackFragment tracky;
+	private LyricFragment lyrical;
+	private int totalMinutes;
+	private int totalSeconds;
+	private int currMinutes;
+	private int currSeconds;
+	private int fragMode = 0; // 0 = AlbumArt, 1 = midi controls, 2 = Kareoke
+	private boolean ffrw = false;
+	private boolean enabledControls = false;
+	private boolean canEnablePlay = true;
+	private boolean shouldUpdateSeekBar = false;
 	//
-	public AlertDialog ddd;
-	TextView tempo;
-	TextView pitch;
-	TextView voices;
+	public AlertDialog midiInfoDialog;
+	private TextView tempo;
+	private TextView pitch;
+	private TextView voices;
 
 	//
 	public static PlayerFragment create() {
@@ -142,7 +139,6 @@ public class PlayerFragment extends Fragment {
 				if (JNIHandler.mAudioTrack != null) {
 					if ((JNIHandler.exceptional & 1) != 0) {
 						Toast.makeText(getActivity(), "Error initializing AudioTrack. Try decreasing the buffer size.", Toast.LENGTH_LONG).show();
-						shouldAdvance = false;
 						canEnablePlay = true;
 						mActivity.stop();
 					}
@@ -170,7 +166,7 @@ public class PlayerFragment extends Fragment {
 			if (fragMode == 1) {
 				tracky.updateList();
 			}
-			if (ddd != null && ddd.isShowing()) {
+			if (midiInfoDialog != null && midiInfoDialog.isShowing()) {
 				if (tempo != null)
 					tempo.setText(String.format(getResources().getString(R.string.mop_tempo), JNIHandler.playbackPercentage, (int) (500000 / (double) JNIHandler.playbackTempo * 120 * (double) JNIHandler.playbackPercentage / 100 + 0.5)));
 				if (pitch != null)
@@ -185,8 +181,8 @@ public class PlayerFragment extends Fragment {
 				}
 			} catch (Exception e) {
 			}
-			if (getActivity() != null && !sliding) {
-				updaterPlacid = false;
+			if (getActivity() != null && !changingTime) {
+				shouldUpdateSeekBar = false;
 				totalMinutes = 0;
 				totalSeconds = JNIHandler.maxTime;
 				currMinutes = 0;
@@ -212,7 +208,7 @@ public class PlayerFragment extends Fragment {
 				});
 				seekHandler.postDelayed(seekbarUpdater, 500);
 			} else {
-				updaterPlacid = true;
+				shouldUpdateSeekBar = true;
 			}
 		}
 	}
@@ -242,7 +238,6 @@ public class PlayerFragment extends Fragment {
 		trackBar = (SeekBar) v.findViewById(R.id.seekBar);
 		songTitle = (TextView) v.findViewById(R.id.songTitle);
 		timeCounter = (TextView) v.findViewById(R.id.timeCount);
-		subContainer = (FrameLayout) v.findViewById(R.id.midiContainer);
 		return v;
 	}
 
@@ -288,7 +283,6 @@ public class PlayerFragment extends Fragment {
 		previousButton.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View arg0) {
-				shouldAdvance = false;
 				canEnablePlay = false;
 				playButton.setEnabled(false);
 				mActivity.prev();
@@ -324,7 +318,7 @@ public class PlayerFragment extends Fragment {
 			Runnable mAction = new Runnable() {
 				@Override
 				public void run() {
-					sliding = true;
+					changingTime = true;
 					int to = trackBar.getProgress() - (3 * mult * (JNIHandler.isMediaPlayerFormat ? 1000 : 1));
 					to = (to > trackBar.getMax() ? trackBar.getMax() : to < 0 ? 0 : to);
 					trackBar.setProgress(to);
@@ -335,7 +329,7 @@ public class PlayerFragment extends Fragment {
 						}
 						mHandler.postDelayed(this, 500);
 					} else {
-						sliding = false;
+						changingTime = false;
 						if (!JNIHandler.isMediaPlayerFormat)
 							mActivity.seek(trackBar.getProgress());
 						seekUpdation();
@@ -386,7 +380,7 @@ public class PlayerFragment extends Fragment {
 			Runnable mAction = new Runnable() {
 				@Override
 				public void run() {
-					sliding = true;
+					changingTime = true;
 					int to = trackBar.getProgress() + (3 * mult * (JNIHandler.isMediaPlayerFormat ? 1000 : 1));
 					to = (to > trackBar.getMax() ? trackBar.getMax() : to < 0 ? 0 : to);
 					trackBar.setProgress(to);
@@ -397,7 +391,7 @@ public class PlayerFragment extends Fragment {
 						}
 						mHandler.postDelayed(this, 500);
 					} else {
-						sliding = false;
+						changingTime = false;
 						if (!JNIHandler.isMediaPlayerFormat)
 							mActivity.seek(trackBar.getProgress());
 						seekUpdation();
@@ -409,7 +403,6 @@ public class PlayerFragment extends Fragment {
 		nextButton.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View arg0) {
-				shouldAdvance = false;
 				canEnablePlay = false;
 				playButton.setEnabled(false);
 				mActivity.next();
@@ -464,7 +457,6 @@ public class PlayerFragment extends Fragment {
 		stopButton.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View arg0) {
-				shouldAdvance = false;
 				canEnablePlay = true;
 				mActivity.stop();
 			}
@@ -505,16 +497,16 @@ public class PlayerFragment extends Fragment {
 
 			@Override
 			public void onStartTrackingTouch(SeekBar arg0) {
-				sliding = true;
+				changingTime = true;
 			}
 
 			@Override
 			public void onStopTrackingTouch(SeekBar arg0) {
 
-				sliding = false;
+				changingTime = false;
 				if (!JNIHandler.isMediaPlayerFormat)
 					mActivity.seek(arg0.getProgress());
-				if (updaterPlacid)
+				if (shouldUpdateSeekBar)
 					seekUpdation();
 			}
 
@@ -531,10 +523,10 @@ public class PlayerFragment extends Fragment {
 		if (tracky != null)
 			tracky.reset();
 
-		if (ddd != null) {
-			if (ddd.isShowing()) {
-				ddd.dismiss();
-				ddd = null;
+		if (midiInfoDialog != null) {
+			if (midiInfoDialog.isShowing()) {
+				midiInfoDialog.dismiss();
+				midiInfoDialog = null;
 			}
 		}
 		this.shuffleMode = shuffleMode;
@@ -595,10 +587,10 @@ public class PlayerFragment extends Fragment {
 		if (tracky != null)
 			tracky.reset();
 
-		if (ddd != null) {
-			if (ddd.isShowing()) {
-				ddd.dismiss();
-				ddd = null;
+		if (midiInfoDialog != null) {
+			if (midiInfoDialog.isShowing()) {
+				midiInfoDialog.dismiss();
+				midiInfoDialog = null;
 			}
 		}
 		if (getActivity() != null) {
@@ -693,23 +685,23 @@ public class PlayerFragment extends Fragment {
 	 */
 	@SuppressLint("InflateParams")
 	public void showMidiDialog() {
-		AlertDialog.Builder b = new AlertDialog.Builder(getActivity());
-		View v = getActivity().getLayoutInflater().inflate(R.layout.midi_options, null);
-		Button speedUp = (Button) v.findViewById(R.id.speedUp);
-		Button slowDown = (Button) v.findViewById(R.id.slowDown);
-		Button keyUp = (Button) v.findViewById(R.id.keyUp);
-		Button keyDown = (Button) v.findViewById(R.id.keyDown);
-		Button vplus = (Button) v.findViewById(R.id.vplus);
-		Button vminus = (Button) v.findViewById(R.id.vminus);
-		Button export = (Button) v.findViewById(R.id.exportButton);
-		Button saveCfg = (Button) v.findViewById(R.id.saveCfg);
-		Button loadCfg = (Button) v.findViewById(R.id.loadCfg);
-		Button savedefCfg = (Button) v.findViewById(R.id.savedefCfg);
-		final Button deldefCfg = (Button) v.findViewById(R.id.deldefCfg);
+		AlertDialog.Builder midiInfoDialogBuilder = new AlertDialog.Builder(getActivity());
+		View midiDialogView = getActivity().getLayoutInflater().inflate(R.layout.midi_options, null);
+		Button speedUp = (Button) midiDialogView.findViewById(R.id.speedUp);
+		Button slowDown = (Button) midiDialogView.findViewById(R.id.slowDown);
+		Button keyUp = (Button) midiDialogView.findViewById(R.id.keyUp);
+		Button keyDown = (Button) midiDialogView.findViewById(R.id.keyDown);
+		Button vplus = (Button) midiDialogView.findViewById(R.id.vplus);
+		Button vminus = (Button) midiDialogView.findViewById(R.id.vminus);
+		Button export = (Button) midiDialogView.findViewById(R.id.exportButton);
+		Button saveCfg = (Button) midiDialogView.findViewById(R.id.saveCfg);
+		Button loadCfg = (Button) midiDialogView.findViewById(R.id.loadCfg);
+		Button savedefCfg = (Button) midiDialogView.findViewById(R.id.savedefCfg);
+		final Button deldefCfg = (Button) midiDialogView.findViewById(R.id.deldefCfg);
 		deldefCfg.setEnabled(new File(mActivity.currSongName + ".def.tcf").exists() || new File(mActivity.currSongName + ".def.tzf").exists());
-		tempo = (TextView) v.findViewById(R.id.tempoText);
-		pitch = (TextView) v.findViewById(R.id.pitchText);
-		voices = (TextView) v.findViewById(R.id.voiceText);
+		tempo = (TextView) midiDialogView.findViewById(R.id.tempoText);
+		pitch = (TextView) midiDialogView.findViewById(R.id.pitchText);
+		voices = (TextView) midiDialogView.findViewById(R.id.voiceText);
 
 		tempo.setText(String.format(getResources().getString(R.string.mop_tempo), JNIHandler.playbackPercentage, (int) (500000 / (double) JNIHandler.playbackTempo * 120 * (double) JNIHandler.playbackPercentage / 100 + 0.5)));
 		pitch.setText(String.format(getResources().getString(R.string.mop_pitch), ((JNIHandler.keyOffset > 0) ? "+" : "") + Integer.toString(JNIHandler.keyOffset)));
@@ -718,7 +710,7 @@ public class PlayerFragment extends Fragment {
 
 			@Override
 			public void onClick(View arg0) {
-				JNIHandler.controlTimidity(17, 1);
+				JNIHandler.controlTimidity(CommandStrings.jni_speedup, 1);
 				JNIHandler.waitUntilReady();
 				JNIHandler.tb++;
 			}
@@ -728,7 +720,7 @@ public class PlayerFragment extends Fragment {
 
 			@Override
 			public void onClick(View arg0) {
-				JNIHandler.controlTimidity(18, 1);
+				JNIHandler.controlTimidity(CommandStrings.jni_speeddown, 1);
 				JNIHandler.waitUntilReady();
 				JNIHandler.tb--;
 			}
@@ -738,7 +730,7 @@ public class PlayerFragment extends Fragment {
 
 			@Override
 			public void onClick(View arg0) {
-				JNIHandler.controlTimidity(15, 1);
+				JNIHandler.controlTimidity(CommandStrings.jni_keyup, 1);
 				JNIHandler.waitUntilReady();
 			}
 
@@ -747,7 +739,7 @@ public class PlayerFragment extends Fragment {
 
 			@Override
 			public void onClick(View arg0) {
-				JNIHandler.controlTimidity(16, -1);
+				JNIHandler.controlTimidity(CommandStrings.jni_keydown, -1);
 				JNIHandler.waitUntilReady();
 			}
 
@@ -756,7 +748,7 @@ public class PlayerFragment extends Fragment {
 
 			@Override
 			public void onClick(View arg0) {
-				JNIHandler.controlTimidity(19, 5);
+				JNIHandler.controlTimidity(CommandStrings.jni_voiceincr, 5);
 				JNIHandler.waitUntilReady();
 			}
 
@@ -765,7 +757,7 @@ public class PlayerFragment extends Fragment {
 
 			@Override
 			public void onClick(View arg0) {
-				JNIHandler.controlTimidity(20, 5);
+				JNIHandler.controlTimidity(CommandStrings.jni_voicedecr, 5);
 				JNIHandler.waitUntilReady();
 			}
 
@@ -945,7 +937,7 @@ public class PlayerFragment extends Fragment {
 
 		});
 
-		final Spinner x = (Spinner) v.findViewById(R.id.resampSpinner);
+		final Spinner x = (Spinner) midiDialogView.findViewById(R.id.resampSpinner);
 		List<String> arrayAdapter = new ArrayList<String>();
 		for (String yyy : Globals.sampls)
 			arrayAdapter.add(yyy);
@@ -973,19 +965,19 @@ public class PlayerFragment extends Fragment {
 		});
 		x.setSelection(JNIHandler.currsamp);
 		if (Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH)
-			v.setBackgroundColor(SettingsStorage.theme == 1 ? Color.WHITE : Color.BLACK);
+			midiDialogView.setBackgroundColor(SettingsStorage.theme == 1 ? Color.WHITE : Color.BLACK);
 
-		b.setView(v);
-		b.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+		midiInfoDialogBuilder.setView(midiDialogView);
+		midiInfoDialogBuilder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
 
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
 
 			}
 		});
-		b.setTitle(getActivity().getResources().getString(R.string.mop));
-		ddd = b.create();
-		ddd.show();
+		midiInfoDialogBuilder.setTitle(getActivity().getResources().getString(R.string.mop));
+		midiInfoDialog = midiInfoDialogBuilder.create();
+		midiInfoDialog.show();
 
 	}
 

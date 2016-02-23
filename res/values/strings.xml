@@ -1,152 +1,154 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name = "app_name">Timidity AE</string>
-    <string name = "action_settings">Settings</string>
-    <string name = "action_help">Help</string>
-    <string name = "action_quit">Quit</string>
-	<string name = "soundfont">Choose Soundfonts</string>
-	<string name = "soundfont2">Manage soundfonts</string>
-	<string name = "dynex_alert1">Convert to WAV File</string>
-	<string name = "dynex_alert1_msg">Exports the MIDI/MOD file to WAV.\nNative Midi must be disabled in settings.\nWarning: WAV files are large.</string>
-	<string name = "warning">Warning</string>
-	<string name = "dynex_alert2_msg">Overwrite WAV file?</string>
-	<string name = "cancel">Cancel</string>
-	<string name = "sett_file">File Browser Options</string>
-	<string name = "sett_shf">Show Hidden Files</string>
-	<string name = "sett_shf_sum">Show files and folders beginning with a .</string>
-	<string name = "sett_shv">Show Video Files</string>
-	<string name = "sett_shv_sum">Show and play audio from .mp4 and .3gp files</string>
-	<string name = "sett_brows4fb">Browse For Default Folder</string>
-	<string name = "sett_brows4fb_sum">Browse for the file browser\'s home folder</string>
-	<string name = "sett_fbpath">Manually edit default folder</string>
-	<string name = "sett_nm">Native Midi</string>
-	<string name = "sett_nm_sum">Use native android midi playback</string>
-	<string name = "sett_rate">Audio Rate</string>
-	<string name = "sett_rate_sum">Audio rate in Hz</string>
-	<string name = "sett_chan">Audio Channels</string>
-	<string name = "sett_chan_sum">Number of audio channels</string>
-	<string name = "sett_buff">Audio Buffer Size</string>
-	<string name = "sett_buff_sum">Use a higher value if you experience audio skipping (Default 192000)</string>
-	<string name = "sett_title">Timidity AE Settings</string>
-	<string name = "sett_ds">Display Settings</string>
-	<string name = "sett_ds_sum">Display and file browser settings</string>
-	<string name = "sett_theme">Theme</string>
-	<string name = "sett_theme_sum">App theme</string>
-	<string name = "sett_plus">TiMidity++ Settings</string>
-	<string name = "sett_plus_sum">TiMidity++ settings (may stop playback)</string>
-	<string name = "sett_dat">Data Settings</string>
-	<string name = "sett_resf">Reinstall Default Soundfont</string>
-	<string name = "sett_resf_sum">Reinstall 8Rock11e.sf2 to Timidity AE\'s data folder</string>
-	<string name = "sett_resf_q">Reinstall Default Soundfont?</string>
-	<string name = "sett_resf_q_sum">This may take a few minutes.</string>
-	<string name = "sett_resf_err">Could not extract default soundfont</string>
-	<string name = "sett_mancfg">Use manual config file</string>
-	<string name = "sett_mancfg_sum">Use manually created timidity.cfg</string>
-	<string name = "sett_sil">Preserve Silence</string>
-	<string name = "sett_sil_sum">Preserve the silence at the beginning of a song instead of skipping it</string>
-	<string name = "sett_unload">Unload Instruments</string>
-	<string name = "sett_unload_sum">Unload instruments between songs (recommended)</string>
-	<string name = "sett_res">Default Resampling Mode</string>
-	<string name = "sett_res_sum">Algorithm to convert sample rate</string>
-	<string name = "sett_bits">Audio Bit Depth</string>
-	<string name = "sett_bits_sum">Bits per sample</string>
-	<string name = "sett_ddir">Browse For Data Folder</string>
-	<string name = "sett_ddir_sum">Browse for Timidity AE\'s system folder</string>
-	<string name = "sett_mandir">Manually Enter Data Folder</string>
-	<string name = "sett_mandir_sum">Manually enter Timidity AE\'s system folder</string>
-	<string name = "sett_other">Other Settings</string>
-	<string name = "sett_kpw">Keep Partial Conversions</string>
-	<string name = "sett_kpw_sum">Keep partially converted WAV files instead of deleting them</string>
-	<string name = "sett_defback">Use Default Back Button</string>
-	<string name = "sett_defback_sum">Use Android\'s default behavior when the back button is pressed</string>
-	<string name = "sett_compcfg">Compress Configuration Files</string>
-	<string name = "sett_compcfg_sum">Compresses custom midi configuration files</string>
-	<string name = "sett_lolrw">Request Lollipop Write Access</string>
-	<string name = "sett_lolrw_sum">Change the directory that Timidity has access to\nThe ROOT of the SD card must be chosen</string>
-	<string name = "sett_lolnag">Ask for external sdcard access on startup</string>
-	<string name = "sett_lolnag_sum">Ask for write access to the external sdcard if not found on startup</string>
-	<string name = "sett_reshuff">Reshuffle playlist</string>
-	<string name = "sett_reshuff_sum">Reshuffle the current playlist when switching shuffle modes</string>
-	<string name = "intErr1">File not found/unsupported format</string>
-	<string name = "intErr2">Unsupported protocol; Timidity AE does not support streaming</string>
-	<string name = "refreshfld">Refresh Folder</string>
-	<string name = "refreshpls">Refresh Playlist(s)</string>
-	<string name = "refreshcon">Refresh</string>
-	<string name = "homefld">Home Folder</string>
-	<string name = "homecon">Home</string>
-	<string name = "view">Change View</string>
-	<string name = "viewcon">View</string>
-	<string name = "playback">Playback Options</string>
-	<string name = "playbackcon">Playback</string>
-	<string name = "add">Add Item</string>
-	<string name = "addcon">Add</string>
-	<string name = "tcfg_error">Could not load cfg. Using native midi (%d)</string>
-	<string name = "mop">TiMidity++ Controls</string>
-	<string name = "mop_up">Key Up</string>
-	<string name = "mop_down">Key Down</string>
-	<string name = "mop_fast">Faster</string>
-	<string name = "mop_slow">Slower</string>
-	<string name = "mop_vplus">Voices+</string>
-	<string name = "mop_vminus">Voices-</string>
-	<string name = "mop_resamp">Resampling Algorithm</string>
-	<string name = "mop_tempo">Tempo: %2$d BPM (%1$d%%)</string>
-	<string name = "mop_pitch">Pitch: %s</string>
-	<string name = "mop_voice">Voices: %1$d/%2$d</string>
-	<string name = "mop_export">Export to WAV</string>
-	
-	<string name = "trk_dinst">Default Instrument</string>
-	<string name = "trk_dvol">Default Volume</string>
-	<string name = "trk_inst">Instrument</string>
-	<string name = "trk_vol">Volume</string>
-	<string name = "trk_form">%1$s Track %2$d. Prog: %3$d Vol: %4$d</string>
-	<string name = "trk_drum">Drum</string>
-	<string name = "trk_inst2">Inst</string>
-	<string name = "trk_form2">Track %d Settings</string>
-	<string name = "srv_fnf">File not found</string>
-	<string name = "srv_loading">Already loading</string>
-	<string name = "srv_unk">Unknown error: %d</string>
-	<string name = "fb_chfi">Choose File(s)</string>
-	<string name = "fb_chfo">Choose Folder(s)</string>
-	<string name = "done">Done</string>
-	<string name = "fb_fold">This Folder</string>
-	<string name = "fb_cread">Cannot be read!</string>
-	<string name = "fb_add">Added</string>
-	<string name = "plist_save2">Save Playlist As…</string>
-	<string name = "plist_save">Save</string>
-	<string name = "plist_mod">Modify Playlist</string>
-	<string name = "plist_del">Delete</string>
-	<string name = "plist_del2">Really delete %s?</string>
-	<string name = "plist_ren">Rename</string>
-	<string name = "plist_ren2">Rename %s</string>
-	<string name = "plist_ex">Playlist already exists</string>
-	<string name = "plist_pnf">Playlist not found</string>
-	<string name = "plist_modit">Modify Playlist Item</string>
-	<string name = "plist_addcs">Add current song…</string>
-	<string name = "plist_adds">Add song…</string>
-	<string name = "plist_addf">Add folder…</string>
-	<string name = "plist_addft">Add folder tree…</string>
-	<string name = "plist_ds">Remove from playlist</string>
-	<string name = "plist_addcsh">Add current song here…</string>
-	<string name = "plist_addsh">Add song here…</string>
-	<string name = "plist_addfh">Add folder here…</string>
-	<string name = "plist_addfth">Add folder tree here…</string>
-	<string name = "plist_addto">Add To Playlist</string>
-	<string name = "plist_curr">Current Playlist</string>
-	<string name = "plist_crea">Create New Playlist</string>
-	<string name = "extract">Extracting…</string>
-	<string name = "extract_sum">Extracting 8Rock11e.sf2…</string>
-	<string name = "extract_def">To use 8Rock11e.sf2, please re-add it to the config via the \'Choose Soundfonts\' button above</string>
-	<string name = "invalidbuff">Invalid buffer size, reverting to minimum</string>
-	<string name = "invalidfold">Invalid folder</string>
-	<string name = "restart">Restart app to apply changes</string>
-	<string name = "sf_man">Manage Soundfonts</string>
-	<string name = "sf_rem">Remove Soundfont</string>
-	<string name = "sf_rem2">Remove</string>
-	<string name = "sf_com">Really remove %s from cfg?</string>
-	<string name = "yes">Yes</string>
-	<string name = "no">No</string>
-	<string name = "helpt">Timidity AE Help</string>
-	<string name = "helper">Frequently Asked Questions\n\n
+
+    <string name="app_name">Timidity AE</string>
+    <string name="action_settings">Settings</string>
+    <string name="action_help">Help</string>
+    <string name="action_quit">Quit</string>
+    <string name="soundfont">Choose Soundfonts</string>
+    <string name="soundfont2">Manage soundfonts</string>
+    <string name="dynex_alert1">Convert to WAV File</string>
+    <string name="dynex_alert1_msg">Exports the MIDI/MOD file to WAV.\nNative Midi must be disabled in settings.\nWarning: WAV files are large.</string>
+    <string name="warning">Warning</string>
+    <string name="dynex_alert2_msg">Overwrite WAV file?</string>
+    <string name="cancel">Cancel</string>
+    <string name="sett_file">File Browser Options</string>
+    <string name="sett_shf">Show Hidden Files</string>
+    <string name="sett_shf_sum">Show files and folders beginning with a .</string>
+    <string name="sett_shv">Show Video Files</string>
+    <string name="sett_shv_sum">Show and play audio from .mp4 and .3gp files</string>
+    <string name="sett_brows4fb">Browse For Default Folder</string>
+    <string name="sett_brows4fb_sum">Browse for the file browser\'s home folder</string>
+    <string name="sett_fbpath">Manually edit default folder</string>
+    <string name="sett_nm">Native Midi</string>
+    <string name="sett_nm_sum">Use native android midi playback</string>
+    <string name="sett_rate">Audio Rate</string>
+    <string name="sett_rate_sum">Audio rate in Hz</string>
+    <string name="sett_chan">Audio Channels</string>
+    <string name="sett_chan_sum">Number of audio channels</string>
+    <string name="sett_buff">Audio Buffer Size</string>
+    <string name="sett_buff_sum">Use a higher value if you experience audio skipping (Default 192000)</string>
+    <string name="sett_title">Timidity AE Settings</string>
+    <string name="sett_ds">Display Settings</string>
+    <string name="sett_ds_sum">Display and file browser settings</string>
+    <string name="sett_theme">Theme</string>
+    <string name="sett_theme_sum">App theme</string>
+    <string name="sett_plus">TiMidity++ Settings</string>
+    <string name="sett_plus_sum">TiMidity++ settings (may stop playback)</string>
+    <string name="sett_dat">Data Settings</string>
+    <string name="sett_resf">Reinstall Default Soundfont</string>
+    <string name="sett_resf_sum">Reinstall 8Rock11e.sf2 to Timidity AE\'s data folder</string>
+    <string name="sett_resf_q">Reinstall Default Soundfont?</string>
+    <string name="sett_resf_q_sum">This may take a few minutes.</string>
+    <string name="sett_resf_err">Could not extract default soundfont</string>
+    <string name="sett_mancfg">Use manual config file</string>
+    <string name="sett_mancfg_sum">Use manually created timidity.cfg</string>
+    <string name="sett_sil">Preserve Silence</string>
+    <string name="sett_sil_sum">Preserve the silence at the beginning of a song instead of skipping it</string>
+    <string name="sett_unload">Unload Instruments</string>
+    <string name="sett_unload_sum">Unload instruments between songs (recommended)</string>
+    <string name="sett_res">Default Resampling Mode</string>
+    <string name="sett_res_sum">Algorithm to convert sample rate</string>
+    <string name="sett_bits">Audio Bit Depth</string>
+    <string name="sett_bits_sum">Bits per sample</string>
+    <string name="sett_ddir">Browse For Data Folder</string>
+    <string name="sett_ddir_sum">Browse for Timidity AE\'s system folder</string>
+    <string name="sett_mandir">Manually Enter Data Folder</string>
+    <string name="sett_mandir_sum">Manually enter Timidity AE\'s system folder</string>
+    <string name="sett_other">Other Settings</string>
+    <string name="sett_kpw">Keep Partial Conversions</string>
+    <string name="sett_kpw_sum">Keep partially converted WAV files instead of deleting them</string>
+    <string name="sett_defback">Use Default Back Button</string>
+    <string name="sett_defback_sum">Use Android\'s default behavior when the back button is pressed</string>
+    <string name="sett_compcfg">Compress Configuration Files</string>
+    <string name="sett_compcfg_sum">Compresses custom midi configuration files</string>
+    <string name="sett_lolrw">Request Lollipop Write Access</string>
+    <string name="sett_lolrw_sum">Change the directory that Timidity has access to\nThe ROOT of the SD card must be chosen</string>
+    <string name="sett_lolnag">Ask for external sdcard access on startup</string>
+    <string name="sett_lolnag_sum">Ask for write access to the external sdcard if not found on startup</string>
+    <string name="sett_reshuff">Reshuffle playlist</string>
+    <string name="sett_reshuff_sum">Reshuffle the current playlist when switching shuffle modes</string>
+    <string name="sett_fancy_plist">Drag and Drop Playlist Reordering</string>
+    <string name="sett_fancy_plist_sum">Enable reordering of playlist items via drag and drop</string>
+    <string name="intErr1">File not found/unsupported format</string>
+    <string name="intErr2">Unsupported protocol; Timidity AE does not support streaming</string>
+    <string name="refreshfld">Refresh Folder</string>
+    <string name="refreshpls">Refresh Playlist(s)</string>
+    <string name="refreshcon">Refresh</string>
+    <string name="homefld">Home Folder</string>
+    <string name="homecon">Home</string>
+    <string name="view">Change View</string>
+    <string name="viewcon">View</string>
+    <string name="playback">Playback Options</string>
+    <string name="playbackcon">Playback</string>
+    <string name="add">Add Item</string>
+    <string name="addcon">Add</string>
+    <string name="tcfg_error">Could not load config. Some file types will be unavailable (%d)</string>
+    <string name="mop">TiMidity++ Controls</string>
+    <string name="mop_up">Key Up</string>
+    <string name="mop_down">Key Down</string>
+    <string name="mop_fast">Faster</string>
+    <string name="mop_slow">Slower</string>
+    <string name="mop_vplus">Voices+</string>
+    <string name="mop_vminus">Voices-</string>
+    <string name="mop_resamp">Resampling Algorithm</string>
+    <string name="mop_tempo">Tempo: %2$d BPM (%1$d%%)</string>
+    <string name="mop_pitch">Pitch: %s</string>
+    <string name="mop_voice">Voices: %1$d/%2$d</string>
+    <string name="mop_export">Export to WAV</string>
+    <string name="trk_dinst">Default Instrument</string>
+    <string name="trk_dvol">Default Volume</string>
+    <string name="trk_inst">Instrument</string>
+    <string name="trk_vol">Volume</string>
+    <string name="trk_form">%1$s Track %2$d. Prog: %3$d Vol: %4$d</string>
+    <string name="trk_drum">Drum</string>
+    <string name="trk_inst2">Inst</string>
+    <string name="trk_form2">Track %d Settings</string>
+    <string name="srv_fnf">File not found</string>
+    <string name="srv_loading">Already loading</string>
+    <string name="srv_unk">Unknown error: %d</string>
+    <string name="fb_chfi">Choose File(s)</string>
+    <string name="fb_chfo">Choose Folder(s)</string>
+    <string name="done">Done</string>
+    <string name="fb_fold">This Folder</string>
+    <string name="fb_cread">Cannot be read!</string>
+    <string name="fb_add">Added</string>
+    <string name="plist_save2">Save Playlist As…</string>
+    <string name="plist_save">Save</string>
+    <string name="plist_mod">Modify Playlist</string>
+    <string name="plist_del">Delete</string>
+    <string name="plist_del2">Really delete %s?</string>
+    <string name="plist_ren">Rename</string>
+    <string name="plist_ren2">Rename %s</string>
+    <string name="plist_ex">Playlist already exists</string>
+    <string name="plist_pnf">Playlist not found</string>
+    <string name="plist_modit">Modify Playlist Item</string>
+    <string name="plist_addcs">Add current song…</string>
+    <string name="plist_adds">Add song…</string>
+    <string name="plist_addf">Add folder…</string>
+    <string name="plist_addft">Add folder tree…</string>
+    <string name="plist_ds">Remove from playlist</string>
+    <string name="plist_addcsh">Add current song here…</string>
+    <string name="plist_addsh">Add song here…</string>
+    <string name="plist_addfh">Add folder here…</string>
+    <string name="plist_addfth">Add folder tree here…</string>
+    <string name="plist_addto">Add To Playlist</string>
+    <string name="plist_curr">Current Playlist</string>
+    <string name="plist_crea">Create New Playlist</string>
+    <string name="extract">Extracting…</string>
+    <string name="extract_sum">Extracting 8Rock11e.sf2…</string>
+    <string name="extract_def">To use 8Rock11e.sf2, please re-add it to the config via the \'Choose Soundfonts\' button above</string>
+    <string name="invalidbuff">Invalid buffer size, reverting to minimum</string>
+    <string name="invalidfold">Invalid folder</string>
+    <string name="restart">Restart app to apply changes</string>
+    <string name="sf_man">Manage Soundfonts</string>
+    <string name="sf_rem">Remove Soundfont</string>
+    <string name="sf_rem2">Remove</string>
+    <string name="sf_com">Really remove %s from cfg?</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="helpt">Timidity AE Help</string>
+    <string name="helper">Frequently Asked Questions\n\n
 	    
 	    Q: How do I export to a WAV file?\n
 	    A: Long press your file in the file browser or press the export button in the TiMidity++ Controls dialog box.\n\n
@@ -177,236 +179,230 @@
 	    A: Press the upper left button of the player to switch loop modes. The straight arrow icon indicates that the playlist will stop once it has finished. The double arrow icon indicates the playlist will loop. The single arrow icon indicates that the current song will loop.\n\n
 	    
 	    Q: How do I shuffle playlists?\n
-	    A: Press the upper right button of the player to toggle shuffle mode.
-	    
-	</string>
-	
+	    A: Press the upper right button of the player to toggle shuffle mode.</string>
 
+    <!-- Arrays -->
+    <string-array name="theme_items">
+        <item>Light</item>
+        <item>Dark</item>
+    </string-array>
+    <string-array name="background_theme_items">
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+    <string-array name="resamp_items">
+        <item>Cubic Spline</item>
+        <item>Lagrange</item>
+        <item>Gaussian</item>
+        <item>Newton</item>
+        <item>Linear</item>
+        <item>None</item>
+    </string-array>
+    <string-array name="background_resamp_items">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+    </string-array>
+    <string-array name="select_channel_items">
+        <item>1 (Downmixed Mono)</item>
+        <item>1 (Synthesized Mono)</item>
+        <item>2 (Stereo)</item>
+    </string-array>
+    <string-array name="background_channel_items">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+    <string-array name="select_bit_items">
+        <item>8-Bit</item>
+        <item>16-Bit</item>
+    </string-array>
+    <string-array name="background_bit_items">
+        <item>8</item>
+        <item>16</item>
+    </string-array>
+    <string-array name="midi_instruments">
+        <item>1. Acoustic Grand Piano</item>
+        <item>2. Bright Acoustic Piano</item>
+        <item>3. Electric-Grand Piano</item>
+        <item>4. Honky-Tonk</item>
+        <item>5. Electric Piano 1</item>
+        <item>6. Electric Piano 2</item>
+        <item>7. Harpsichord</item>
+        <item>8. Clavi</item>
+        <item>9. Celesta</item>
+        <item>10. Glockenspiel</item>
+        <item>11. Music Box</item>
+        <item>12. Vibraphone</item>
+        <item>13. Marimba</item>
+        <item>14. Xylophone</item>
+        <item>15. Tubular Bells</item>
+        <item>16. Dulcimer</item>
+        <item>17. Drawbar Organ</item>
+        <item>18. Percussive Organ</item>
+        <item>19. Rock Organ</item>
+        <item>20. Church Organ</item>
+        <item>21. Reed Organ</item>
+        <item>22. Accordion</item>
+        <item>23. Harmonica</item>
+        <item>24. Tango Accordion</item>
+        <item>25. Acoustic Guitar (nylon)</item>
+        <item>26. Acoustic Guitar (steel)</item>
+        <item>27. Electric Guitar (jazz)</item>
+        <item>28. Electric Guitar (clean)</item>
+        <item>29. Electric Guitar (muted)</item>
+        <item>30. Overdriven Guitar</item>
+        <item>31. Distortion Guitar</item>
+        <item>32. Guitar Harmonics</item>
+        <item>33. Acoustic Bass</item>
+        <item>34. Electric Bass (finger)</item>
+        <item>35. Electric Bass (pick)</item>
+        <item>36. Fretless Bass</item>
+        <item>37. Slap Bass 1</item>
+        <item>38. Slap Bass 2</item>
+        <item>39. Synth Bass 1</item>
+        <item>40. Synth Bass 2</item>
+        <item>41. Violin</item>
+        <item>42. Viola</item>
+        <item>43. Cello</item>
+        <item>44. Contrabass</item>
+        <item>45. Tremolo Strings</item>
+        <item>46. Pizzicato Strings</item>
+        <item>47. Orchestral Harp</item>
+        <item>48. Timpani</item>
+        <item>49. String Ensemble 1</item>
+        <item>50. String Ensemble 2</item>
+        <item>51. SynthStrings 1</item>
+        <item>52. SynthStrings 2</item>
+        <item>53. Choir Aahs</item>
+        <item>54. Voice Oohs</item>
+        <item>55. Synth Voice</item>
+        <item>56. Orchestra Hit</item>
+        <item>57. Trumpet</item>
+        <item>58. Trombone</item>
+        <item>59. Tuba</item>
+        <item>60. Muted Trumpet</item>
+        <item>61. French Horn</item>
+        <item>62. Brass Section</item>
+        <item>63. SynthBrass 1</item>
+        <item>64. SynthBrass 2</item>
+        <item>65. Soprano Sax</item>
+        <item>66. Alto Sax</item>
+        <item>67. Tenor Sax</item>
+        <item>68. Baritone Sax</item>
+        <item>69. Oboe</item>
+        <item>70. English Horn</item>
+        <item>71. Bassoon</item>
+        <item>72. Clarinet</item>
+        <item>73. Piccolo</item>
+        <item>74. Flute</item>
+        <item>75. Recorder</item>
+        <item>76. Pan Flute</item>
+        <item>77. Blown Bottle</item>
+        <item>78. Shakuhachi</item>
+        <item>79. Whistle</item>
+        <item>80. Ocarina</item>
+        <item>81. Lead 1 (square)</item>
+        <item>82. Lead 2 (sawtooth)</item>
+        <item>83. Lead 3 (calliope)</item>
+        <item>84. Lead 4 (chiff)</item>
+        <item>85. Lead 5 (charang)</item>
+        <item>86. Lead 6 (voice)</item>
+        <item>87. Lead 7 (fifths)</item>
+        <item>88. Lead 8 (bass + lead)</item>
+        <item>89. Pad 1 (new age)</item>
+        <item>90. Pad 2 (warm)</item>
+        <item>91. Pad 3 (polysynth)</item>
+        <item>92. Pad 4 (choir)</item>
+        <item>93. Pad 5 (bowed)</item>
+        <item>94. Pad 6 (metallic)</item>
+        <item>95. Pad 7 (halo)</item>
+        <item>96. Pad 8 (sweep)</item>
+        <item>97. FX 1 (rain)</item>
+        <item>98. FX 2 (soundtrack)</item>
+        <item>99. FX 3 (crystal)</item>
+        <item>100. FX 4 (atmosphere)</item>
+        <item>101. FX 5 (brightness)</item>
+        <item>102. FX 6 (goblins)</item>
+        <item>103. FX 7 (echoes)</item>
+        <item>104. FX 8 (sci-fi)</item>
+        <item>105. Sitar</item>
+        <item>106. Banjo</item>
+        <item>107. Shamisen</item>
+        <item>108. Koto</item>
+        <item>109. Kalimba</item>
+        <item>110. Bag pipe</item>
+        <item>111. Fiddle</item>
+        <item>112. Shanai</item>
+        <item>113. Tinkle Bell</item>
+        <item>114. Agogo</item>
+        <item>115. Steel Drums</item>
+        <item>116. Woodblock</item>
+        <item>117. Taiko Drum</item>
+        <item>118. Melodic Tom</item>
+        <item>119. Synth Drum</item>
+        <item>120. Reverse Cymbal</item>
+        <item>121. Guitar Fret Noise</item>
+        <item>122. Breath Noise</item>
+        <item>123. Seashore</item>
+        <item>124. Bird Tweet</item>
+        <item>125. Telephone Ring</item>
+        <item>126. Helicopter</item>
+        <item>127. Applause</item>
+        <item>128. Gunshot</item>
+    </string-array>
+    <!-- This doesn't really work -->
+    <string-array name="midi_drums">
+        <item>35. Acoustic Bass Drum</item>
+        <item>36. Bass Drum 1</item>
+        <item>37. Side Stick</item>
+        <item>38. Acoustic Snare</item>
+        <item>39. Hand Clap</item>
+        <item>40. Electric Snare</item>
+        <item>41. Low Floor Tom</item>
+        <item>42. Closed Hi Hat</item>
+        <item>43. Hi Floor Tom</item>
+        <item>44. Pedal Hi-Hat</item>
+        <item>45. Low Tom</item>
+        <item>46. Open Hi-Hat</item>
+        <item>47. Low-Mid Tom</item>
+        <item>48. Hi-Mid Tom</item>
+        <item>49. Crash Cymbal 1</item>
+        <item>50. High Tom</item>
+        <item>51. Ride Cymbal 1</item>
+        <item>52. Chinese Cymbal</item>
+        <item>53. Ride Bell</item>
+        <item>54. Tambourine</item>
+        <item>55. Splash Cymbal</item>
+        <item>56. Cowbell</item>
+        <item>57. Crash Cymbal 2</item>
+        <item>58. Vibraslap</item>
+        <item>59. ride Cymbal 2</item>
+        <item>60. Hi Bongo</item>
+        <item>61. Low Bongo</item>
+        <item>62. Mute Hi Conga</item>
+        <item>63. Open Hi Conga</item>
+        <item>64. Low Conga</item>
+        <item>65. High Timable</item>
+        <item>66. Low Timable</item>
+        <item>67. High Agogo</item>
+        <item>68. Low Agogo</item>
+        <item>69. Cabasa</item>
+        <item>70. Maracas</item>
+        <item>71. Short Whistle</item>
+        <item>72. Long Whistle</item>
+        <item>73. Short Guiro</item>
+        <item>74. Long Guiro</item>
+        <item>75. Claves</item>
+        <item>76. Hi Wood Block</item>
+        <item>77. Low Wood Block</item>
+        <item>78. Mute Cuica</item>
+        <item>79. Open Cuica</item>
+        <item>80. Mute Triangle</item>
+        <item>81. Open Triangle</item>
+    </string-array>
 
-
-
-
-<!-- Arrays -->
-<string-array name="theme_items">
-    <item>Light</item>
-    <item>Dark</item>
-</string-array>
-<string-array name="background_theme_items">
-    <item>1</item>
-    <item>2</item>
-</string-array>
-<string-array name="resamp_items">
-    <item>Cubic Spline</item>
-    <item>Lagrange</item>
-    <item>Gaussian</item>
-    <item>Newton</item>
-    <item>Linear</item>
-    <item>None</item>
-</string-array>
-<string-array name="background_resamp_items">
-    <item>0</item>
-    <item>1</item>
-    <item>2</item>
-    <item>3</item>
-    <item>4</item>
-    <item>5</item>
-</string-array>
-<string-array name="select_channel_items">
-    <item>1 (Downmixed Mono)</item>
-    <item>1 (Synthesized Mono)</item>
-    <item>2 (Stereo)</item>
-</string-array>
-<string-array name="background_channel_items">
-    <item>0</item>
-    <item>1</item>
-    <item>2</item>
-</string-array>
-<string-array name="select_bit_items">
-    <item>8-Bit</item>
-    <item>16-Bit</item>
-</string-array>
-<string-array name="background_bit_items">
-    <item>8</item>
-    <item>16</item>
-</string-array>
-<string-array name="midi_instruments">
-    				<item>1. Acoustic Grand Piano</item>
-	                <item>2. Bright Acoustic Piano</item>
-	                <item>3. Electric-Grand Piano</item>
-	                <item>4. Honky-Tonk</item>
-	                <item>5. Electric Piano 1</item>
-	                <item>6. Electric Piano 2</item>
-	                <item>7. Harpsichord</item>
-	                <item>8. Clavi</item>
-	                <item>9. Celesta</item>
-	                <item>10. Glockenspiel</item>
-	                <item>11. Music Box</item>
-	                <item>12. Vibraphone</item>
-	                <item>13. Marimba</item>
-	                <item>14. Xylophone</item>
-	                <item>15. Tubular Bells</item>
-	                <item>16. Dulcimer</item>
-	                <item>17. Drawbar Organ</item>
-	                <item>18. Percussive Organ</item>
-	                <item>19. Rock Organ</item>
-	                <item>20. Church Organ</item>
-	                <item>21. Reed Organ</item>
-	                <item>22. Accordion</item>
-	                <item>23. Harmonica</item>
-	                <item>24. Tango Accordion</item>
-	                <item>25. Acoustic Guitar (nylon)</item>
-	                <item>26. Acoustic Guitar (steel)</item>
-	                <item>27. Electric Guitar (jazz)</item>
-	                <item>28. Electric Guitar (clean)</item>
-	                <item>29. Electric Guitar (muted)</item>
-	                <item>30. Overdriven Guitar</item>
-	                <item>31. Distortion Guitar</item>
-	                <item>32. Guitar Harmonics</item>
-	                <item>33. Acoustic Bass</item>
-	                <item>34. Electric Bass (finger)</item>
-	                <item>35. Electric Bass (pick)</item>
-	                <item>36. Fretless Bass</item>
-	                <item>37. Slap Bass 1</item>
-	                <item>38. Slap Bass 2</item>
-	                <item>39. Synth Bass 1</item>
-	                <item>40. Synth Bass 2</item>
-	                <item>41. Violin</item>
-	                <item>42. Viola</item>
-	                <item>43. Cello</item>
-	                <item>44. Contrabass</item>
-	                <item>45. Tremolo Strings</item>
-	                <item>46. Pizzicato Strings</item>
-	                <item>47. Orchestral Harp</item>
-	                <item>48. Timpani</item>
-	                <item>49. String Ensemble 1</item>
-	                <item>50. String Ensemble 2</item>
-	                <item>51. SynthStrings 1</item>
-	                <item>52. SynthStrings 2</item>
-	                <item>53. Choir Aahs</item>
-	                <item>54. Voice Oohs</item>
-	                <item>55. Synth Voice</item>
-	                <item>56. Orchestra Hit</item>
-	                <item>57. Trumpet</item>
-	                <item>58. Trombone</item>
-	                <item>59. Tuba</item>
-	                <item>60. Muted Trumpet</item>
-	                <item>61. French Horn</item>
-	                <item>62. Brass Section</item>
-	                <item>63. SynthBrass 1</item>
-	                <item>64. SynthBrass 2</item>
-	                <item>65. Soprano Sax</item>
-	                <item>66. Alto Sax</item>
-	                <item>67. Tenor Sax</item>
-	                <item>68. Baritone Sax</item>
-	                <item>69. Oboe</item>
-	                <item>70. English Horn</item>
-	                <item>71. Bassoon</item>
-	                <item>72. Clarinet</item>
-	                <item>73. Piccolo</item>
-	                <item>74. Flute</item>
-	                <item>75. Recorder</item>
-	                <item>76. Pan Flute</item>
-	                <item>77. Blown Bottle</item>
-	                <item>78. Shakuhachi</item>
-	                <item>79. Whistle</item>
-	                <item>80. Ocarina</item>
-	                <item>81. Lead 1 (square)</item>
-	                <item>82. Lead 2 (sawtooth)</item>
-	                <item>83. Lead 3 (calliope)</item>
-	                <item>84. Lead 4 (chiff)</item>
-	                <item>85. Lead 5 (charang)</item>
-	                <item>86. Lead 6 (voice)</item>
-	                <item>87. Lead 7 (fifths)</item>
-	                <item>88. Lead 8 (bass + lead)</item>
-	                <item>89. Pad 1 (new age)</item>
-	                <item>90. Pad 2 (warm)</item>
-	                <item>91. Pad 3 (polysynth)</item>
-	                <item>92. Pad 4 (choir)</item>
-	                <item>93. Pad 5 (bowed)</item>
-	                <item>94. Pad 6 (metallic)</item>
-	                <item>95. Pad 7 (halo)</item>
-	                <item>96. Pad 8 (sweep)</item>
-	                <item>97. FX 1 (rain)</item>
-	                <item>98. FX 2 (soundtrack)</item>
-	                <item>99. FX 3 (crystal)</item>
-	                <item>100. FX 4 (atmosphere)</item>
-	                <item>101. FX 5 (brightness)</item>
-	                <item>102. FX 6 (goblins)</item>
-	                <item>103. FX 7 (echoes)</item>
-	                <item>104. FX 8 (sci-fi)</item>
-	                <item>105. Sitar</item>
-	                <item>106. Banjo</item>
-	                <item>107. Shamisen</item>
-	                <item>108. Koto</item>
-	                <item>109. Kalimba</item>
-	                <item>110. Bag pipe</item>
-	                <item>111. Fiddle</item>
-	                <item>112. Shanai</item>
-	                <item>113. Tinkle Bell</item>
-	                <item>114. Agogo</item>
-	                <item>115. Steel Drums</item>
-	                <item>116. Woodblock</item>
-	                <item>117. Taiko Drum</item>
-	                <item>118. Melodic Tom</item>
-	                <item>119. Synth Drum</item>
-	                <item>120. Reverse Cymbal</item>
-	                <item>121. Guitar Fret Noise</item>
-	                <item>122. Breath Noise</item>
-	                <item>123. Seashore</item>
-	                <item>124. Bird Tweet</item>
-	                <item>125. Telephone Ring</item>
-	                <item>126. Helicopter</item>
-	                <item>127. Applause</item>
-	                <item>128. Gunshot</item>
-</string-array>
-<!-- This doesn't really work -->
-<string-array name="midi_drums">
-    					<item>35. Acoustic Bass Drum</item>
-	                    <item>36. Bass Drum 1</item>
-	                    <item>37. Side Stick</item>
-	                    <item>38. Acoustic Snare</item>
-	                    <item>39. Hand Clap</item>
-	                    <item>40. Electric Snare</item>
-	                    <item>41. Low Floor Tom</item>
-	                    <item>42. Closed Hi Hat</item>
-	                    <item>43. Hi Floor Tom</item>
-	                    <item>44. Pedal Hi-Hat</item>
-	                    <item>45. Low Tom</item>
-	                    <item>46. Open Hi-Hat</item>
-	                    <item>47. Low-Mid Tom</item>
-	                    <item>48. Hi-Mid Tom</item>
-	                    <item>49. Crash Cymbal 1</item>
-	                    <item>50. High Tom</item>
-	                    <item>51. Ride Cymbal 1</item>
-	                    <item>52. Chinese Cymbal</item>
-	                    <item>53. Ride Bell</item>
-	                    <item>54. Tambourine</item>
-	                    <item>55. Splash Cymbal</item>
-	                    <item>56. Cowbell</item>
-	                    <item>57. Crash Cymbal 2</item>
-	                    <item>58. Vibraslap</item>
-	                    <item>59. ride Cymbal 2</item>
-	                    <item>60. Hi Bongo</item>
-	                    <item>61. Low Bongo</item>
-	                    <item>62. Mute Hi Conga</item>
-	                    <item>63. Open Hi Conga</item>
-	                    <item>64. Low Conga</item>
-	                    <item>65. High Timable</item>
-	                    <item>66. Low Timable</item>
-	                    <item>67. High Agogo</item>
-	                    <item>68. Low Agogo</item>
-	                    <item>69. Cabasa</item>
-	                    <item>70. Maracas</item>
-	                    <item>71. Short Whistle</item>
-	                    <item>72. Long Whistle</item>
-	                    <item>73. Short Guiro</item>
-	                    <item>74. Long Guiro</item>
-	                    <item>75. Claves</item>
-	                    <item>76. Hi Wood Block</item>
-	                    <item>77. Low Wood Block</item>
-	                    <item>78. Mute Cuica</item>
-	                    <item>79. Open Cuica</item>
-	                    <item>80. Mute Triangle</item>
-	                    <item>81. Open Triangle</item>
-</string-array>
 </resources>

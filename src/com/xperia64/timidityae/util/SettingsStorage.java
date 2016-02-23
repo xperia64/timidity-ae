@@ -60,7 +60,8 @@ public class SettingsStorage {
 	public static boolean preserveSilence = true;
 	public static boolean freeInsts = true;
 	public static boolean isTV;
-
+	public static boolean enableDragNDrop = true;
+	
 	@SuppressLint("NewApi")
 	public static void reloadSettings(Activity c, AssetManager assets) {
 
@@ -84,12 +85,14 @@ public class SettingsStorage {
 		reShuffle = prefs.getBoolean(CommandStrings.sett_reshuffle_plist, false);
 		freeInsts = prefs.getBoolean(CommandStrings.sett_free_insts, true);
 		preserveSilence = prefs.getBoolean(CommandStrings.sett_preserve_silence, true);
+		enableDragNDrop = prefs.getBoolean(CommandStrings.sett_fancy_plist, true);
 		if (!onlyNative)
 			nativeMidi = prefs.getBoolean(CommandStrings.sett_native_midi, false);
 		else
 			nativeMidi = true;
-		UiModeManager uiModeManager = (UiModeManager) c.getSystemService(Context.UI_MODE_SERVICE);
+		
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.FROYO) {
+			UiModeManager uiModeManager = (UiModeManager) c.getSystemService(Context.UI_MODE_SERVICE);
 			isTV = (uiModeManager.getCurrentModeType() == Configuration.UI_MODE_TYPE_TELEVISION);
 		}
 
@@ -312,7 +315,7 @@ public class SettingsStorage {
 				e.printStackTrace();
 			}
 
-			if (needLol != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && needLol != null) {
 				if (DocumentFileUtils.docFileDevice != null) {
 					String probablyTheDirectory = needLol[0];
 					String probablyTheRoot = needLol[1];

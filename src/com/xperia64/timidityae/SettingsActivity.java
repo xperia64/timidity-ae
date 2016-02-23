@@ -77,6 +77,7 @@ public class SettingsActivity extends AppCompatActivity implements FileBrowserDi
 	private ListPreference themePref;
 	private CheckBoxPreference hiddenFold;
 	private CheckBoxPreference showVids;
+	private CheckBoxPreference fplist;
 	private Preference defaultFoldPreference;
 	private Preference reinstallSoundfont;
 	private Preference lolPref;
@@ -187,12 +188,11 @@ public class SettingsActivity extends AppCompatActivity implements FileBrowserDi
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		if (needUpdateSf) {
-			SettingsStorage.writeCfg(SettingsActivity.this, SettingsStorage.dataFolder + "/timidity/timidity.cfg", tmpSounds); // TODO
-																												// ??
-		}
-
 		SettingsStorage.reloadSettings(this, this.getAssets());
+		if (needUpdateSf) {
+			SettingsStorage.writeCfg(SettingsActivity.this, SettingsStorage.dataFolder + "/timidity/timidity.cfg", tmpSounds); // TODO																						// ??
+		}
+		
 		if (needRestart) {
 			Intent new_intent = new Intent();
 			new_intent.setAction(CommandStrings.msrv_rec);
@@ -293,6 +293,7 @@ public class SettingsActivity extends AppCompatActivity implements FileBrowserDi
 			s.themePref = (ListPreference) findPreference("fbTheme");
 			s.hiddenFold = (CheckBoxPreference) findPreference("hiddenSwitch");
 			s.showVids = (CheckBoxPreference) findPreference("videoSwitch");
+			s.fplist = (CheckBoxPreference) findPreference("fpSwitch");
 			s.defaultFoldPreference = findPreference("defFold");
 			s.reinstallSoundfont = findPreference("reSF");
 			s.manHomeFolder = (EditTextPreference) findPreference("defaultPath");
@@ -346,6 +347,18 @@ public class SettingsActivity extends AppCompatActivity implements FileBrowserDi
 				}
 
 			});
+			if(s.fplist!=null)
+			{
+				s.fplist.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
+	
+					@Override
+					public boolean onPreferenceChange(Preference arg0, Object arg1) {
+						SettingsStorage.enableDragNDrop = (Boolean) arg1;
+						return true;
+					}
+	
+				});
+			}
 			s.keepWav.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
 
 				@Override
@@ -490,7 +503,16 @@ public class SettingsActivity extends AppCompatActivity implements FileBrowserDi
 
 				@Override
 				public boolean onPreferenceChange(Preference arg0, Object arg1) {
-					s.sfPref.setEnabled(!(Boolean) arg1);
+					System.out.println("Writing enabled?");
+					boolean manual = (Boolean) arg1;
+					s.sfPref.setEnabled(!manual);
+					s.needRestart = true;
+					s.needUpdateSf = !manual;
+					if(!manual)
+					{
+						System.out.println("Yes");
+						s.needUpdateSf = true;
+					}
 					return true;
 				}
 

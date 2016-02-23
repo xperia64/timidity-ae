@@ -4,21 +4,23 @@
     android:layout_height="fill_parent"
     android:descendantFocusability="blocksDescendants" >
 
-<TextView
-    android:id="@+id/checkText"
-    android:layout_width="fill_parent"
-    android:layout_height="wrap_content"
-    android:layout_toLeftOf="@+id/sfSwitch"
-    android:ellipsize="end"
-    android:padding="7dp"
-    android:singleLine="true"
-    android:textSize="23sp" />
-<ToggleButton
-    android:id="@+id/sfSwitch"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:layout_alignBaseline="@+id/checkText"
-    android:layout_alignBottom="@+id/checkText"
-    android:layout_alignParentRight="true"
-    android:checked="false" />
+    <TextView
+        android:id="@+id/checkText"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_toLeftOf="@+id/sfSwitch"
+        android:ellipsize="end"
+        android:padding="7dp"
+        android:singleLine="true"
+        android:textSize="23sp" />
+
+    <ToggleButton
+        android:id="@+id/sfSwitch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/checkText"
+        android:layout_alignBottom="@+id/checkText"
+        android:layout_alignParentRight="true"
+        android:checked="false" />
+
 </RelativeLayout>

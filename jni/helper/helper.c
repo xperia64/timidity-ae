@@ -11,7 +11,6 @@ typedef double FLOAT_T;
 // So libtimidityplusplus doesn't have to have any android libs
 void andro_timidity_log_print(const char* tag, const char* fmt, ...)
 { 
-
 	va_list listPointer;
 	va_start( listPointer, fmt);
 	__android_log_print(ANDROID_LOG_ERROR, tag, fmt, listPointer);
@@ -67,7 +66,7 @@ char* configFile;
 char* configFile2;
 int sixteen;
 int mono;
-int itIsDone=0;
+int outputOpen=0;
 int shouldFreeInsts = 1;
 //JNIEnv* envelope;
 //JavaVM  *jvm;
@@ -273,6 +272,7 @@ Java_com_xperia64_timidityae_JNIHandler_unloadLib(JNIEnv * env, jobject  obj)
 {
 	if(libsLoaded&&!libHandle)
 	{
+		__android_log_print(ANDROID_LOG_DEBUG, "TIMIDITY", "Nothing to unload");
 		return -1; // nothing to do
 	}
 	int libclose = dlclose(libHandle);
@@ -290,7 +290,7 @@ Java_com_xperia64_timidityae_JNIHandler_unloadLib(JNIEnv * env, jobject  obj)
 JNIEXPORT int JNICALL 
 Java_com_xperia64_timidityae_JNIHandler_prepareTimidity(JNIEnv * env, jobject  obj, jstring config, jstring config2, jint jmono, jint jcustResamp, jint jsixteen, jint jPresSil, jint jreloading, jint jfreeInsts)
 {
-	itIsDone = 0;
+	outputOpen = 0;
 	if(!jreloading)
 	{
 		Android_JNI_SetupThread();
@@ -298,14 +298,14 @@ Java_com_xperia64_timidityae_JNIHandler_prepareTimidity(JNIEnv * env, jobject  o
 		//pushClazz = (jclass)(*env)->NewGlobalRef(env, tmp);
 		pushClazz = (*env)->NewGlobalRef(env,(*env)->FindClass(env, "com/xperia64/timidityae/JNIHandler"));
 		pushBuffit=(*env)->GetStaticMethodID(env, pushClazz, "buffit", "([BI)V");
-		flushId=(*env)->GetStaticMethodID(env, pushClazz, "flushIt", "()V");
+		flushId=(*env)->GetStaticMethodID(env, pushClazz, "flushTrack", "()V");
 		buffId=(*env)->GetStaticMethodID(env, pushClazz, "bufferSize", "()I");
-		controlId=(*env)->GetStaticMethodID(env, pushClazz, "controlMe", "(I)V");
+		controlId=(*env)->GetStaticMethodID(env, pushClazz, "controlCallback", "(I)V");
 		buffId=(*env)->GetStaticMethodID(env, pushClazz, "bufferSize", "()I");
 		rateId=(*env)->GetStaticMethodID(env, pushClazz, "getRate", "()I");
-		finishId=(*env)->GetStaticMethodID(env, pushClazz, "finishIt", "()V");
-		seekInitId=(*env)->GetStaticMethodID(env, pushClazz, "initSeeker", "(I)V");
-		updateSeekId=(*env)->GetStaticMethodID(env, pushClazz, "updateSeeker", "(II)V");
+		finishId=(*env)->GetStaticMethodID(env, pushClazz, "finishCallback", "()V");
+		seekInitId=(*env)->GetStaticMethodID(env, pushClazz, "initSeekBar", "(I)V");
+		updateSeekId=(*env)->GetStaticMethodID(env, pushClazz, "updateSeekBar", "(II)V");
 		pushLyricId=(*env)->GetStaticMethodID(env, pushClazz, "updateLyrics", "([B)V");
 		updateMaxChanId=(*env)->GetStaticMethodID(env, pushClazz, "updateMaxChannels", "(I)V");
 		updateProgId=(*env)->GetStaticMethodID(env, pushClazz, "updateProgramInfo", "(II)V");
@@ -360,11 +360,11 @@ Java_com_xperia64_timidityae_JNIHandler_loadSongTimidity(JNIEnv * env, jobject  
 	// Don't you just love JNI+threading?
 	
 	// Must be called once to open output. Thank you mac_main for the NULL file list thing	
-	if(!itIsDone)
+	if(!outputOpen)
 	{	
 		setMaxChannels((int)MAX_CHANNELS);
 		(*timidity_play)(0, NULL);
-		itIsDone=1;
+		outputOpen=1;
 	}
 	int main_ret;
 	char *filez[1];
@@ -373,7 +373,7 @@ Java_com_xperia64_timidityae_JNIHandler_loadSongTimidity(JNIEnv * env, jobject  
 	filez[0]=(char*)(*env)->GetStringUTFChars(env, song, &isCopy);
 	//main_ret = timidity_play_main(1, filez);
 	(*ext_play_list)(1,filez);
-(*env)->ReleaseStringUTFChars(env, song, filez[0]);
+	(*env)->ReleaseStringUTFChars(env, song, filez[0]);
 	finishAE();
 	
 	//(*theGoodEnv)->DeleteLocalRef(theGoodEnv, pushClazz);

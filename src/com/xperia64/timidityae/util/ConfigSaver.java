@@ -32,7 +32,12 @@ public class ConfigSaver implements TimidityActivity.SpecialAction {
 		this.currSongName = currSongName;
 	}
 
-	public void saveCfg() {
+	public void saveDefaultCfg(String songTitle)
+	{
+		
+	}
+	
+	public void promptSaveCfg() {
 		localfinished = false;
 		if (Globals.isMidi(currSongName) && JNIHandler.isPlaying) {
 			AlertDialog.Builder saveMidiConfigDialog = new AlertDialog.Builder(context);
@@ -128,7 +133,7 @@ public class ConfigSaver implements TimidityActivity.SpecialAction {
 					} else {
 						new File(finalval).delete();
 					}
-					saveCfgPart2(finalval, needToRename);
+					writeConfig(finalval, needToRename);
 				}
 			});
 			deletionDialog.setButton(DialogInterface.BUTTON_NEGATIVE, context.getResources().getString(android.R.string.no), new DialogInterface.OnClickListener() {
@@ -137,11 +142,11 @@ public class ConfigSaver implements TimidityActivity.SpecialAction {
 			});
 			deletionDialog.show();
 		} else {
-			saveCfgPart2(finalval, needToRename);
+			writeConfig(finalval, needToRename);
 		}
 	}
 
-	public void saveCfgPart2(final String finalval, final String needToRename) {
+	public void writeConfig(final String finalval, final String needToRename) {
 		Intent new_intent = new Intent();
 		new_intent.setAction(CommandStrings.msrv_rec);
 		new_intent.putExtra(CommandStrings.msrv_cmd, CommandStrings.msrv_cmd_save_cfg);
@@ -201,7 +206,6 @@ public class ConfigSaver implements TimidityActivity.SpecialAction {
 
 	@Override
 	public void setLocalFinished(boolean localfinished) {
-		// TODO Auto-generated method stub
 		this.localfinished = localfinished;
 	}
 }

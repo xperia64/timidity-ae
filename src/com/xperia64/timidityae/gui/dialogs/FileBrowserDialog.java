@@ -191,6 +191,19 @@ public class FileBrowserDialog implements OnItemClickListener {
 		if (file.isDirectory()) {
 			if (file.canRead()) {
 				getDir(path.get(arg2));
+			} else if (file.getAbsolutePath().equals("/storage/emulated")&&
+					((new File("/storage/emulated/0").exists()&&new File("/storage/emulated/0").canRead())||
+							(new File("/storage/emulated/legacy").exists()&&new File("/storage/emulated/legacy").canRead())||
+							(new File("/storage/self/primary").exists()&&new File("/storage/self/primary").canRead())))
+			{
+				if(new File("/storage/emulated/0").exists()&&new File("/storage/emulated/0").canRead())
+				{
+					getDir("/storage/emulated/0");
+				}else if((new File("/storage/emulated/legacy").exists()&&new File("/storage/emulated/legacy").canRead())){
+					getDir("/storage/emulated/legacy");
+				}else{
+					getDir("/storage/self/primary");
+				}
 			} else {
 				AlertDialog.Builder unreadableDialog = new AlertDialog.Builder(context);
 				unreadableDialog = unreadableDialog.setIcon(R.drawable.ic_launcher);

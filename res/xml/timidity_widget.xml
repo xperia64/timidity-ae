@@ -1,14 +1,14 @@
-<!--  android:configure="com.xperia64.timidityae.TimidityAEWidgetConfigure" -->
-<!--  android:previewImage="@drawable/timidity" -->
+<!-- android:configure="com.xperia64.timidityae.TimidityAEWidgetConfigure" -->
+<!-- android:previewImage="@drawable/timidity" -->
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
-    android:minWidth="180dp"
+    android:initialKeyguardLayout="@layout/widget_layout"
+    android:initialLayout="@layout/widget_layout"
     android:minHeight="110dp"
     android:minResizeHeight="40dp"
     android:minResizeWidth="180dp"
+    android:minWidth="180dp"
     android:resizeMode="horizontal|vertical"
     android:updatePeriodMillis="86400000"
-   
-    android:initialLayout="@layout/widget_layout"
-    android:widgetCategory="keyguard|home_screen"
-    android:initialKeyguardLayout="@layout/widget_layout">
+    android:widgetCategory="keyguard|home_screen" >
+
 </appwidget-provider>

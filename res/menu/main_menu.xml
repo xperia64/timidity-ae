@@ -1,11 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android" 
-    xmlns:timidityae="http://schemas.android.com/apk/res-auto">
-    
-    <item android:id="@+id/menuBtn2" android:icon="@drawable/ic_menu_home" android:title="@string/homefld" android:titleCondensed="@string/homecon" timidityae:showAsAction="ifRoom"></item>
-    <item android:id="@+id/menuBtn1" android:icon="@drawable/ic_menu_refresh" android:title="@string/refreshfld" android:titleCondensed="@string/refreshcon" timidityae:showAsAction="ifRoom"></item>
-    <item android:id="@+id/ahelp" android:title="@string/action_help" android:titleCondensed="@string/action_help"></item>
-    <item android:id="@+id/asettings" android:title="@string/action_settings" android:titleCondensed="@string/action_settings"></item>
-    <item android:id="@+id/quit" android:title="@string/action_quit" android:titleCondensed="@string/action_quit"></item>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:timidityae="http://schemas.android.com/apk/res-auto" >
+
+    <item
+        android:id="@+id/menuBtn2"
+        android:icon="@drawable/ic_menu_home"
+        android:title="@string/homefld"
+        android:titleCondensed="@string/homecon"
+        timidityae:showAsAction="ifRoom">
+    </item>
+    <item
+        android:id="@+id/menuBtn1"
+        android:icon="@drawable/ic_menu_refresh"
+        android:title="@string/refreshfld"
+        android:titleCondensed="@string/refreshcon"
+        timidityae:showAsAction="ifRoom">
+    </item>
+    <item
+        android:id="@+id/ahelp"
+        android:title="@string/action_help"
+        android:titleCondensed="@string/action_help">
+    </item>
+    <item
+        android:id="@+id/asettings"
+        android:title="@string/action_settings"
+        android:titleCondensed="@string/action_settings">
+    </item>
+    <item
+        android:id="@+id/quit"
+        android:title="@string/action_quit"
+        android:titleCondensed="@string/action_quit">
+    </item>
 
 </menu>

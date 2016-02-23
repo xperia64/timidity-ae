@@ -15,6 +15,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import com.xperia64.timidityae.util.CommandStrings;
 import com.xperia64.timidityae.util.Globals;
 import com.xperia64.timidityae.util.WavWriter;
 
@@ -73,7 +74,6 @@ public class JNIHandler {
 	public static ArrayList<Boolean> drums = new ArrayList<Boolean>();
 	public static String currentLyric = "";
 	public static int overwriteLyricAt = 0;
-	public static int threadedError = 0;
 	public static int exceptional = 0;
 	public static int playbackPercentage;
 	public static int playbackTempo; // This number is not the tempo in BPM, but some number that can be used to calculate the real tempo
@@ -90,7 +90,7 @@ public class JNIHandler {
 	
 	
 	public static boolean finishedCallbackCheck = true; // Is set
-	public static boolean isPlaying = false; // Active low.
+	public static boolean isPlaying = false;
 	public static boolean isBlocking = false; // false = not currently blocking, true = blocking. Makes sure timidity actually returned. 
 	
 	// public static ArrayList<String> lyricLines;
@@ -108,7 +108,7 @@ public class JNIHandler {
 				if (isMediaPlayerFormat) {
 					mMediaPlayer.start();
 				} else {
-					controlTimidity(7, 0);
+					controlTimidity(CommandStrings.jni_toggle_pause, 0);
 					if (!(currentWavWriter != null && !currentWavWriter.finishedWriting) && mAudioTrack != null) {
 						try {
 							mAudioTrack.play();
@@ -122,7 +122,7 @@ public class JNIHandler {
 				if (isMediaPlayerFormat) {
 					mMediaPlayer.pause();
 				} else {
-					controlTimidity(7, 0);
+					controlTimidity(CommandStrings.jni_toggle_pause, 0);
 					if (!(currentWavWriter != null && !currentWavWriter.finishedWriting) && mAudioTrack != null) {
 						try {
 							mAudioTrack.pause();
@@ -146,7 +146,7 @@ public class JNIHandler {
 			finishedCallbackCheck = true;
 			isBlocking = false;
 		} else {
-			controlTimidity(30, 0);
+			controlTimidity(CommandStrings.jni_stop, 0);
 		}
 	}
 
@@ -154,7 +154,7 @@ public class JNIHandler {
 		if (isMediaPlayerFormat) {
 			mMediaPlayer.seekTo(time);
 		} else {
-			controlTimidity(6, time);
+			controlTimidity(CommandStrings.jni_jump, time);
 			waitUntilReady();
 		}
 	}
@@ -177,12 +177,23 @@ public class JNIHandler {
 	}
 
 	public static void waitForStop(int interval) {
-		while (isPlaying || isBlocking || !finishedCallbackCheck) {
+		if(isMediaPlayerFormat)
+		{
+			while (isPlaying || isBlocking || !finishedCallbackCheck) {
+				try {
+					Thread.sleep(interval);
+				} catch (InterruptedException e) {
+				}
+			}
+		}else{
 			try {
-				Thread.sleep(interval);
-			} catch (InterruptedException e) {
+				t.join();
+			} catch (InterruptedException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
 			}
 		}
+		/**/
 	}
 
 	public static void setupOutputFile(String filename) {
@@ -303,7 +314,7 @@ public class JNIHandler {
 						mMediaPlayer.setDataSource(songTitle);
 						mMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
 							public void onPrepared(MediaPlayer arg0) {
-								initSeeker(arg0.getDuration());
+								initSeekBar(arg0.getDuration());
 							}
 						});
 						mMediaPlayer.prepare();
@@ -367,7 +378,7 @@ public class JNIHandler {
 		return -1;
 	}
 
-	public static void controlMe(int y) {
+	public static void controlCallback(int y) {
 		/*
 		 * String[] control = { "PM_REQ_MIDI",
 		 * 
@@ -433,20 +444,20 @@ public class JNIHandler {
 		}
 	}
 
-	public static void finishIt() {
+	public static void finishCallback() {
 		finishedCallbackCheck = true;
 		isPlaying = false;
 	}
 
-	public static void flushIt() {
+	public static void flushTrack() {
 		mAudioTrack.flush();
 	}
 
-	public static void initSeeker(int seeker) {
+	public static void initSeekBar(int seeker) {
 		maxTime = seeker;
 	}
 
-	public static void updateSeeker(int seekIt, int voices) {
+	public static void updateSeekBar(int seekIt, int voices) {
 		currTime = seekIt;
 		voice = voices;
 	}
@@ -509,7 +520,7 @@ public class JNIHandler {
 	public static void updateTempo(int t, int tr) {
 		playbackTempo = t;
 		playbackPercentage = tr;
-		System.out.println("T: "+t+" tr "+tr);
+		//System.out.println("T: "+t+" tr "+tr);
 		// TODO something
 		// int x = (int) (500000 / (double) t * 120 * (double) tr / 100 + 0.5);
 		// System.out.println("T: "+t+ " TR: "+tr+" X: "+x);

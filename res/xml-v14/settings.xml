@@ -3,51 +3,47 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent" >
 
-    <PreferenceCategory android:title="@string/sett_title" >
-        <PreferenceScreen
-            android:key="dsKey"
-            android:summary="@string/sett_ds_sum"
-            android:title="@string/sett_ds" >
-            <PreferenceCategory android:title="@string/sett_ds" >
-                <ListPreference
-                    android:defaultValue="1"
-                    android:entries="@array/theme_items"
-                    android:entryValues="@array/background_theme_items"
-                    android:key="fbTheme"
-                    android:summary="@string/sett_theme_sum"
-                    android:title="@string/sett_theme" />
+    <PreferenceScreen
+        android:key="dsKey"
+        android:summary="@string/sett_ds_sum"
+        android:title="@string/sett_ds" >
+        <PreferenceCategory android:title="@string/sett_title" >
+            <ListPreference
+                android:defaultValue="1"
+                android:entries="@array/theme_items"
+                android:entryValues="@array/background_theme_items"
+                android:key="fbTheme"
+                android:summary="@string/sett_theme_sum"
+                android:title="@string/sett_theme" />
 
-                <CheckBoxPreference
-                    android:defaultValue="false"
-                    android:key="hiddenSwitch"
-                    android:summary="@string/sett_shf_sum"
-                    android:title="@string/sett_shf" />
-                <CheckBoxPreference
-                    android:defaultValue="true"
-                    android:key="videoSwitch"
-                    android:summary="@string/sett_shv_sum"
-                    android:title="@string/sett_shv" />
-                <CheckBoxPreference
-                    android:defaultValue="true"
-                    android:key="fpSwitch"
-                    android:summary="@string/sett_fancy_plist_sum"
-                    android:title="@string/sett_fancy_plist" />
+            <CheckBoxPreference
+                android:defaultValue="false"
+                android:key="hiddenSwitch"
+                android:summary="@string/sett_shf_sum"
+                android:title="@string/sett_shf" />
+            <CheckBoxPreference
+                android:defaultValue="true"
+                android:key="videoSwitch"
+                android:summary="@string/sett_shv_sum"
+                android:title="@string/sett_shv" />
+            <CheckBoxPreference
+                android:defaultValue="true"
+                android:key="fpSwitch"
+                android:summary="@string/sett_fancy_plist_sum"
+                android:title="@string/sett_fancy_plist" />
 
-                <PreferenceScreen
-                    android:key="defFold"
-                    android:summary="@string/sett_brows4fb_sum"
-                    android:title="@string/sett_brows4fb" >
-                </PreferenceScreen>
+            <PreferenceScreen
+                android:key="defFold"
+                android:summary="@string/sett_brows4fb_sum"
+                android:title="@string/sett_brows4fb" />
 
-                <EditTextPreference
-                    android:defaultValue="/sdcard/"
-                    android:key="defaultPath"
-                    android:summary="@string/sett_fbpath"
-                    android:title="@string/sett_fbpath" />
-            </PreferenceCategory>
-        </PreferenceScreen>
-    </PreferenceCategory>
-
+            <EditTextPreference
+                android:defaultValue="/sdcard/"
+                android:key="defaultPath"
+                android:summary="@string/sett_fbpath"
+                android:title="@string/sett_fbpath" />
+        </PreferenceCategory>
+    </PreferenceScreen>
     <PreferenceScreen
         android:key="tplusKey"
         android:summary="@string/sett_plus_sum"
@@ -62,7 +58,8 @@
             <PreferenceScreen
                 android:key="sfConfig"
                 android:summary="@string/soundfont2"
-                android:title="@string/soundfont" />
+                android:title="@string/soundfont" >
+            </PreferenceScreen>
 
             <CheckBoxPreference
                 android:defaultValue="true"
@@ -116,17 +113,6 @@
                 android:key="dataDir"
                 android:summary="@string/sett_mandir_sum"
                 android:title="@string/sett_mandir" />
-
-            <PreferenceScreen
-                android:key="lolWrite"
-                android:summary="@string/sett_lolrw_sum"
-                android:title="@string/sett_lolrw" />
-
-            <CheckBoxPreference
-                android:defaultValue="true"
-                android:key="shouldLolNag"
-                android:summary="@string/sett_lolnag_sum"
-                android:title="@string/sett_lolnag" />
         </PreferenceCategory>
     </PreferenceScreen>
 

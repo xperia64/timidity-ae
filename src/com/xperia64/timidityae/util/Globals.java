@@ -18,31 +18,20 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Field;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Locale;
-
-import javax.net.ssl.HttpsURLConnection;
+import java.util.Random;
 
 import com.xperia64.timidityae.JNIHandler;
-import com.xperia64.timidityae.TimidityActivity;
 import android.annotation.SuppressLint;
-import android.annotation.TargetApi;
-import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
-import android.os.AsyncTask;
 import android.os.Build;
-import android.os.PowerManager;
 import android.text.InputFilter;
 import android.text.Spanned;
 import android.widget.TextView;
-import android.widget.Toast;
 
 public class Globals {
 	public static boolean libLoaded = false;
@@ -80,8 +69,61 @@ public static InputFilter fileNameInputFilter = new InputFilter() {
 		return null;
 	}
 };
-public static String musicFiles = "*.mid*.smf*.kar*.mod*.xm*.s3m*.it*.669*.amf*.dsm*.far*.gdm*.imf*.med*.mtm*.stm*.stx*.ult*.uni*.mp3*.m4a*.wav*.ogg*.flac*";
-public static String musicVideoFiles = musicFiles+".mp4*.3gp*";
+
+public static String getFileExtension(File f)
+{
+	int dotPosition = f.getName().lastIndexOf(".");
+	if (dotPosition != -1) {
+		return (f.getName().substring(dotPosition)).toLowerCase(Locale.US);
+	}
+	return null;
+}
+public static String getFileExtension(String f)
+{
+	int dotPosition = f.lastIndexOf(".");
+	if (dotPosition != -1) {
+		return (f.substring(dotPosition)).toLowerCase(Locale.US);
+	}
+	return null;
+}
+// Requires TiMidity to be loaded to play these files:
+public static final String TIMIDITY_FILES = "*.mid*.smf*.kar*.mod*.xm*.s3m*.it*.669*.amf*.dsm*.far*.gdm*.imf*.med*.mtm*.stm*.stx*.ult*.uni*";
+public static final String MEDIA_FILES = "*.mp3*.m4a*.wav*.ogg*.flac*.mid*.smf*.kar*";
+public static final String VIDEO_FILES = "*.mp4*.3gp*";
+
+public static String getSupportedExtensions()
+{
+	StringBuilder supportedExtensions = new StringBuilder(MEDIA_FILES);
+	if(SettingsStorage.showVideos)
+	{
+		supportedExtensions.append(VIDEO_FILES);
+	}
+	if(!SettingsStorage.nativeMidi)
+	{
+		supportedExtensions.append(TIMIDITY_FILES);
+	}
+	return supportedExtensions.toString();
+}
+
+public static ArrayList<String> normalToUuid(ArrayList<String> list)
+{
+	ArrayList<String> uuid = new ArrayList<String>();
+	for(String xx : list)
+	{
+		uuid.add(String.format("%s*%08x",xx,new Random().nextInt()));
+	}
+	return uuid;
+}
+public static ArrayList<String> uuidToNormal(ArrayList<String> list)
+{
+	ArrayList<String> normal = new ArrayList<String>();
+	for(String xx : list)
+	{
+		normal.add(xx.substring(0,xx.lastIndexOf("*")));
+	}
+	return normal;
+}
+
 public static String playlistFiles = "*.tpl*";
 public static String configFiles = "*.tcf*.tzf*";
 public static String fontFiles = "*.sf2*.sfark*.sfark.exe*";
@@ -144,6 +186,7 @@ public static String getLibDir(Context c)
 public static int probablyFresh=0;
 public static final int NOTIFICATION_ID = 13901858;
 public static boolean phoneState = true;
+public static int highlightMe = -1;
 
 public static boolean isMidi(String songFileName)
 {
@@ -265,239 +308,7 @@ public static int extract8Rock(Context c)
     return 777;
     
 }
-@TargetApi(Build.VERSION_CODES.FROYO)
-public static class DownloadTask extends AsyncTask<String, Integer, String> {
 
-    private Context context;
-    private PowerManager.WakeLock mWakeLock;
-    private ProgressDialog prog;
-    private String theUrl="";
-    private String theFilename="";
-    public DownloadTask(Context context) {
-        this.context = context;
-    }
-    @Override
-    protected void onPreExecute() {
-        super.onPreExecute();
-        // take CPU lock to prevent CPU from going off if the user 
-        // presses the power button during download
-        PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
-        mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
-             getClass().getName());
-        mWakeLock.acquire();
-        
-  	  prog = new ProgressDialog(context);
-  	  prog.setButton(DialogInterface.BUTTON_NEGATIVE, "Cancel", new DialogInterface.OnClickListener() {
-  		    @Override
-  		    public void onClick(DialogInterface dialog, int which) {
-  		    	
-  		        dialog.dismiss();
-  		    }
-  		});
-  	prog.setOnCancelListener(new DialogInterface.OnCancelListener() {
-  	    @Override
-  	    public void onCancel(DialogInterface dialog) {
-  	        DownloadTask.this.cancel(true);
-  	    }
-  	});
-  	  prog.setTitle("Downloading file...");
-  	  prog.setMessage("Downloading...");       
-  	  prog.setCancelable(false);
-  	  prog.show();
-    }
 
-    @Override
-    protected void onProgressUpdate(Integer... progress) {
-        super.onProgressUpdate(progress);
-        prog.setIndeterminate(false);
-        prog.setMax(100);
-        prog.setProgress(progress[0]);
-    }
-
-    @Override
-    protected void onPostExecute(String result) {
-        mWakeLock.release();
-        prog.dismiss();
-        if (result != null)
-            Toast.makeText(context,"Download error: "+result, Toast.LENGTH_LONG).show();
-        else
-        	((TimidityActivity)context).downloadFinished(theUrl, theFilename);
-    }
-	@TargetApi(Build.VERSION_CODES.FROYO)
-	@Override
-    protected String doInBackground(String... sUrl) {
-        InputStream input = null;
-        OutputStream output = null;
-        URL url = null;
-		try
-		{
-			url = new URL(sUrl[0]);
-		} catch (MalformedURLException e1)
-		{
-			e1.printStackTrace();
-		}
-        theUrl=sUrl[0];
-        theFilename=sUrl[1];
-        if(theUrl.startsWith("http"))
-        {
-        HttpURLConnection connection = null;
-        try {
-            
-            connection = (HttpURLConnection) url.openConnection();
-            connection.connect();
-
-            // expect HTTP 200 OK, so we don't mistakenly save error report
-            // instead of the file
-            if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
-                return "Server returned HTTP " + connection.getResponseCode()
-                        + " " + connection.getResponseMessage();
-            }
-
-            // this will be useful to display download percentage
-            // might be -1: server did not report the length
-            int fileLength = connection.getContentLength();
-
-            // download the file
-            input = connection.getInputStream();
-            output = new FileOutputStream(Globals.getExternalCacheDir(context).getAbsolutePath()+'/'+theFilename);
-
-            byte[] data = new byte[4096];
-            long total = 0;
-            int count;
-            while ((count = input.read(data)) != -1) {
-                // allow canceling with back button
-                if (isCancelled()) {
-                	output.close();
-                    input.close();
-                    return null;
-                }
-                total += count;
-                // publishing the progress....
-                if (fileLength > 0) // only if total length is known
-                    publishProgress((int) (total * 100 / fileLength));
-                output.write(data, 0, count);
-            }
-        } catch (Exception e) {
-            return e.toString();
-        } finally {
-            try {
-                if (output != null)
-                    output.close();
-                if (input != null)
-                    input.close();
-            } catch (IOException ignored) {
-            }
-
-            if (connection != null)
-                connection.disconnect();
-        }
-        return null;
-        }else{
-        	 HttpsURLConnection connection = null;
-             try {
-                 
-                 connection = (HttpsURLConnection) url.openConnection();
-                 connection.connect();
-
-                 // expect HTTP 200 OK, so we don't mistakenly save error report
-                 // instead of the file
-                 if (connection.getResponseCode() != HttpsURLConnection.HTTP_OK) {
-                     return "Server returned HTTPS " + connection.getResponseCode()
-                             + " " + connection.getResponseMessage();
-                 }
-
-                 // this will be useful to display download percentage
-                 // might be -1: server did not report the length
-                 int fileLength = connection.getContentLength();
-
-                 // download the file
-                 input = connection.getInputStream();
-                 output = new FileOutputStream(Globals.getExternalCacheDir(context).getAbsolutePath()+'/'+theFilename);
-
-                 byte[] data = new byte[4096];
-                 long total = 0;
-                 int count;
-                 while ((count = input.read(data)) != -1) {
-                     // allow canceling with back button
-                     if (isCancelled()) {
-                    	 input.close();
-                    	 output.close();
-                         return null;
-                     }
-                     total += count;
-                     // publishing the progress....
-                     if (fileLength > 0) // only if total length is known
-                         publishProgress((int) (total * 100 / fileLength));
-                     output.write(data, 0, count);
-                 }
-             } catch (Exception e) {
-                 return e.toString();
-             } finally {
-                 try {
-                     if (output != null)
-                         output.close();
-                     if (input != null)
-                         input.close();
-                 } catch (IOException ignored) {
-                 }
-
-                 if (connection != null)
-                     connection.disconnect();
-             }
-             return null;
-        }
-    }
-   
-}
-// @formatter:off
-/*
- * RESAMPLE_CSPLINE, 0
-	RESAMPLE_LAGRANGE, 1
-	RESAMPLE_GAUSS, 2
-	RESAMPLE_NEWTON, 3
-	RESAMPLE_LINEAR, 4
-	RESAMPLE_NONE 5
- 
-/*
- * #define RC_ERROR	-1
-#ifdef RC_NONE
-#undef RC_NONE
-#endif
-#define RC_NONE		0
-#define RC_QUIT		1
-#define RC_NEXT		2
-#define RC_PREVIOUS	3 // Restart this song at beginning, or the previous
-			     song if we're less than a second into this one. 
-#define RC_FORWARD	4
-#define RC_BACK		5
-#define RC_JUMP		6
-#define RC_TOGGLE_PAUSE 7	Pause/continue 
-#define RC_RESTART	8	/* Restart song at beginning 
-#define RC_PAUSE	9	/* Really pause playing 
-#define RC_CONTINUE	10	/* Continue if paused 
-#define RC_REALLY_PREVIOUS 11	/* Really go to the previous song 
-#define RC_CHANGE_VOLUME 12
-#define RC_LOAD_FILE	13	/* Load a new midifile 
-#define RC_TUNE_END	14	/* The tune is over, play it again sam? 
-#define RC_KEYUP	15	/* Key up 
-#define RC_KEYDOWN	16	/* Key down 
-#define RC_SPEEDUP	17	/* Speed up 
-#define RC_SPEEDDOWN	18	/* Speed down 
-#define RC_VOICEINCR	19	/* Increase voices 
-#define RC_VOICEDECR	20	/* Decrease voices 
-#define RC_TOGGLE_DRUMCHAN 21	/* Toggle drum channel 
-#define RC_RELOAD	22	/* Reload & Play 
-#define RC_TOGGLE_SNDSPEC 23	/* Open/Close Sound Spectrogram Window 
-#define RC_CHANGE_REV_EFFB 24
-#define RC_CHANGE_REV_TIME 25
-#define RC_SYNC_RESTART 26
-#define RC_TOGGLE_CTL_SPEANA 27
-#define RC_CHANGE_RATE	28
-#define RC_OUTPUT_CHANGED      29
-#define RC_STOP		30	/* Stop to play 
-#define RC_TOGGLE_MUTE	31
-#define RC_SOLO_PLAY	32
-#define RC_MUTE_CLEAR	33*/
-	// @formatter:on
 
 }
