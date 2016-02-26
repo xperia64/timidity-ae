@@ -78,13 +78,31 @@ public static String getFileExtension(File f)
 	}
 	return null;
 }
-public static String getFileExtension(String f)
+public static String getFileExtension(String s)
 {
-	int dotPosition = f.lastIndexOf(".");
+	int dotPosition = s.lastIndexOf(".");
 	if (dotPosition != -1) {
-		return (f.substring(dotPosition)).toLowerCase(Locale.US);
+		return (s.substring(dotPosition)).toLowerCase(Locale.US);
 	}
 	return null;
+}
+public static boolean hasSupportedExtension(File f)
+{
+	String ext = getFileExtension(f);
+	if(ext!=null && getSupportedExtensions().contains("*"+ext+"*"))
+	{
+		return true;
+	}
+	return false;
+}
+public static boolean hasSupportedExtension(String s)
+{
+	String ext = getFileExtension(s);
+	if(ext!=null && getSupportedExtensions().contains("*"+ext+"*"))
+	{
+		return true;
+	}
+	return false;
 }
 // Requires TiMidity to be loaded to play these files:
 public static final String TIMIDITY_FILES = "*.mid*.smf*.kar*.mod*.xm*.s3m*.it*.669*.amf*.dsm*.far*.gdm*.imf*.med*.mtm*.stm*.stx*.ult*.uni*";
@@ -102,7 +120,7 @@ public static String getSupportedExtensions()
 	{
 		supportedExtensions.append(TIMIDITY_FILES);
 	}
-	return supportedExtensions.toString();
+	return supportedExtensions.toString().replaceAll("[*]+", "*");
 }
 
 public static ArrayList<String> normalToUuid(ArrayList<String> list)

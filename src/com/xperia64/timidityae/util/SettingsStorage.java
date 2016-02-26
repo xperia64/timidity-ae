@@ -435,7 +435,6 @@ public class SettingsStorage {
 
 			int bufferSize = AudioTrack.getMinBufferSize(rate, (stereo) ? AudioFormat.CHANNEL_OUT_STEREO : AudioFormat.CHANNEL_OUT_MONO, (sixteen) ? AudioFormat.ENCODING_PCM_16BIT : AudioFormat.ENCODING_PCM_8BIT);
 			if (bufferSize > 0) {
-				// System.out.println(rate+" "+bufferSize);
 				// buffer size is valid, Sample rate supported
 				valid.add(rate);
 			}

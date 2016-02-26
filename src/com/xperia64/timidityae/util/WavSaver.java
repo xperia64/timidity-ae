@@ -19,6 +19,7 @@ import android.os.Build;
 import android.os.Environment;
 import android.text.InputFilter;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 public class WavSaver implements TimidityActivity.SpecialAction {
@@ -185,17 +186,33 @@ public class WavSaver implements TimidityActivity.SpecialAction {
 
 				} else {
 					context.runOnUiThread(new Runnable() {
+						@Override
 						public void run() {
-							String trueName = finalval;
-							if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && DocumentFileUtils.docFileDevice != null && needToRename != null) {
-								if (DocumentFileUtils.renameDocumentFile(context, finalval, needToRename)) {
-									trueName = needToRename;
-								} else {
-									trueName = "Error";
-								}
+							if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.M)
+							{
+								TextView messageView = (TextView)prog.findViewById(android.R.id.message);
+								messageView.setText("Copying... Please wait...");
+								messageView.invalidate();
 							}
-							Toast.makeText(context, "Wrote " + trueName, Toast.LENGTH_SHORT).show();
+						}
+					});
+					String trueName = finalval;
+					if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && DocumentFileUtils.docFileDevice != null && needToRename != null) {
+						
+						if (DocumentFileUtils.renameDocumentFile(context, finalval, needToRename)) {
+							trueName = needToRename;
+						} else {
+							trueName = "Error";
+						}
+					}
+					final String tn = trueName;
+					context.runOnUiThread(new Runnable() {
+						public void run() {
+							
+							
+							
 							prog.dismiss();
+							Toast.makeText(context, "Wrote " + tn, Toast.LENGTH_SHORT).show();
 							Intent outgoingIntent = new Intent();
 							outgoingIntent.setAction(CommandStrings.ta_rec);
 							outgoingIntent.putExtra(CommandStrings.ta_cmd, CommandStrings.ta_cmd_refresh_filebrowser);

@@ -1,5 +1,7 @@
 package com.xperia64.timidityae.util;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
 
@@ -110,7 +112,7 @@ public class DocumentFileUtils {
 	 * @param  subTo the path to the new file without the mount point prefix
 	 * @return      whether the operation was successful
 	 */
-	public static boolean renameDocumentFile(Context context, String from, String subTo) {
+	public static boolean renameDocumentFile21(Context context, String from, String subTo) {
 		// From is the full path
 		// subTo is the path without the device prefix.
 		// So /storage/sdcard1/folder/file.mid should be folder/file.mid
@@ -136,7 +138,7 @@ public class DocumentFileUtils {
 			upper.append(Globals.parentString); // Usually "../"
 			if (df == null) {
 				Log.e("TimidityAE Globals", "Rename file error.");
-				break;
+				return false;
 			}
 		}
 		if (df != null && upper.length() > 3) {
@@ -147,6 +149,69 @@ public class DocumentFileUtils {
 		return false;
 	}
 
+	public static boolean renameDocumentFile23(Context context, String from, String subTo)
+	{
+		if (docFileDevice == null)
+			return false;
+		from = fixRepeatedSeparator(from);
+		subTo = fixRepeatedSeparator(subTo);
+		DocumentFile in = DocumentFile.fromTreeUri(context, docFileDevice);
+		String insplit[] = from.split(File.separator);
+		int i;
+		for (i = 0; i < insplit.length; i++) {
+			if (insplit[i].equals(in.getName())) {
+				i++;
+				break;
+			}
+		}
+		while (i < insplit.length) {
+			in = in.findFile(insplit[i++]);
+			
+			if (in == null) {
+				Log.e("TimidityAE Globals", "Rename file error.");
+				return false;
+			}
+		}
+		String outsplit[] = subTo.split(File.separator);
+		DocumentFile out = DocumentFile.fromTreeUri(context, docFileDevice);
+		for(i = 0; i<outsplit.length-1; i++)
+		{
+			if(out.findFile(outsplit[i])!=null)
+			{
+				out = out.findFile(outsplit[i]);
+			}else{
+				out = out.createDirectory(outsplit[i]);
+			}
+		}
+		out = out.createFile("application/octet-stream",outsplit[outsplit.length-1]);
+		
+		try {
+			DataInputStream is = new DataInputStream(context.getContentResolver().openInputStream(in.getUri()));
+			DataOutputStream os = new DataOutputStream(context.getContentResolver().openOutputStream(out.getUri()));
+			while((i = is.read())>-1)
+			{
+				os.write(i);
+			}
+			is.close();
+			os.close();
+			in.delete();
+		} catch ( IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return false;
+		}
+		
+		return true;
+	}
+	public static boolean renameDocumentFile(final Context context, final String from, final String subTo)
+	{
+		if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.M)
+		{
+			return renameDocumentFile23(context, from, subTo);
+		}else{
+			return renameDocumentFile21(context, from, subTo);
+		}
+	}
 	
 	/**
 	 * This method attempts to find the temporary folder on the filesystem containing parent.
@@ -156,7 +221,7 @@ public class DocumentFileUtils {
 	 * @param parent the parent directory of the file we want
 	 * @return
 	 */
-	@TargetApi(Build.VERSION_CODES.KITKAT)
+	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	public static String[] getExternalFilePaths(Context context, String parent) {
 		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP)
 			return null; // Error.
@@ -173,10 +238,15 @@ public class DocumentFileUtils {
 		{
 			absoluteParent = absoluteParent+File.separator;
 		}
-		File[] x = context.getExternalFilesDirs(null);
-		for (File f : x) {
+		File[] exf = context.getExternalFilesDirs(null);
+		for (File f : exf) {
 			if (f != null) {
 				String ex = f.getAbsolutePath();
+				if(ex.indexOf("Android")<0)
+				{
+					break;
+				}
+				ex = ex.substring(0,ex.indexOf("/Android/")+1);
 				String ss1;
 				String ss2;
 				int lastmatch = 1;
@@ -189,13 +259,17 @@ public class DocumentFileUtils {
 						break;
 					}
 				}
+				if(lastmatch < ex.length())
+				{
+					continue;
+				}
 				String theRoot = absoluteParent.substring(0, lastmatch);
 				File testFile = new File(theRoot);
 				// The root must have the path of a folder, exist, and actually be a folder
 				if (!theRoot.endsWith(File.separator) || !testFile.exists() || !testFile.isDirectory()) {
 					continue;
 				} else {
-					probablyTheDirectory = ex;
+					probablyTheDirectory = f.getAbsolutePath();
 					probablyTheRoot = theRoot;
 					break;
 				}
@@ -206,7 +280,5 @@ public class DocumentFileUtils {
 		rets[1] = probablyTheRoot;
 		return rets;
 	}
-
-	
 
 }

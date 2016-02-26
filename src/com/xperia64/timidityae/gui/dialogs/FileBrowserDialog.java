@@ -14,10 +14,9 @@ package com.xperia64.timidityae.gui.dialogs;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Locale;
-
 import com.xperia64.timidityae.R;
 import com.xperia64.timidityae.util.FileComparator;
+import com.xperia64.timidityae.util.Globals;
 import com.xperia64.timidityae.util.SettingsStorage;
 
 import android.annotation.SuppressLint;
@@ -146,32 +145,26 @@ public class FileBrowserDialog implements OnItemClickListener {
 
 						if ((!file.getName().startsWith(".") && !SettingsStorage.showHiddenFiles) || SettingsStorage.showHiddenFiles) {
 							if (file.isFile() && type == 0) {
-								int dotPosition = file.getName().lastIndexOf(".");
-								String extension = "";
-								if (dotPosition != -1) {
-									extension = (file.getName().substring(dotPosition)).toLowerCase(Locale.US);
+								String extension = Globals.getFileExtension(file);
 									if (extension != null) {
-
-										if (extensions.contains("*" + extension + "*")) {
-
+										if (Globals.hasSupportedExtension(extension)) {
 											path.add(file.getAbsolutePath());
 											fname.add(file.getName());
 										}
-									} else if (file.getName().endsWith("/")) {
-										path.add(file.getAbsolutePath() + "/");
-										fname.add(file.getName() + "/");
+									} else if (file.getName().endsWith(File.separator)) {
+										path.add(file.getAbsolutePath() + File.separator);
+										fname.add(file.getName() + File.separator);
 									}
-								}
 							} else if (file.isDirectory()) {
-								path.add(file.getAbsolutePath() + "/");
-								fname.add(file.getName() + "/");
+								path.add(file.getAbsolutePath() + File.separator);
+								fname.add(file.getName() + File.separator);
 							}
 						}
 					}
 				} else {
-					if (!currPath.matches("[/]+")) {
+					if (!currPath.matches(Globals.repeatedSeparatorString)) {
 						fname.add("../");
-						path.add(f.getParent() + "/");
+						path.add(f.getParent() + File.separator);
 
 					}
 				}
@@ -187,7 +180,6 @@ public class FileBrowserDialog implements OnItemClickListener {
 	public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
 
 		File file = new File(path.get(arg2));
-		System.out.println(path.get(arg2));
 		if (file.isDirectory()) {
 			if (file.canRead()) {
 				getDir(path.get(arg2));

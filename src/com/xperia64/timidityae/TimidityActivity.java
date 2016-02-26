@@ -18,7 +18,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -139,11 +138,17 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 
 				break;
 			case CommandStrings.ta_cmd_refresh_filebrowser:
-				fileFrag.refresh();
+				if(fileFrag!=null)
+				{
+					fileFrag.refresh();
+				}
 				break;
 			case CommandStrings.ta_cmd_load_filebrowser:
 				try {
-					fileFrag.getDir(intent.getStringExtra(CommandStrings.ta_currpath));
+					if(fileFrag!=null)
+					{
+						fileFrag.getDir(intent.getStringExtra(CommandStrings.ta_currpath));
+					}
 				} catch (IllegalStateException e) {
 
 				}
@@ -559,7 +564,6 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 		});
 		if(extras!=null && extras.getInt("fragmentpage",-1)>=0)
 		{
-			System.out.println("Setting viewpager");
 			viewPager.setCurrentItem(extras.getInt("fragmentpage",-1));
 		}
 	}
@@ -603,7 +607,6 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 						DocumentFileUtils.docFileDevice = permission.getUri();
 					}
 				}
-
 				initCallback2();
 			}
 		} else {
@@ -616,7 +619,10 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 		if (x != 0 && x != -99) {
 			SettingsStorage.nativeMidi = true;
 			Toast.makeText(this, String.format(getResources().getString(R.string.tcfg_error), x), Toast.LENGTH_LONG).show();
-			fileFrag.refresh();
+			if(fileFrag!=null)
+			{
+				fileFrag.refresh();
+			}
 		}
 		handleIntentData(getIntent());
 	}
@@ -628,22 +634,19 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 				if (in.getData().getScheme().equals("file")) {
 					if (new File(data).exists()) {
 						File f = new File(data.substring(0, data.lastIndexOf('/') + 1));
-						if (f.exists()) {
-							if (f.isDirectory()) {
+						if (f!=null && f.exists() && f.isDirectory() && f.listFiles()!=null ) {
 								ArrayList<String> files = new ArrayList<String>();
 								int position = -1;
 								int goodCounter = 0;
 								for (File ff : f.listFiles()) {
 									if (ff != null && ff.isFile()) {
-											String extension = Globals.getFileExtension(ff);
-											if (extension != null) {
-												if (Globals.getSupportedExtensions().contains("*" + extension + "*")) {
-													files.add(ff.getPath());
-													if (ff.getPath().equals(data))
-														position = goodCounter;
-													goodCounter++;
-												}
-											}
+										if(Globals.hasSupportedExtension(ff))
+										{
+												files.add(ff.getPath());
+												if (ff.getPath().equals(data))
+													position = goodCounter;
+												goodCounter++;
+										}
 									}
 								}
 								if (position == -1)
@@ -653,7 +656,6 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 									selectedSong(files, position, true, false, true);
 									fileFrag.getDir(data.substring(0, data.lastIndexOf('/') + 1));
 								}
-							}
 						}
 					} else {
 						Toast.makeText(this, getResources().getString(R.string.srv_fnf), Toast.LENGTH_SHORT).show();
@@ -707,19 +709,11 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 							int goodCounter = 0;
 							for (File ff : f.listFiles()) {
 								if (ff != null && ff.isFile()) {
-									int dotPosition = ff.getName().lastIndexOf('.');
-									String extension = "";
-									if (dotPosition != -1) {
-										extension = (ff.getName().substring(dotPosition)).toLowerCase(Locale.US);
-										if (extension != null) {
-											if (Globals.getSupportedExtensions().contains("*" + extension + "*")) {
-
-												files.add(ff.getPath());
-												if (ff.getPath().equals(Globals.getExternalCacheDir(this).getAbsolutePath() + '/' + filename))
-													position = goodCounter;
-												goodCounter++;
-											}
-										}
+									if (Globals.hasSupportedExtension(ff)) {
+										files.add(ff.getPath());
+										if (ff.getPath().equals(Globals.getExternalCacheDir(this).getAbsolutePath() + '/' + filename))
+											position = goodCounter;
+										goodCounter++;
 									}
 								}
 							}
@@ -743,18 +737,13 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 	public void downloadFinished(String data, String theFilename) {
 		ArrayList<String> files = new ArrayList<String>();
 		String name = Globals.getExternalCacheDir(this).getAbsolutePath() + '/' + theFilename;
-		String extension = Globals.getFileExtension(name);
-		
-			if (extension != null) {
-				if (Globals.getSupportedExtensions().contains("*" + extension + "*")) {
+		if (Globals.hasSupportedExtension(name)) {
 
-					files.add(name);
-					stop();
-					selectedSong(files, 0, true, false, true);
-					fileFrag.getDir(name.substring(0, name.lastIndexOf('/') + 1));
-				}
-			}
-	
+			files.add(name);
+			stop();
+			selectedSong(files, 0, true, false, true);
+			fileFrag.getDir(name.substring(0, name.lastIndexOf('/') + 1));
+		}
 	}
 
 	@Override
@@ -883,9 +872,12 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 		if (item.getItemId() == R.id.menuBtn1) {
 			switch (viewPager.getCurrentItem()) {
 			case 0:
-				int x = fileFrag.getListView().getFirstVisiblePosition();
-				fileFrag.refresh();
-				fileFrag.setSelection(x);
+				if(fileFrag!=null)
+				{
+					int x = fileFrag.getListView().getFirstVisiblePosition();
+					fileFrag.refresh();
+					fileFrag.setSelection(x);
+				}
 				break;
 			case 1:
 				if (playFrag != null && !JNIHandler.isMediaPlayerFormat) {
@@ -893,9 +885,12 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 				}
 				break;
 			case 2:
-				int position = plistFrag.getListView().getFirstVisiblePosition();
-				plistFrag.getPlaylists(plistFrag.isPlaylist ? plistFrag.plistName : null);
-				plistFrag.getListView().setSelection(position);
+				if(plistFrag != null)
+				{
+					int position = plistFrag.getListView().getFirstVisiblePosition();
+					plistFrag.getPlaylists(plistFrag.isPlaylist ? plistFrag.plistName : null);
+					plistFrag.getListView().setSelection(position);
+				}
 				break;
 			}
 		} else if (item.getItemId() == R.id.menuBtn2) {
@@ -912,9 +907,11 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 				}
 				break;
 			case 2:
-				plistFrag.add();
+				if(plistFrag!=null)
+				{
+					plistFrag.add();
+				}
 				break;
-
 			}
 		} else if (item.getItemId() == android.R.id.home) {
 			onBackPressed();
@@ -986,7 +983,7 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 	}
 
 	public void selectedSong(ArrayList<String> files, int songNumber, boolean begin, boolean fromPlaylist, boolean copyPlist) {
-		if(!Globals.getSupportedExtensions().contains("*"+Globals.getFileExtension(files.get(songNumber))+"*"))
+		if(!Globals.hasSupportedExtension(files.get(songNumber)))
 		{
 			Toast.makeText(this, "Error: Timidity is not loaded. Please make sure the config is valid.", Toast.LENGTH_LONG).show();;
 			return;
@@ -1024,12 +1021,15 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 	public void needFileBackCallback(boolean yes) {
 		needFileBack = yes;
 		if (getSupportActionBar() != null) {
-			if (viewPager.getCurrentItem() == 0) {
-				if (needFileBack) {
-					getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-				} else {
-					getSupportActionBar().setDisplayHomeAsUpEnabled(false);
-					getSupportActionBar().setHomeButtonEnabled(false);
+			if(viewPager!=null)
+			{
+				if (viewPager.getCurrentItem() == 0) {
+					if (needFileBack) {
+						getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+					} else {
+						getSupportActionBar().setDisplayHomeAsUpEnabled(false);
+						getSupportActionBar().setHomeButtonEnabled(false);
+					}
 				}
 			}
 		}
@@ -1144,6 +1144,7 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 			if (resultCode == RESULT_OK) {
 				Uri treeUri = data.getData();
 				getContentResolver().takePersistableUriPermission(treeUri, Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+				DocumentFileUtils.docFileDevice = treeUri;
 			}
 			initCallback2();
 		}

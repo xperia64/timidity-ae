@@ -237,6 +237,7 @@ public class SettingsActivity extends AppCompatActivity implements FileBrowserDi
 		// Check which request we're responding to
 		if (requestCode == 42) {
 			if (resultCode == RESULT_OK) {
+				
 				Uri treeUri = data.getData();
 				getContentResolver().takePersistableUriPermission(treeUri, Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
 				DocumentFileUtils.docFileDevice = treeUri;
@@ -388,7 +389,7 @@ public class SettingsActivity extends AppCompatActivity implements FileBrowserDi
 							}
 						}
 						Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
-						startActivityForResult(intent, 42);
+						s.startActivityForResult(intent, 42);
 						return true;
 					}
 				});
@@ -503,14 +504,12 @@ public class SettingsActivity extends AppCompatActivity implements FileBrowserDi
 
 				@Override
 				public boolean onPreferenceChange(Preference arg0, Object arg1) {
-					System.out.println("Writing enabled?");
 					boolean manual = (Boolean) arg1;
 					s.sfPref.setEnabled(!manual);
 					s.needRestart = true;
 					s.needUpdateSf = !manual;
 					if(!manual)
 					{
-						System.out.println("Yes");
 						s.needUpdateSf = true;
 					}
 					return true;

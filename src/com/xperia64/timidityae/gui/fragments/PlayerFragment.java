@@ -513,7 +513,6 @@ public class PlayerFragment extends Fragment {
 		});
 
 		trackBar.setIndeterminate(false);
-		((TimidityActivity) getActivity()).readyForInit();
 	}
 
 	public void play(final int seekBarTime, final String title, final int shuffleMode, final int loopMode) {

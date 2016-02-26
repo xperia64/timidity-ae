@@ -376,13 +376,10 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 				for (File ff : files) {
 					if (ff != null) {
 						if (ff.isFile()) {
-								String extension = Globals.getFileExtension(ff);
-								if (extension != null) {
-									if (Globals.getSupportedExtensions().contains("*" + extension + "*")) {
-										vola.add(loki++, ff.getAbsolutePath());
-									}
-								}
+							if (Globals.hasSupportedExtension(ff)) {
+								vola.add(loki++, ff.getAbsolutePath());
 							}
+						}
 					}
 				}
 			}
@@ -392,11 +389,8 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 			for (File foo : fff) {
 				if (foo != null) {
 					if (foo.isFile()) {
-							String extension = Globals.getFileExtension(foo);
-							if (extension != null) {
-								if (Globals.getSupportedExtensions().contains("*" + extension + "*")) {
-									vola.add(loki++, foo.getAbsolutePath());
-								}
+							if (Globals.hasSupportedExtension(foo)) {
+								vola.add(loki++, foo.getAbsolutePath());
 							}
 						}
 				}

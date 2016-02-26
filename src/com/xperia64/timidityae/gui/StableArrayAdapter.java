@@ -62,7 +62,6 @@ public class StableArrayAdapter extends ArrayAdapter<String> {
             return INVALID_ID;
         }
         String item = getItem(position);
-        //System.out.println("Wtf "+item.hashCode());
         return mIdMap.get(item);
     }
 

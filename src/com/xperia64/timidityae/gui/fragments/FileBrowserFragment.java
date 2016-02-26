@@ -113,10 +113,7 @@ public class FileBrowserFragment extends ListFragment {
 			if (f.exists()) {
 				File[] files = f.listFiles();
 				if (files != null && files.length > 0) {
-
 					Arrays.sort(files, new FileComparator());
-
-					// System.out.println(currPath);
 					if (!currPath.matches(Globals.repeatedSeparatorString)) {
 						fname.add(Globals.parentString);
 						// Thank you Marshmallow.
