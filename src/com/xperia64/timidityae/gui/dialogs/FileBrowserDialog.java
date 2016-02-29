@@ -147,7 +147,7 @@ public class FileBrowserDialog implements OnItemClickListener {
 							if (file.isFile() && type == 0) {
 								String extension = Globals.getFileExtension(file);
 									if (extension != null) {
-										if (Globals.hasSupportedExtension(extension)) {
+										if (extension!=null && extensions.contains("*"+extension+"*")) {
 											path.add(file.getAbsolutePath());
 											fname.add(file.getName());
 										}
