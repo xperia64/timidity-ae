@@ -7,7 +7,7 @@ Timidity AE contains TiMidity++ and sfArkLib:
 http://sourceforge.net/projects/timidity
 https://github.com/raboof/sfArkLib
 
-This app uses an unmodified android-support-v4-preferencefragment Library which can be found at: 
-https://github.com/kolavar/android-support-v4-preferencefragment
+This app uses an android-support-v4-preferencefragment Library which can be found at: 
+https://github.com/Machinarius/PreferenceFragment-Compat
 
 Version 2.7.3
