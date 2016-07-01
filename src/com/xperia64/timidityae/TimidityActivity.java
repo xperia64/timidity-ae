@@ -74,10 +74,8 @@ import com.xperia64.timidityae.util.WavSaver;
 // Eclipse Stahp
 @SuppressLint("NewApi")
 public class TimidityActivity extends AppCompatActivity implements FileBrowserFragment.ActionFileBackListener, PlaylistFragment.ActionPlaylistBackListener, FileBrowserDialog.FileBrowserDialogListener {
-	// public static TimidityActivity staticthis;
 	private MenuItem menuButton;
 	private MenuItem menuButton2;
-	//private int viewPagerLocation = 0;
 	private FileBrowserFragment fileFrag;
 	private PlayerFragment playFrag;
 	private PlaylistFragment plistFrag;
@@ -90,10 +88,8 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 	boolean needInit = false;
 	boolean fromIntent = false;
 	boolean deadlyDeath = false;
-	// public boolean localfinished;
 	int oldTheme;
 	boolean oldPlist;
-	// AlertDialog alerty;
 
 	public interface SpecialAction {
 		public AlertDialog getAlertDialog();
@@ -617,7 +613,7 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 	public void initCallback2() {
 		int x = JNIHandler.init(SettingsStorage.dataFolder + "timidity/", "timidity.cfg", SettingsStorage.channelMode, SettingsStorage.defaultResamp, SettingsStorage.sixteenBit, SettingsStorage.bufferSize, SettingsStorage.audioRate, SettingsStorage.preserveSilence, false, SettingsStorage.freeInsts);
 		if (x != 0 && x != -99) {
-			SettingsStorage.nativeMidi = true;
+			SettingsStorage.onlyNative = SettingsStorage.nativeMidi = true;
 			Toast.makeText(this, String.format(getResources().getString(R.string.tcfg_error), x), Toast.LENGTH_LONG).show();
 			if(fileFrag!=null)
 			{
@@ -951,7 +947,7 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 		case 0:
 			if (fileFrag != null)
 				if (fileFrag.currPath != null)
-					if (!fileFrag.currPath.matches("[/]+")) {
+					if (!(fileFrag.currPath.matches(Globals.repeatedSeparatorString))) {
 						fileFrag.getDir(new File(fileFrag.currPath).getParent().toString());
 					} else {
 						if (SettingsStorage.useDefaultBack) {

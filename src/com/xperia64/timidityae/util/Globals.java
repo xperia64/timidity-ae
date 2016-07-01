@@ -116,7 +116,7 @@ public static String getSupportedExtensions()
 	{
 		supportedExtensions.append(VIDEO_FILES);
 	}
-	if(!SettingsStorage.nativeMidi)
+	if(!SettingsStorage.onlyNative)
 	{
 		supportedExtensions.append(TIMIDITY_FILES);
 	}

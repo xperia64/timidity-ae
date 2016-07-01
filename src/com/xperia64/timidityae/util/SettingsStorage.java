@@ -381,6 +381,13 @@ public class SettingsStorage {
 						Toast.makeText(c, "Renaming manually edited cfg... (6)", Toast.LENGTH_LONG).show();
 						theConfig.renameTo(new File(path + ".manualTimidityCfg." + Long.toString(System.currentTimeMillis()))); // manual config, rename for later
 					}
+				}else{
+					File parent = new File(path.substring(0,path.lastIndexOf(File.separator)));
+					if(!parent.mkdirs() && !parent.isDirectory())
+					{
+						Toast.makeText(c, "Error writing config. Make sure data directory is writable (7)", Toast.LENGTH_LONG).show();
+						return;
+					}
 				}
 				FileWriter fw = null;
 				try {
@@ -388,6 +395,11 @@ public class SettingsStorage {
 				} catch (IOException e) {
 
 					e.printStackTrace();
+				}
+				if(fw == null)
+				{
+					Toast.makeText(c, "Error writing config. Make sure data directory is writable (8)", Toast.LENGTH_LONG).show();
+					return;
 				}
 				try {
 					fw.write(Globals.autoSoundfontHeader + "\n");

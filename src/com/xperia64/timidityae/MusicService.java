@@ -649,7 +649,7 @@ public class MusicService extends Service {
 					Log.d("TIMIDITY", "Reloading: " + logRet);
 					int x = JNIHandler.init(SettingsStorage.dataFolder + "timidity/", "timidity.cfg", SettingsStorage.channelMode, SettingsStorage.defaultResamp, SettingsStorage.sixteenBit, SettingsStorage.bufferSize, SettingsStorage.audioRate, SettingsStorage.preserveSilence, true, SettingsStorage.freeInsts);
 					if (x != 0 && x != -99) {
-						SettingsStorage.nativeMidi = true;
+						SettingsStorage.onlyNative = SettingsStorage.nativeMidi = true;
 						Toast.makeText(MusicService.this, String.format(getResources().getString(R.string.tcfg_error), x), Toast.LENGTH_LONG).show();
 						Intent outgoingIntent16 = new Intent();
 						outgoingIntent16.setAction(CommandStrings.ta_rec);

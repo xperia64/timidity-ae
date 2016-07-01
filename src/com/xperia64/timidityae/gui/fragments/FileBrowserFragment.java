@@ -23,6 +23,7 @@ import com.xperia64.timidityae.util.Globals;
 import com.xperia64.timidityae.util.CommandStrings;
 import com.xperia64.timidityae.util.SettingsStorage;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -45,7 +46,7 @@ public class FileBrowserFragment extends ListFragment {
 	boolean gotDir = false;
 	ActionFileBackListener mCallback;
 	public boolean localfinished = false;
-
+	private Activity mActivity;
 	public interface ActionFileBackListener {
 		public void needFileBackCallback(boolean yes);
 	}
@@ -87,6 +88,10 @@ public class FileBrowserFragment extends ListFragment {
 	@Override
 	public void onAttach(Context activity) {
 		super.onAttach(activity);
+		if(activity instanceof Activity)
+		{
+			mActivity = (Activity) activity;
+		}
 		try {
 			mCallback = (ActionFileBackListener) activity;
 		} catch (ClassCastException e) {
@@ -96,15 +101,33 @@ public class FileBrowserFragment extends ListFragment {
 			Intent new_intent = new Intent();
 			new_intent.setAction(CommandStrings.msrv_rec);
 			new_intent.putExtra(CommandStrings.msrv_cmd, CommandStrings.msrv_cmd_get_fold);
-			getActivity().sendBroadcast(new_intent);
+			mActivity.sendBroadcast(new_intent);
 		}
 	}
 
+	@Override
+	public void onDetach()
+	{
+		mActivity = null;
+		mCallback = null;
+		super.onDetach();
+	}
+	@Override
+	public void onDestroy()
+	{
+		mActivity = null;
+		mCallback = null;
+		super.onDestroy();
+	}
 	public void refresh()
 	{
 		getDir(currPath);
 	}
 	public void getDir(String dirPath) {
+		if(dirPath.matches(Globals.repeatedSeparatorString)&&!new File(dirPath).canRead())
+		{
+			return;
+		}
 		currPath = dirPath;
 		fname = new ArrayList<String>();
 		path = new ArrayList<String>();
@@ -114,15 +137,17 @@ public class FileBrowserFragment extends ListFragment {
 				File[] files = f.listFiles();
 				if (files != null && files.length > 0) {
 					Arrays.sort(files, new FileComparator());
-					if (!currPath.matches(Globals.repeatedSeparatorString)) {
+					if (!currPath.matches(Globals.repeatedSeparatorString) && !((currPath.equals(File.separator+"storage"+File.separator)||currPath.equals(File.separator+"storage")) && !(new File(File.separator).canRead()))) {
 						fname.add(Globals.parentString);
 						// Thank you Marshmallow.
 						// Disallowing access to /storage/emulated has now
 						// prevent billions of hacking attempts daily.
 						if (new File(f.getParent()).canRead()) {
 							path.add(f.getParent() + File.separator);
-						} else {
+						} else if(new File(File.separator).canRead()) {
 							path.add(File.separator);
+						}else{
+							path.add(File.separator+"storage"+File.separator);
 						}
 						mCallback.needFileBackCallback(true);
 					} else {
@@ -152,20 +177,28 @@ public class FileBrowserFragment extends ListFragment {
 						}
 					}
 				} else {
-					if (!currPath.matches(Globals.repeatedSeparatorString)) {
+					if (!currPath.matches(Globals.repeatedSeparatorString) && !(currPath.equals(File.separator+"storage"+File.separator) && !(new File(File.separator).canRead()))) {
 						fname.add(Globals.parentString);
-						path.add(f.getParent() + File.separator);
+						// Thank you Marshmallow.
+						// Disallowing access to /storage/emulated has now prevent billions of hacking attempts daily.
+						if (new File(f.getParent()).canRead()) {
+							path.add(f.getParent() + File.separator);
+						} else if (new File(File.separator).canRead()){ // N seems to block reading /
+							path.add(File.separator);
+						}else{
+							path.add(File.separator+"storage"+File.separator);
+						}
 
 					}
 				}
-				ArrayAdapter<String> fileList = new ArrayAdapter<String>(getActivity(), R.layout.row, fname);
+				ArrayAdapter<String> fileList = new ArrayAdapter<String>(mActivity, R.layout.row, fname);
 				getListView().setFastScrollEnabled(true);
 				getListView().setOnItemLongClickListener(new OnItemLongClickListener() {
 
 					@Override
 					public boolean onItemLongClick(AdapterView<?> l, View v, final int position, long id) {
-						if (Globals.isMidi(path.get(position))) {
-							((TimidityActivity) getActivity()).dynExport(path.get(position), false);
+						if (new File(path.get(position)).isFile()&&Globals.isMidi(path.get(position))) {
+							((TimidityActivity) mActivity).dynExport(path.get(position), false);
 							return true;
 						}
 						return false;
@@ -197,10 +230,10 @@ public class FileBrowserFragment extends ListFragment {
 					getDir("/storage/self/primary");
 				}
 			} else {
-				AlertDialog.Builder unreadableDialog = new AlertDialog.Builder(getActivity());
+				AlertDialog.Builder unreadableDialog = new AlertDialog.Builder(mActivity);
 				unreadableDialog = unreadableDialog.setIcon(R.drawable.ic_launcher);
-				unreadableDialog = unreadableDialog.setTitle(String.format("[%1$s] %2$s", file.getName(), getActivity().getResources().getString(R.string.fb_cread)));
-				unreadableDialog = unreadableDialog.setPositiveButton(getActivity().getResources().getString(android.R.string.ok), new DialogInterface.OnClickListener() {
+				unreadableDialog = unreadableDialog.setTitle(String.format("[%1$s] %2$s", file.getName(), mActivity.getResources().getString(R.string.fb_cread)));
+				unreadableDialog = unreadableDialog.setPositiveButton(mActivity.getResources().getString(android.R.string.ok), new DialogInterface.OnClickListener() {
 					@Override
 					public void onClick(DialogInterface dialog, int which) {
 					}
@@ -219,7 +252,7 @@ public class FileBrowserFragment extends ListFragment {
 						}
 					}
 				}
-				((TimidityActivity) getActivity()).selectedSong(files, position - firstFile, true, false, true);
+				((TimidityActivity) mActivity).selectedSong(files, position - firstFile, true, false, true);
 			}
 		}
 	}

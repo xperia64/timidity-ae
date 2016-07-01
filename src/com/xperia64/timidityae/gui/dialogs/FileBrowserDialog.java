@@ -128,14 +128,16 @@ public class FileBrowserDialog implements OnItemClickListener {
 					if (files != null) {
 						Arrays.sort(files, new FileComparator());
 					}
-					if (!currPath.matches("[/]+")) {
-						fname.add("../");
+					if (!currPath.matches(Globals.repeatedSeparatorString) && !(currPath.equals(File.separator+"storage"+File.separator) && !(new File(File.separator).canRead()))) {
+						fname.add(Globals.parentString);
 						// Thank you Marshmallow.
 						// Disallowing access to /storage/emulated has now prevent billions of hacking attempts daily.
 						if (new File(f.getParent()).canRead()) {
-							path.add(f.getParent() + "/");
-						} else {
-							path.add("/");
+							path.add(f.getParent() + File.separator);
+						} else if (new File(File.separator).canRead()){ // N seems to block reading /
+							path.add(File.separator);
+						}else{
+							path.add(File.separator+"storage"+File.separator);
 						}
 					}
 					for (int i = 0; i < files.length; i++)
@@ -162,9 +164,17 @@ public class FileBrowserDialog implements OnItemClickListener {
 						}
 					}
 				} else {
-					if (!currPath.matches(Globals.repeatedSeparatorString)) {
-						fname.add("../");
-						path.add(f.getParent() + File.separator);
+					if (!currPath.matches(Globals.repeatedSeparatorString) &&! (currPath.equals(File.separator+"storage"+File.separator) && !(new File(File.separator).canRead()))) {
+						fname.add(Globals.parentString);
+						// Thank you Marshmallow.
+						// Disallowing access to /storage/emulated has now prevent billions of hacking attempts daily.
+						if (new File(f.getParent()).canRead()) {
+							path.add(f.getParent() + File.separator);
+						} else if (new File(File.separator).canRead()){ // N seems to block reading /
+							path.add(File.separator);
+						}else{
+							path.add(File.separator+"storage"+File.separator);
+						}
 
 					}
 				}

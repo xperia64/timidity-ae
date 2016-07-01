@@ -47,6 +47,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -131,10 +132,18 @@ public class SettingsActivity extends AppCompatActivity implements FileBrowserDi
 		Toolbar bar;
 
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-			LinearLayout root = (LinearLayout) dialog.findViewById(android.R.id.list).getParent();
-			bar = (Toolbar) LayoutInflater.from(this).inflate(R.layout.settings_toolbar, root, false);
-			bar.setElevation(abElevation);
-			root.addView(bar, 0);
+			try{
+			       LinearLayout root = (LinearLayout) dialog.findViewById(android.R.id.list).getParent();
+			       bar = (Toolbar) LayoutInflater.from(this).inflate(R.layout.settings_toolbar, root, false);
+			       bar.setElevation(abElevation);
+			       root.addView(bar, 0);
+			}catch(ClassCastException e)
+			{
+			       FrameLayout root = (FrameLayout) dialog.findViewById(android.R.id.list).getParent();
+			       bar = (Toolbar) LayoutInflater.from(this).inflate(R.layout.settings_toolbar, root, false);
+			       bar.setElevation(abElevation);
+			       root.addView(bar, 0);
+			}
 		} else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
 			LinearLayout root = (LinearLayout) dialog.findViewById(android.R.id.list).getParent();
 			bar = (Toolbar) LayoutInflater.from(this).inflate(R.layout.settings_toolbar, root, false);

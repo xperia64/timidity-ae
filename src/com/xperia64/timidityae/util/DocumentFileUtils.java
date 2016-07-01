@@ -1,5 +1,7 @@
 package com.xperia64.timidityae.util;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -186,8 +188,8 @@ public class DocumentFileUtils {
 		out = out.createFile("application/octet-stream",outsplit[outsplit.length-1]);
 		
 		try {
-			DataInputStream is = new DataInputStream(context.getContentResolver().openInputStream(in.getUri()));
-			DataOutputStream os = new DataOutputStream(context.getContentResolver().openOutputStream(out.getUri()));
+			DataInputStream is = new DataInputStream(new BufferedInputStream(context.getContentResolver().openInputStream(in.getUri())));
+			DataOutputStream os = new DataOutputStream(new BufferedOutputStream(context.getContentResolver().openOutputStream(out.getUri())));
 			while((i = is.read())>-1)
 			{
 				os.write(i);
