@@ -120,16 +120,13 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 				}
 				playFrag.play(intent.getIntExtra(CommandStrings.ta_startt, 0), intent.getStringExtra(CommandStrings.ta_songttl));
 				if (plistFrag != null) {
-					Globals.highlightMe = intent.getIntExtra("stupidNumber", -1);
+					Globals.highlightMe = intent.getIntExtra(CommandStrings.ta_highlight, -1);
 					try {
 
 						int x = plistFrag.getListView().getFirstVisiblePosition();
 						plistFrag.getPlaylists(plistFrag.isPlaylist ? plistFrag.plistName : null);
 						plistFrag.getListView().setSelection(x);
-					} catch (Exception e) {
-
-					}
-
+					} catch (Exception e) {}
 				}
 
 				break;
@@ -166,8 +163,17 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 				playFrag.play(intent.getIntExtra(CommandStrings.ta_startt, 0), intent.getStringExtra(CommandStrings.ta_songttl), intent.getIntExtra(CommandStrings.ta_shufmode, 0), intent.getIntExtra(CommandStrings.ta_loopmode, 1));
 				break;
 			case CommandStrings.ta_cmd_copy_plist:
-				plistFrag.currPlist = Globals.tmpplist;
-				Globals.tmpplist = null;
+				if (plistFrag != null) {
+					plistFrag.currPlist = Globals.tmpplist;
+					Globals.tmpplist = null;
+					Globals.highlightMe = intent.getIntExtra(CommandStrings.ta_highlight, -1);
+					try {
+	
+						int x = plistFrag.getListView().getFirstVisiblePosition();
+						plistFrag.getPlaylists(plistFrag.isPlaylist ? plistFrag.plistName : null);
+						plistFrag.getListView().setSelection(x);
+					} catch (Exception e) {}
+				}
 				break;
 			case CommandStrings.ta_cmd_pause_stop: // Notifiy pause/stop
 				if (!intent.getBooleanExtra(CommandStrings.ta_pause, false) && Globals.hardStop) {

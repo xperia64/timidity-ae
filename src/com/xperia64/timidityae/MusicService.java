@@ -305,6 +305,7 @@ public class MusicService extends Service {
 					}
 					outgoingIntent.setAction(CommandStrings.ta_rec);
 					outgoingIntent.putExtra(CommandStrings.ta_cmd, CommandStrings.ta_cmd_copy_plist);
+					outgoingIntent.putExtra(CommandStrings.ta_highlight, currSongNumber);
 					if (shuffleMode == 1) {
 						Globals.tmpplist = new ArrayList<String>();
 						for (int i = 0; i < playList.size(); i++) {
@@ -819,7 +820,7 @@ public class MusicService extends Service {
 								guiIntent.putExtra(CommandStrings.ta_startt, JNIHandler.maxTime);
 								guiIntent.putExtra(CommandStrings.ta_songttl, currTitle);
 								guiIntent.putExtra(CommandStrings.ta_filename, fileName);
-								guiIntent.putExtra("stupidNumber", songIndex);
+								guiIntent.putExtra(CommandStrings.ta_highlight, currSongNumber);
 								sendBroadcast(guiIntent);
 							}
 							if (new File(fileName + ".def.tcf").exists() || new File(fileName + ".def.tzf").exists()) {

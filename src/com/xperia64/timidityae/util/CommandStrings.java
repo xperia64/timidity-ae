@@ -54,7 +54,7 @@ public class CommandStrings {
 	public static final String ta_loopmode = ta+"_LoopMode";
 	public static final String ta_pause = ta+"_Pause";
 	public static final String ta_pausea = ta+"_PauseArg";
-
+	public static final String ta_highlight = ta+"_Highlight";
 	// TimidityActivity Broadcast Commands
 	public static final int ta_cmd_error = -5;
 	public static final int ta_cmd_gui_play = 0;
