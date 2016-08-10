@@ -4,3 +4,5 @@ build/
 gen/
 libs/*/*.so
 .gradle
+*.o
+*.exe
