@@ -62,6 +62,19 @@ public class SettingsStorage {
 	public static boolean isTV;
 	public static boolean enableDragNDrop = true;
 	
+	
+	// Delay: d = disabled, l = Left, r = Right, b = Both 
+	public static int delay = 0;
+	public static int delayLevel = -1;
+	
+	// Chorus: d = disabled, n = normal, s = surround, level = [0,127]
+	public static int chorus = 0;
+	public static int chorusLevel = -1;
+	
+	// Reverb: d = disabled, n = normal, g = global, f = freeverb, G = global freeverb
+	public static int reverb = 0;
+	public static int reverbLevel = -1;
+	
 	@SuppressLint("NewApi")
 	public static void reloadSettings(Activity c, AssetManager assets) {
 
@@ -199,7 +212,18 @@ public class SettingsStorage {
 								} catch (ArrayIndexOutOfBoundsException e1) {
 									e1.printStackTrace();
 								}
-
+							}else if(line.indexOf("#extension opt ")==0)
+							{
+								if(line.indexOf("--no-unload-instruments")>0)
+								{
+									SettingsStorage.freeInsts = false;
+								}/*else if(line.indexOf("")>0)
+								{
+									
+								}else if(line.indexOf("")>0)
+								{
+									
+								}*/
 							}
 						}
 					} catch (IOException e) {
@@ -211,7 +235,8 @@ public class SettingsStorage {
 						e.printStackTrace();
 					}
 					try {
-						eee.putString("tplusSoundfonts", ObjectSerializer.serialize(soundfonts));
+						eee.putString(CommandStrings.sett_soundfonts, ObjectSerializer.serialize(soundfonts));
+						eee.putBoolean(CommandStrings.sett_free_insts, SettingsStorage.freeInsts);
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
@@ -252,7 +277,7 @@ public class SettingsStorage {
 						ArrayList<String> tmpConfig = new ArrayList<String>();
 						tmpConfig.add(rootStorage.getAbsolutePath() + "/soundfonts/8Rock11e.sf2");
 						try {
-							eee.putString("tplusSoundfonts", ObjectSerializer.serialize(tmpConfig));
+							eee.putString(CommandStrings.sett_soundfonts, ObjectSerializer.serialize(tmpConfig));
 						} catch (IOException e) {
 							e.printStackTrace();
 						}

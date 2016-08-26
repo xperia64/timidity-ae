@@ -66,6 +66,7 @@ public class CommandStrings {
 	public static final int ta_cmd_update_art = 6;
 	// public static final int ta_cmd_unused_7 = 7;
 	public static final int ta_cmd_special_notification_finished = 8;
+	public static final int ta_cmd_service_started = 9;
 
 	// Settings names
 	public static final String sett_first_run = "tplusFirstRun";
@@ -88,6 +89,7 @@ public class CommandStrings {
 	public static final String sett_preserve_silence = "tplusSilKey";
 	public static final String sett_native_midi = "nativeMidiSwitch";
 	public static final String sett_fancy_plist = "fpSwitch";
+	public static final String sett_soundfonts = "tplusSoundfonts";
 	
 	// Fragment Keys
 	public static final String currFoldKey = "CURRENT_FOLDER";
@@ -179,5 +181,6 @@ public class CommandStrings {
 	#define RC_SOLO_PLAY	32
 	#define RC_MUTE_CLEAR	33*/
 		// @formatter:on
+	
 	
 }

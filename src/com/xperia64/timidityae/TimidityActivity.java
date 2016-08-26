@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import android.Manifest;
@@ -66,6 +67,7 @@ import com.xperia64.timidityae.gui.fragments.PlaylistFragment;
 import com.xperia64.timidityae.util.ConfigSaver;
 import com.xperia64.timidityae.util.DocumentFileUtils;
 import com.xperia64.timidityae.util.DownloadTask;
+import com.xperia64.timidityae.util.FileComparator;
 import com.xperia64.timidityae.util.Globals;
 import com.xperia64.timidityae.util.CommandStrings;
 import com.xperia64.timidityae.util.SettingsStorage;
@@ -88,9 +90,16 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 	boolean needInit = false;
 	boolean fromIntent = false;
 	boolean deadlyDeath = false;
+	
+	boolean serviceStarted = false;
+	
+	String fileFragDir = null;
 	int oldTheme;
 	boolean oldPlist;
 
+	ArrayList<String> queuedPlist = null;
+	int queuedPosition = -1;
+	
 	public interface SpecialAction {
 		public AlertDialog getAlertDialog();
 
@@ -225,7 +234,15 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 					special.setLocalFinished(true);
 				}
 				break;
-
+			case CommandStrings.ta_cmd_service_started:
+				serviceStarted = true;
+				if(queuedPosition>-1)
+				{
+					selectedSong(queuedPlist, queuedPosition, true, false, true);
+					queuedPlist = null;
+					queuedPosition = -1;
+				}
+				break;
 			}
 		}
 	};
@@ -640,7 +657,9 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 								ArrayList<String> files = new ArrayList<String>();
 								int position = -1;
 								int goodCounter = 0;
-								for (File ff : f.listFiles()) {
+								File[] filesz = f.listFiles();
+								Arrays.sort(filesz, new FileComparator());
+								for (File ff : filesz) {
 									if (ff != null && ff.isFile()) {
 										if(Globals.hasSupportedExtension(ff))
 										{
@@ -655,8 +674,21 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 									Toast.makeText(this, getResources().getString(R.string.intErr1), Toast.LENGTH_SHORT).show();
 								else {
 									stop();
-									selectedSong(files, position, true, false, true);
-									fileFrag.getDir(data.substring(0, data.lastIndexOf('/') + 1));
+									
+									if(serviceStarted)
+									{
+										selectedSong(files, position, true, false, true);
+									}else{
+										queuedPlist = files;
+										queuedPosition = position;
+									}
+									if(fileFrag!=null)
+									{
+										fileFrag.getDir(data.substring(0, data.lastIndexOf('/') + 1));
+									}else{
+										fileFragDir=data.substring(0,data.lastIndexOf('/')+1);
+									}
+									
 								}
 						}
 					} else {
@@ -673,7 +705,9 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 					} else {
 						Toast.makeText(this, "This is a directory, not a file", Toast.LENGTH_SHORT).show();
 					}
-				} else if (in.getData().getScheme().equals("content") && (data.contains("downloads"))) {
+					
+					// TODO: Better hereustics on content:// type
+				} else if (in.getData().getScheme().equals("content") && (data.contains("downloads") || data.contains("audio"))) {
 					String filename = null;
 					Cursor cursor = null;
 					try {
@@ -709,7 +743,9 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 							ArrayList<String> files = new ArrayList<String>();
 							int position = -1;
 							int goodCounter = 0;
-							for (File ff : f.listFiles()) {
+							File[] filesz = f.listFiles();
+							Arrays.sort(filesz, new FileComparator());
+							for (File ff : filesz) {
 								if (ff != null && ff.isFile()) {
 									if (Globals.hasSupportedExtension(ff)) {
 										files.add(ff.getPath());
@@ -723,14 +759,26 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 								Toast.makeText(this, getResources().getString(R.string.intErr1), Toast.LENGTH_SHORT).show();
 							else {
 								stop();
-								selectedSong(files, position, true, false, true);
-								fileFrag.getDir(Globals.getExternalCacheDir(this).getAbsolutePath());
+								if(serviceStarted)
+								{
+									selectedSong(files, position, true, false, true);
+								}else{
+									queuedPlist = files;
+									queuedPosition = position;
+								}
+								if(fileFrag != null)
+								{
+									fileFrag.getDir(Globals.getExternalCacheDir(this).getAbsolutePath());
+								}else{
+									fileFragDir = (Globals.getExternalCacheDir(this).getAbsolutePath());
+								}
 							}
 						}
 					}
 
 				} else {
-					Toast.makeText(this, getResources().getString(R.string.intErr2) + " (" + in.getData().getScheme() + ")", Toast.LENGTH_SHORT).show();
+					
+					Toast.makeText(this, getResources().getString(R.string.intErr2) + " (" + in.getData().getScheme() + " " + data + ")", Toast.LENGTH_SHORT).show();
 				}
 			}
 		}
@@ -743,8 +791,20 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 
 			files.add(name);
 			stop();
-			selectedSong(files, 0, true, false, true);
-			fileFrag.getDir(name.substring(0, name.lastIndexOf('/') + 1));
+			
+			if(serviceStarted)
+			{
+				selectedSong(files, 0, true, false, true);
+			}else{
+				queuedPlist = files;
+				queuedPosition = 0;
+			}
+			if(fileFrag!=null)
+			{
+				fileFrag.getDir(name.substring(0, name.lastIndexOf('/') + 1));
+			}else{
+				fileFragDir=data.substring(0, name.lastIndexOf('/')+1);
+			}	
 		}
 	}
 
@@ -987,7 +1047,7 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 	public void selectedSong(ArrayList<String> files, int songNumber, boolean begin, boolean fromPlaylist, boolean copyPlist) {
 		if(!Globals.hasSupportedExtension(files.get(songNumber)))
 		{
-			Toast.makeText(this, "Error: Timidity is not loaded. Please make sure the config is valid.", Toast.LENGTH_LONG).show();;
+			Toast.makeText(this, "Error: Timidity is not loaded. Please make sure the config is valid.", Toast.LENGTH_LONG).show();
 			return;
 		}
 		this.fromPlaylist = fromPlaylist;
@@ -998,7 +1058,6 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 		if (plistFrag != null && copyPlist) {
 			plistFrag.currPlist = files;
 		}
-
 		// plistFrag.getListView().setItemChecked(songNumber, true);
 		Intent new_intent = new Intent();
 		new_intent.setAction(CommandStrings.msrv_rec);
@@ -1230,7 +1289,8 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 		public Fragment getItem(int position) {
 			switch (position) {
 			case 0:
-				fileFrag = FileBrowserFragment.create(SettingsStorage.homeFolder);
+				fileFrag = FileBrowserFragment.create(fileFragDir==null?SettingsStorage.homeFolder:fileFragDir);
+				fileFragDir = null;
 				return fileFrag;
 			case 1:
 				playFrag = PlayerFragment.create();

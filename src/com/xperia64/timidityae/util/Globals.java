@@ -215,6 +215,7 @@ public static boolean isMidi(String songFileName)
 	|| songFileName.toLowerCase(Locale.US).endsWith(".flac")
 	|| songFileName.toLowerCase(Locale.US).endsWith(".mp4")
 	|| songFileName.toLowerCase(Locale.US).endsWith(".3gp")
+	|| songFileName.toLowerCase(Locale.US).endsWith(".webm") // MediaPlayer might support webm audio only on some devices but not mine
 	|| (SettingsStorage.nativeMidi 
 			&&(songFileName.toLowerCase(Locale.US).endsWith(".mid")
 			|| songFileName.toLowerCase(Locale.US).endsWith(".kar") 

@@ -15,6 +15,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 
 import com.xperia64.timidityae.R;
 import com.xperia64.timidityae.TimidityActivity;
@@ -126,6 +127,11 @@ public class FileBrowserFragment extends ListFragment {
 	public void getDir(String dirPath) {
 		if(dirPath.matches(Globals.repeatedSeparatorString)&&!new File(dirPath).canRead())
 		{
+			return;
+		}
+		if(!new File(dirPath).canRead()&&(dirPath.toLowerCase(Locale.US).equals("/storage/emulated")||dirPath.toLowerCase(Locale.US).equals("/storage/emulated/")))
+		{
+			getDir(new File(dirPath).getParent());
 			return;
 		}
 		currPath = dirPath;

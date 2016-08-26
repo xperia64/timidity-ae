@@ -673,6 +673,10 @@ public class MusicService extends Service {
 			intentFilter.addAction(Intent.ACTION_MEDIA_BUTTON);
 			registerReceiver(serviceReceiver, intentFilter);
 		}
+		Intent outgoingIntent = new Intent();
+		outgoingIntent.setAction(CommandStrings.ta_rec);
+		outgoingIntent.putExtra(CommandStrings.ta_cmd, CommandStrings.ta_cmd_service_started);
+		sendBroadcast(outgoingIntent);
 		pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
 		wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "Timidity AE");
 		wl.setReferenceCounted(false);
