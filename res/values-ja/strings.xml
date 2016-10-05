@@ -1,0 +1,408 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Timidity AE</string>
+    <string name="action_settings">設定</string>
+    <string name="action_help">ヘルプ</string>
+    <string name="action_quit">終了</string>
+    <string name="soundfont">サウンドフォントを選択</string>
+    <string name="soundfont2">サウンドフォントを管理</string>
+    <string name="dynex_alert1">WAV ファイルに変換</string>
+    <string name="dynex_alert1_msg">MIDI/MOD ファイルを WAV にエクスポートします。\n設定でネイティブの Midi を無効にする必要があります。\n警告: WAV ファイルはサイズが大きくなります。</string>
+    <string name="warning">警告</string>
+    <string name="dynex_alert2_msg">WAV ファイルを上書きしますか?</string>
+    <string name="cancel">キャンセル</string>
+    <string name="sett_file">ファイルブラウザーのオプション</string>
+    <string name="sett_shf">隠しファイルを表示</string>
+    <string name="sett_shf_sum">. で始まるファイルとフォルダーを表示します</string>
+    <string name="sett_shv">ビデオファイルを表示</string>
+    <string name="sett_shv_sum">.mp4 と .3gp ファイルからオーディオを表示および再生します</string>
+    <string name="sett_brows4fb">デフォルトフォルダーの閲覧</string>
+    <string name="sett_brows4fb_sum">ブラウザーのホームフォルダーから閲覧します</string>
+    <string name="sett_fbpath">デフォルトフォルダーを手動で編集</string>
+    <string name="sett_nm">ネイティブの MIDI</string>
+    <string name="sett_nm_sum">ネイティブの Android MIDI 再生を使用します</string>
+    <string name="sett_rate">オーディオレート</string>
+    <string name="sett_rate_sum">オーディオレート Hz で</string>
+    <string name="sett_chan">オーディオチャンネル</string>
+    <string name="sett_chan_sum">オーディオチャンネルの番号</string>
+    <string name="sett_buff">オーディオバッファーのサイズ</string>
+    <string name="sett_buff_sum">音飛びがある場合は高い値を使用してください (デフォルト 192000)</string>
+    <string name="sett_title">Timidity AE 設定</string>
+    <string name="sett_ds">表示設定</string>
+    <string name="sett_ds_sum">表示とファイルブラウザー設定</string>
+    <string name="sett_theme">テーマ</string>
+    <string name="sett_theme_sum">アプリのテーマ</string>
+    <string name="sett_plus">TiMidity++ 設定</string>
+    <string name="sett_plus_sum">TiMidity++ 設定 (再生が停止することがあります)</string>
+    <string name="sett_dat">データ設定</string>
+    <string name="sett_resf">デフォルトのサウンドフォントを再インストール</string>
+    <string name="sett_resf_sum">8Rock11e.sf2 を Timidity AE のデータフォルダーに再インストールします</string>
+    <string name="sett_resf_q">デフォルトのサウンドフォントを再インストールしますか?</string>
+    <string name="sett_resf_q_sum">これは数分かかることがあります。</string>
+    <string name="sett_resf_err">デフォルトのサウンドフォントを抽出できません</string>
+    <string name="sett_mancfg">手動構成ファイルを使用する</string>
+    <string name="sett_mancfg_sum">手動で作成した timidity.cfg を使用します</string>
+    <string name="sett_sil">無音を保持</string>
+    <string name="sett_sil_sum">曲の先頭の無音をスキップせずに保持します</string>
+    <string name="sett_unload">楽器をアンロード</string>
+    <string name="sett_unload_sum">曲の間で楽器をアンロードします (推奨)</string>
+    <string name="sett_res">デフォルトの再サンプリングモード</string>
+    <string name="sett_res_sum">サンプルレートを変換するアルゴリズム</string>
+    <string name="sett_bits">オーディオビット深度</string>
+    <string name="sett_bits_sum">サンプル当たりビット数</string>
+    <string name="sett_ddir">データフォルダーの参照</string>
+    <string name="sett_ddir_sum">Timidity AE のシステムフォルダーを参照します</string>
+    <string name="sett_mandir">手動でデータフォルダーに入る</string>
+    <string name="sett_mandir_sum">手動で Timidity AE のシステムフォルダーに入ります</string>
+    <string name="sett_other">その他の設定</string>
+    <string name="sett_kpw">一部変換を残す</string>
+    <string name="sett_kpw_sum">一部変換された WAV ファイルを削除しないで残します</string>
+    <string name="sett_defback">デフォルトの戻るボタンを使用する</string>
+    <string name="sett_defback_sum">戻るボタンが押されたとき Android のデフォルトの動作を使用します</string>
+    <string name="sett_compcfg">設定ファイルを圧縮</string>
+    <string name="sett_compcfg_sum">カスタムの midi 設定ファイルを圧縮します</string>
+    <string name="sett_lolrw">Lollipop 書き込みアクセスを要求</string>
+    <string name="sett_lolrw_sum">Timidity のアクセス先のディレクトリーを変更します\nSD カードのルートを選択する必要があります</string>
+    <string name="sett_lolnag">起動時に外部 SD カードのアクセスを尋ねる</string>
+    <string name="sett_lolnag_sum">起動時に見つからない場合、外部 SD カードへの書き込みアクセスを尋ねます</string>
+    <string name="sett_reshuff">プレイリストの再シャッフル</string>
+    <string name="sett_reshuff_sum">シャッフルモードを切り替えたとき、現在のプレイリストを再シャッフルします</string>
+    <string name="sett_fancy_plist">ドラッグ＆ドロップでプレイリストを並べ替え</string>
+    <string name="sett_fancy_plist_sum">ドラッグ＆ドロップを使用してプレイリストのアイテムを並べ替えできるようにします</string>
+    <string name="intErr1">ファイルが見つかりません/サポートされていない形式</string>
+    <string name="intErr2">サポートされていないプロトコル; Timidity AE はストリーミングをサポートしていません</string>
+    <string name="refreshfld">フォルダーをリフレッシュ</string>
+    <string name="refreshpls">プレイリストをリフレッシュ</string>
+    <string name="refreshcon">リフレッシュ</string>
+    <string name="homefld">ホームフォルダー</string>
+    <string name="homecon">ホーム</string>
+    <string name="view">表示を変更</string>
+    <string name="viewcon">表示</string>
+    <string name="playback">再生オプション</string>
+    <string name="playbackcon">再生</string>
+    <string name="add">アイテムを追加</string>
+    <string name="addcon">追加</string>
+    <string name="tcfg_error">設定をロードできません。一部のファイル形式が利用できません (%d)</string>
+    <string name="mop">TiMidity++ コントロール</string>
+    <string name="mop_up">キーアップ</string>
+    <string name="mop_down">キーダウン</string>
+    <string name="mop_fast">速く</string>
+    <string name="mop_slow">遅く</string>
+    <string name="mop_vplus">ボイス+</string>
+    <string name="mop_vminus">ボイス-</string>
+    <string name="mop_resamp">再サンプリング アルゴリズム</string>
+    <string name="mop_tempo">テンポ: %2$d BPM (%1$d%%)</string>
+    <string name="mop_pitch">ピッチ: %s</string>
+    <string name="mop_voice">ボイス: %1$d/%2$d</string>
+    <string name="mop_export">WAV にエクスポート</string>
+    <string name="trk_dinst">デフォルトの楽器</string>
+    <string name="trk_dvol">デフォルトのボリューム</string>
+    <string name="trk_inst">楽器</string>
+    <string name="trk_vol">ボリューム</string>
+    <string name="trk_form">%1$s トラック %2$d. 進行: %3$d 音量: %4$d</string>
+    <string name="trk_drum">ドラム</string>
+    <string name="trk_inst2">楽器</string>
+    <string name="trk_form2">トラック %d 設定</string>
+    <string name="srv_fnf">ファイルが見つかりません</string>
+    <string name="srv_loading">すでにロード中</string>
+    <string name="srv_unk">不明なエラー: %d</string>
+    <string name="fb_chfi">ファイルを選択</string>
+    <string name="fb_chfo">フォルダーを選択</string>
+    <string name="done">完了</string>
+    <string name="fb_fold">このフォルダー</string>
+    <string name="fb_cread">読み取りできません!</string>
+    <string name="fb_add">追加しました</string>
+    <string name="plist_save2">…としてプレイリストを保存</string>
+    <string name="plist_save">保存</string>
+    <string name="plist_mod">プレイリストを更新</string>
+    <string name="plist_del">削除</string>
+    <string name="plist_del2">削除してもよろしいですか %s?</string>
+    <string name="plist_ren">名前を変更</string>
+    <string name="plist_ren2">名前を変更 %s</string>
+    <string name="plist_ex">プレイリストはすでに存在します</string>
+    <string name="plist_pnf">プレイリストが見つかりません</string>
+    <string name="plist_modit">プレイリストのアイテムを更新</string>
+    <string name="plist_addcs">現在の曲を追加…</string>
+    <string name="plist_adds">曲を追加…</string>
+    <string name="plist_addf">フォルダーを追加…</string>
+    <string name="plist_addft">フォルダーツリーを追加…</string>
+    <string name="plist_ds">プレイリストから削除</string>
+    <string name="plist_addcsh">現在の曲をここに追加…</string>
+    <string name="plist_addsh">曲をここに追加…</string>
+    <string name="plist_addfh">フォルダーをここに追加…</string>
+    <string name="plist_addfth">フォルダーツリーをここに追加…</string>
+    <string name="plist_addto">プレイリストに追加</string>
+    <string name="plist_curr">現在のプレイリスト</string>
+    <string name="plist_crea">新しいプレイリストを作成</string>
+    <string name="extract">抽出中…</string>
+    <string name="extract_sum">8Rock11e.sf2 の抽出中…</string>
+    <string name="extract_def">8Rock11e.sf2 を使用するには、上の \'サウンドフォントを選択\' ボタンを使用して、設定に再度追加してください</string>
+    <string name="invalidbuff">バッファーサイズが正しくありません。最小値に戻します</string>
+    <string name="invalidfold">フォルダーが正しくありません</string>
+    <string name="restart">変更を適用するためアプリを再起動してください</string>
+    <string name="sf_man">サウンドフォントの管理</string>
+    <string name="sf_rem">サウンドフォントを削除</string>
+    <string name="sf_rem2">削除</string>
+    <string name="sf_com">%s を設定から削除してもよろしいですか?</string>
+    <string name="yes">はい</string>
+    <string name="no">いいえ</string>
+    <string name="helpt">Timidity AE ヘルプ</string>
+    <string name="helper">よくある質問と答え (FAQ)\n\n
+	    
+	    Q: WAV ファイルにエクスポートする方法は?\n
+	    A: ファイルブラウザーでファイルを長押しするか、TiMidity++ コントロール ダイアログボックスで、エクスポートボタンを押します。\n\n
+	    
+	    Q: なぜ Timidity AE がスキップするのですか?\n
+	    A: MIDI ファイルの解釈に CPU 負荷がかかる場合があります。 バッファーサイズを増やしてみてください。 それが失敗する場合は、問題の MIDI ファイルを WAV ファイルとしてエクスポートしてみてください。\n
+	    お使いのデバイスがスリープしているときにのみスキップが発生する場合は、お使いのデバイスが電力を節約するために動作クロックを下げている可能性があります。 Timidity AE はこれを防止しようとしますが、一部のデバイスでは対応しません。 ルート化している場合は、最低 CPU 速度を上げてみてください。\n\n
+	    
+	    Q: なぜ私の MOD ファイルが再生されないのですか?\n
+	    A: Timidity AE のコアが TiMidity++ に変更されたため、TiMidity++ は modplug の代わりに MOD ファイルの再生を処理します。 このように、MOD の互換性が変更されました。 これが原因となった可能性がありご迷惑をおかけいたしますが、他の新機能をお楽しみください。\n\n
+	    
+	    Q: サウンドフォントを追加/変更する方法は?\n
+	    A: 設定メニューから \"TiMidity++ 設定\" に入り、サウンドフォントを選択をクリックして、そこからサウンドフォントを追加、削除、有効、無効にします。\n\n
+	    
+	    Q: 新しいサウンドフォントの設定が適用されません!\n
+	    A: 新しいサウンドフォントの設定を適用する前に、アプリを完全に終了する必要があります。\n\n
+	    
+	    Q: まだパッチファイルを使用することができますか?\n
+	    A: はい。しかし、timidity.cfg を置き換える前に \"手動構成ファイルを使用する\" オプションをチェックしてください。 絶対ファイルパスのみ動作することが実証されていることにご注意ください (フォルダーコマンドはテストされていません)\n\n
+	    
+	    Q: 手動で編集した timidity.cfg がなくなりました!\n
+	    A: おそらく timidity.cfg.manualTimidityCfg.* に名前が変更されました。 名前を元に戻す前に \"手動構成ファイルを使用する\" オプションをチェックしてください。\n\n
+	    
+	    Q: 再生中に曲の楽器/ピッチ/テンポを変更する方法は?\n
+	    A: アクションバーのボタンを使用すると、これらの設定を変更することができます。 機能するには、曲が非 XG MIDI または追加オプションのモジュール ファイルでなければならないことにご注意ください。また、テンポはレシオに基づくので正確な BPM に設定することはできません。\n\n
+	    
+	    Q: プレイリストを繰り返す方法は?\n
+	    A: プレイヤーの左上のボタンを押して、繰り返しモードを切り替えます。 まっすぐな矢印のアイコンは、終了するとプレイリストが停止することを示しています。 二重矢印のアイコンはプレイリストを繰り返すことを示しています。 一重矢印のアイコンは、現在の曲が繰り返すことを示しています。\n\n
+	    
+	    Q: プレイリストをシャッフルする方法は?\n
+	    A: プレイヤーの右上のボタンを押して、シャッフルモードを切り替えます。</string>
+
+    <!-- Arrays -->
+    <string-array name="theme_items">
+        <item>ライト</item>
+        <item>ダーク</item>
+    </string-array>
+    <string-array name="background_theme_items">
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+    <string-array name="resamp_items">
+        <item>三次スプライン</item>
+        <item>ラグランジュ</item>
+        <item>ガウシアン</item>
+        <item>ニュートン</item>
+        <item>リニア</item>
+        <item>なし</item>
+    </string-array>
+    <string-array name="background_resamp_items">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+    </string-array>
+    <string-array name="select_channel_items">
+        <item>1 (ダウンミックス モノ)</item>
+        <item>1 (シンセサイズド モノ)</item>
+        <item>2 (ステレオ)</item>
+    </string-array>
+    <string-array name="background_channel_items">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+    <string-array name="select_bit_items">
+        <item>8-ビット</item>
+        <item>16-ビット</item>
+    </string-array>
+    <string-array name="background_bit_items">
+        <item>8</item>
+        <item>16</item>
+    </string-array>
+    <string-array name="midi_instruments">
+        <item>1. アコースティックグランドピアノ</item>
+        <item>2. ブライトアコースティックピアノ</item>
+        <item>3. エレクトリックグランドピアノ</item>
+        <item>4. ホンキートンクピアノ</item>
+        <item>5. エレクトリックピアノ 1</item>
+        <item>6. エレクトリックピアノ 2</item>
+        <item>7. ハープシコード</item>
+        <item>8. クラビネット</item>
+        <item>9. チェレスタ</item>
+        <item>10. グロッケンシュピール</item>
+        <item>11. オルゴール</item>
+        <item>12. ヴィブラフォン</item>
+        <item>13. マリンバ</item>
+        <item>14. シロフォン</item>
+        <item>15. チューブラーベル</item>
+        <item>16. ダルシマー</item>
+        <item>17. ドローバーオルガン</item>
+        <item>18. パーカッシブオルガン</item>
+        <item>19. ロックオルガン</item>
+        <item>20. チャーチオルガン</item>
+        <item>21. リードオルガン</item>
+        <item>22. アコーディオン</item>
+        <item>23. ハーモニカ</item>
+        <item>24. タンゴアコーディオン</item>
+        <item>25. アコースティックギター (ナイロン弦)</item>
+        <item>26. アコースティックギター (スチール弦)</item>
+        <item>27. ジャズギター</item>
+        <item>28. クリーンギター</item>
+        <item>29. ミュートギター</item>
+        <item>30. オーバードライブギター</item>
+        <item>31. ディストーションギター</item>
+        <item>32. ギターハーモニクス</item>
+        <item>33. アコースティックベース</item>
+        <item>34. フィンガー・ベース</item>
+        <item>35. ピック・ベース</item>
+        <item>36. フレットレスベース</item>
+        <item>37. スラップベース 1</item>
+        <item>38. スラップベース 2</item>
+        <item>39. シンセベース 1</item>
+        <item>40. シンセベース 2</item>
+        <item>41. ヴァイオリン</item>
+        <item>42. ヴィオラ</item>
+        <item>43. チェロ</item>
+        <item>44. コントラバス</item>
+        <item>45. トレモロ</item>
+        <item>46. ピッチカート</item>
+        <item>47. ハープ</item>
+        <item>48. ティンパニ</item>
+        <item>49. ストリングアンサンブル 1</item>
+        <item>50. ストリングアンサンブル 2</item>
+        <item>51. シンセストリングス 1</item>
+        <item>52. シンセストリングス 2</item>
+        <item>53. 声「あー」</item>
+        <item>54. 声「うー」</item>
+        <item>55. シンセヴォイス</item>
+        <item>56. オーケストラヒット</item>
+        <item>57. トランペット</item>
+        <item>58. トロンボーン</item>
+        <item>59. チューバ</item>
+        <item>60. ミュートトランペット</item>
+        <item>61. フレンチ・ホルン</item>
+        <item>62. ブラスセクション</item>
+        <item>63. シンセブラス 1</item>
+        <item>64. シンセブラス 2</item>
+        <item>65. ソプラノサックス</item>
+        <item>66. アルトサックス</item>
+        <item>67. テナーサックス</item>
+        <item>68. バリトンサックス</item>
+        <item>69. オーボエ</item>
+        <item>70. イングリッシュホルン</item>
+        <item>71. ファゴット</item>
+        <item>72. クラリネット</item>
+        <item>73. ピッコロ</item>
+        <item>74. フルート</item>
+        <item>75. リコーダー</item>
+        <item>76. パンフルート</item>
+        <item>77. ブロウンボトル</item>
+        <item>78. 尺八</item>
+        <item>79. 口笛</item>
+        <item>80. オカリナ</item>
+        <item>81. リード 1 (矩形波)</item>
+        <item>82. リード 2 (ノコギリ波)</item>
+        <item>83. リード 3 (カリオペ)</item>
+        <item>84. リード 4 (チフ)</item>
+        <item>85. リード 5 (チャランゴ)</item>
+        <item>86. リード 6 (声)</item>
+        <item>87. リード 7 (フィフスズ)</item>
+        <item>88. リード 8 (バス + リード)</item>
+        <item>89. パッド 1 (ニューエイジ)</item>
+        <item>90. パッド 2 (ウォーム)</item>
+        <item>91. パッド 3 (ポリシンセ)</item>
+        <item>92. パッド 4 (クワイア)</item>
+        <item>93. パッド 5 (ボウ)</item>
+        <item>94. パッド 6 (メタリック)</item>
+        <item>95. パッド 7 (ハロー)</item>
+        <item>96. パッド 8 (スウィープ)</item>
+        <item>97. FX 1 (雨)</item>
+        <item>98. FX 2 (サウンドトラック)</item>
+        <item>99. FX 3 (クリスタル)</item>
+        <item>100. FX 4 (アトモスフィア)</item>
+        <item>101. FX 5 (ブライトネス)</item>
+        <item>102. FX 6 (ゴブリン)</item>
+        <item>103. FX 7 (エコー)</item>
+        <item>104. FX 8 (サイファイ)</item>
+        <item>105. シタール</item>
+        <item>106. バンジョー</item>
+        <item>107. 三味線</item>
+        <item>108. 琴</item>
+        <item>109. カリンバ</item>
+        <item>110. バグパイプ</item>
+        <item>111. フィドル</item>
+        <item>112. シャハナーイ</item>
+        <item>113. ティンクルベル</item>
+        <item>114. アゴゴ</item>
+        <item>115. スチールドラム</item>
+        <item>116. ウッドブロック</item>
+        <item>117. 太鼓</item>
+        <item>118. メロディックタム</item>
+        <item>119. シンセドラム</item>
+        <item>120. 逆シンバル</item>
+        <item>121. ギターフレットノイズ</item>
+        <item>122. ブレスノイズ</item>
+        <item>123. 海岸</item>
+        <item>124. 鳥の囀り</item>
+        <item>125. 電話のベル</item>
+        <item>126. ヘリコプター</item>
+        <item>127. 拍手</item>
+        <item>128. 銃声</item>
+    </string-array>
+    <!-- This doesn't really work -->
+    <string-array name="midi_drums">
+        <item>35. アコースティックバスドラム</item>
+        <item>36. バスドラム 1</item>
+        <item>37. サイドスティック</item>
+        <item>38. アコースティックスネア</item>
+        <item>39. 手拍子</item>
+        <item>40. エレクトリックスネア</item>
+        <item>41. ローフロアトム</item>
+        <item>42. クローズハイハット</item>
+        <item>43. ハイフロアトム</item>
+        <item>44. ペダルハイハット</item>
+        <item>45. ロートム</item>
+        <item>46. オープンハイハット</item>
+        <item>47. ローミドルトム</item>
+        <item>48. ハイミドルトム</item>
+        <item>49. クラッシュシンバル 1</item>
+        <item>50. ハイトム</item>
+        <item>51. ライドシンバル 1</item>
+        <item>52. チャイニーズシンバル</item>
+        <item>53. ライドベル</item>
+        <item>54. タンバリン</item>
+        <item>55. スプラッシュシンバル</item>
+        <item>56. カウベル</item>
+        <item>57. クラッシュシンバル 2</item>
+        <item>58. ヴィブラスラップ</item>
+        <item>59. ライドシンバル 2</item>
+        <item>60. ハイボンゴ</item>
+        <item>61. ローボンゴ</item>
+        <item>62. ミュートハイコンガ</item>
+        <item>63. オープンハイコンガ</item>
+        <item>64. ローコンガ</item>
+        <item>65. ハイティンバル</item>
+        <item>66. ローティンバル</item>
+        <item>67. ハイアゴゴ</item>
+        <item>68. ローアゴゴ</item>
+        <item>69. カバサ</item>
+        <item>70. マラカス</item>
+        <item>71. ショートホイッスル</item>
+        <item>72. ロングホイッスル</item>
+        <item>73. ショートギロ</item>
+        <item>74. ロングギロ</item>
+        <item>75. クラベス</item>
+        <item>76. ハイウッドブロック</item>
+        <item>77. ローウッドブロック</item>
+        <item>78. ミュートクイーカ</item>
+        <item>79. オープンクイーカ</item>
+        <item>80. ミュートトライアングル</item>
+        <item>81. オープントライアングル</item>
+    </string-array>
+
+</resources>
