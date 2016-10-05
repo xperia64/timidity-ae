@@ -11,34 +11,30 @@
  ******************************************************************************/
 package com.xperia64.timidityae;
 
-import java.io.BufferedOutputStream;
-import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.RandomAccessFile;
 import java.util.ArrayList;
+
+import com.xperia64.timidityae.util.CommandStrings;
+import com.xperia64.timidityae.util.Globals;
+import com.xperia64.timidityae.util.WavWriter;
 
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioTrack;
 import android.media.MediaPlayer;
 
-
 //import android.util.Log;
 
 public class JNIHandler {
-	
-
 
 	// config folder, config file, mono, resampling algorithm, bits, preserve
 	// silence
 	public static native int loadLib(String libPath);
+
 	public static native int unloadLib();
-	private static native int prepareTimidity(String config, String config2,
-			int jmono, int jcustResamp, int jsixteen, int jPresSil, int jreloading, int jfreeInsts);
+
+	private static native int prepareTimidity(String config, String config2, int jmono, int jcustResamp, int jsixteen, int jPresSil, int jreloading, int jfreeInsts);
 
 	private static native int loadSongTimidity(String filename);
 
@@ -55,18 +51,19 @@ public class JNIHandler {
 	public static native int setResampleTimidity(int jcustResamp);
 
 	public static native int decompressSFArk(String from, String to);
-	public static DataOutputStream outFile;
+
+	// public static DataOutputStream outFile;
 	public static AudioTrack mAudioTrack;
 	public static MediaPlayer mMediaPlayer;
 	public static int maxTime = 0;
 	public static int currTime = 0;
 	public static boolean paused = false;
-	public static boolean type = true; // true = mediaplayer, false = audiotrack
-	public static int monoop;
-	public static boolean bits;
+	public static boolean isMediaPlayerFormat = true; // true = mediaplayer, false = audiotrack
+	public static int channelMode; // 0 = mono (downmixed), 1 = mono (synthesized), 2 = stereo
+	public static boolean sixteenBit;
 	public static int rate;
 	public static int buffer;
-	public static int alternativeCheck = 555555; // VVVVVV=OK.
+	
 	// Timidity Stuff
 	public static int MAX_CHANNELS = 32;
 	public static int currsamp = 0;
@@ -77,458 +74,294 @@ public class JNIHandler {
 	public static ArrayList<Boolean> drums = new ArrayList<Boolean>();
 	public static String currentLyric = "";
 	public static int overwriteLyricAt = 0;
-	public static int threadedError = 0;
 	public static int exceptional = 0;
-	public static int ttr;
-	public static int tt;
-	public static int tb=0;
+	public static int playbackPercentage;
+	public static int playbackTempo; // This number is not the tempo in BPM, but some number that can be used to calculate the real tempo
+	public static int tb = 0;
 	public static int voice;
-	public static int maxvoice=256;
-	public static int koffset=0;
-	//public static boolean breakLoops = false;
-	// file output things
-	public static boolean writeToFile = false;
-	public static long filesize=0;
-	public static String fileToWrite="";
-	public static boolean finishedWriting=false;
-	public static boolean dataWritten=false;
+	public static int maxvoice = 256;
+	public static int keyOffset = 0;
+	// public static boolean breakLoops = false;
+	public static boolean dataWritten = false;
 
 	public static boolean shouldPlayNow = true;
-	public static int ultSafetyCheck = 1;
+	
+	
+	
+	
+	public static boolean finishedCallbackCheck = true; // Is set
+	public static boolean isPlaying = false;
+	public static boolean isBlocking = false; // false = not currently blocking, true = blocking. Makes sure timidity actually returned. 
+	
 	// public static ArrayList<String> lyricLines;
 	// End Timidity Stuff
 
 	static boolean prepared = false;
 
+	public static WavWriter currentWavWriter = null;
+
 	public static void pause() // or unpause.
 	{
-		if (Globals.isPlaying == 0)
-		{
-			if (paused)
-			{
+		if (isPlaying) {
+			if (paused) {
 				paused = false;
-				if (type)
-				{
+				if (isMediaPlayerFormat) {
 					mMediaPlayer.start();
-				} else
-				{
-					controlTimidity(7, 0);
-					if(!(writeToFile&&!finishedWriting)&&mAudioTrack!=null)
-					{
-					try
-					{
-						mAudioTrack.play();
-					} catch (Exception e)
-					{
-						e.printStackTrace();
-					}
+				} else {
+					controlTimidity(CommandStrings.jni_toggle_pause, 0);
+					if (!(currentWavWriter != null && !currentWavWriter.finishedWriting) && mAudioTrack != null) {
+						try {
+							mAudioTrack.play();
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
 					}
 				}
-			} else
-			{
+			} else {
 				paused = true;
-				if (type)
-				{
+				if (isMediaPlayerFormat) {
 					mMediaPlayer.pause();
-				} else
-				{
-					controlTimidity(7, 0);
-					if(!(writeToFile&&!finishedWriting)&&mAudioTrack!=null)
-					{
-					try
-					{
-						mAudioTrack.pause();
-					} catch (Exception e)
-					{
-						e.printStackTrace();
-					}
+				} else {
+					controlTimidity(CommandStrings.jni_toggle_pause, 0);
+					if (!(currentWavWriter != null && !currentWavWriter.finishedWriting) && mAudioTrack != null) {
+						try {
+							mAudioTrack.pause();
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
 					}
 				}
 			}
 		}
 	}
 
-	public static void stop()
-	{
-		if (type)
-		{
+	public static void stop() {
+		if (isMediaPlayerFormat) {
 			mMediaPlayer.setOnCompletionListener(null);
-			try
-			{
+			try {
 				mMediaPlayer.stop();
-			} catch (IllegalStateException e)
-			{
+			} catch (IllegalStateException e) {
 			}
-			Globals.isPlaying = 1;
-			ultSafetyCheck = 1;
-			alternativeCheck = 555555;
-		} else
-		{
-			controlTimidity(30, 0);
+			isPlaying = false;
+			finishedCallbackCheck = true;
+			isBlocking = false;
+		} else {
+			controlTimidity(CommandStrings.jni_stop, 0);
 		}
 	}
 
-	public static void seekTo(int time)
-	{
-		if (type)
-		{
+	public static void seekTo(int time) {
+		if (isMediaPlayerFormat) {
 			mMediaPlayer.seekTo(time);
-		} else
-		{
-			controlTimidity(6, time);
+		} else {
+			controlTimidity(CommandStrings.jni_jump, time);
 			waitUntilReady();
 		}
 	}
-	private static byte[] intToByteArray(int i)
-    {
-        byte[] b = new byte[4];
-        b[0] = (byte) (i & 0xFF);
-        b[1] = (byte) ((i >> 8) & 0xFF);
-        b[2] = (byte) ((i >> 16) & 0xFF);
-        b[3] = (byte) ((i >> 24) & 0xFF);
-        return b;
-    }
 
-	public static void waitUntilReady()
-	{
+	public static void waitUntilReady() {
 		waitUntilReady(10);
 	}
-	public static void waitUntilReady(int interval)
-	{
-		while(!JNIHandler.timidityReady())
-		{
-			  try {Thread.sleep(interval);} catch (InterruptedException e){}
+
+	public static void waitUntilReady(int interval) {
+		while (!timidityReady()) {
+			try {
+				Thread.sleep(interval);
+			} catch (InterruptedException e) {
+			}
 		}
 	}
-	public static void waitForStop()
-	{
+
+	public static void waitForStop() {
 		waitForStop(10);
 	}
-	public static void waitForStop(int interval)
-	{
-		while(Globals.isPlaying==0||alternativeCheck == 333333||ultSafetyCheck == 0)
+
+	public static void waitForStop(int interval) {
+		if(isMediaPlayerFormat)
 		{
-			  try {Thread.sleep(interval);} catch (InterruptedException e){}
-		}
-	}
-    public static byte[] shortToByteArray(short data)
-    {
-        return new byte[]{(byte)(data & 0xff),(byte)((data >>> 8) & 0xff)};
-    }
-	public static void setupOutputFile(String filename)
-	{
-		if(Globals.isPlaying==0)
-		{
-			mAudioTrack.stop();
-			mAudioTrack.release();
-		}
-		writeToFile=true;
-		finishedWriting=false;
-			fileToWrite=filename;
-			filesize=0;
-			 try {
-			        long mySubChunk1Size = 16;
-			        int myBitsPerSample= (bits?16:8);
-			        int myFormat = 1;
-			        long myChannels = ((monoop<2)?1:2);
-			        long mySampleRate = rate;
-			        long myByteRate = mySampleRate * myChannels * myBitsPerSample/8;
-			        int myBlockAlign = (int) (myChannels * myBitsPerSample/8);
-
-			        //byte[] clipData = getBytesFromFile(fileToConvert);
-
-			        //long myDataSize = clipData.length; // this changes
-			        //long myChunk2Size =  myDataSize * myChannels * myBitsPerSample/8;
-			        //long myChunkSize = 36 + myChunk2Size;
-
-			        OutputStream os;        
-			        os = new FileOutputStream(new File(fileToWrite));
-			        BufferedOutputStream bos = new BufferedOutputStream(os);
-			         outFile = new DataOutputStream(bos);
-
-			        outFile.writeBytes("RIFF");                                 // 00 - RIFF
-			        outFile.write(intToByteArray(0/*(int)myChunkSize*/), 0, 4);      // 04 - how big is the rest of this file?
-			        outFile.writeBytes("WAVE");                                 // 08 - WAVE
-			        outFile.writeBytes("fmt ");                                 // 12 - fmt 
-			        outFile.write(intToByteArray((int)mySubChunk1Size), 0, 4);  // 16 - size of this chunk
-			        outFile.write(shortToByteArray((short)myFormat), 0, 2);     // 20 - what is the audio format? 1 for PCM = Pulse Code Modulation
-			        outFile.write(shortToByteArray((short)myChannels), 0, 2);   // 22 - mono or stereo? 1 or 2?  (or 5 or ???)
-			        outFile.write(intToByteArray((int)mySampleRate), 0, 4);     // 24 - samples per second (numbers per second)
-			        outFile.write(intToByteArray((int)myByteRate), 0, 4);       // 28 - bytes per second
-			        outFile.write(shortToByteArray((short)myBlockAlign), 0, 2); // 32 - # of bytes in one sample, for all channels
-			        outFile.write(shortToByteArray((short)myBitsPerSample), 0, 2);  // 34 - how many bits in a sample(number)?  usually 16 or 24
-			        outFile.writeBytes("data");                                 // 36 - data
-			        outFile.write(intToByteArray(0/*(int)myChunkSize*/), 0, 4);       // 40 - how big is this data chunk
-			        //outFile.write(clipData);                                    // 44 - the actual data itself - just a long string of numbers
-
-			        //outFile.flush();
-			        //outFile.close();
-
-			    } catch (IOException e) {
-			        e.printStackTrace();
-			    }
-	}
-	
-	private static void finishOutput()
-	{
-		if(writeToFile&&!finishedWriting)
-		{
-			try
-			{
-				outFile.flush();
-				outFile.close();
-			} catch (IOException e1)
-			{
+			while (isPlaying || isBlocking || !finishedCallbackCheck) {
+				try {
+					Thread.sleep(interval);
+				} catch (InterruptedException e) {
+				}
+			}
+		}else{
+			try {
+				t.join();
+			} catch (InterruptedException e1) {
+				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
-			finishedWriting=true;
-			long myDataSize = filesize; // this changes
-	        int myBitsPerSample= (bits?16:8);
-	        long myChannels = ((monoop<2)?1:2);
-			long myChunk2Size =  myDataSize * myChannels * myBitsPerSample/8;
-	        long myChunkSize = 36 + myChunk2Size;
-	     
-	        RandomAccessFile raf = null;
-			try
-			{
-				 raf = new RandomAccessFile(fileToWrite, "rw");
-			} catch (FileNotFoundException e)
-			{
-				e.printStackTrace();
-			}
-			
-			try
-			{
-				raf.seek(04);
-				raf.write(intToByteArray((int)myChunkSize));
-				raf.seek(40);
-				raf.write(intToByteArray((int)myDataSize));
-				raf.close();
-			} catch (Exception e)
-			{
-				e.printStackTrace();
-			}
 		}
+		/**/
 	}
-	public static void buffit(byte[] data, int length)
-	{
-		dataWritten=true;
-		if(shouldPlayNow)
-		{
-			if(writeToFile&&!finishedWriting)
-			{
-				if(monoop==0)
-				{
-					byte[] mono = new byte[length/2];
-					if(bits)
-					{
-						for (int i = 0 ; i < mono.length/2; ++i){
-							int HI = 1; int LO = 0;
-							int left = (data[i * 4 + HI] << 8) | (data[i * 4 + LO] & 0xff);
-							int right = (data[i * 4 + 2 + HI] << 8) | (data[i * 4 + 2 + LO] & 0xff);
-							int avg = (left + right) / 2;
-							mono[i * 2 + HI] = (byte)((avg >> 8) & 0xff);
-							mono[i * 2 + LO] = (byte)(avg & 0xff);
-						}
-					}else{
-						for (int i = 0 ; i < mono.length; ++i){
-							int left = (data[i * 2])&0xff;
-							int right = (data[i * 2 + 1])&0xff;
-							int avg = (left + right) / 2;
-							mono[i] = (byte)(avg);
-						}
+
+	public static void setupOutputFile(String filename) {
+		currentWavWriter = new WavWriter();
+		currentWavWriter.setupOutputFile(filename, sixteenBit, (channelMode < 2), rate);
+	}
+
+	public static void buffit(byte[] data, int length) {
+		dataWritten = true;
+		if (shouldPlayNow) {
+
+			if (channelMode == 0) {
+				byte[] mono = new byte[length / 2];
+				if (sixteenBit) {
+					for (int i = 0; i < mono.length / 2; ++i) {
+						int HI = 1;
+						int LO = 0;
+						int left = (data[i * 4 + HI] << 8) | (data[i * 4 + LO] & 0xff);
+						int right = (data[i * 4 + 2 + HI] << 8) | (data[i * 4 + 2 + LO] & 0xff);
+						int avg = (left + right) / 2;
+						mono[i * 2 + HI] = (byte) ((avg >> 8) & 0xff);
+						mono[i * 2 + LO] = (byte) (avg & 0xff);
 					}
-					try
-					{
-						filesize+=mono.length;
-						outFile.write(mono, 0, mono.length);
-					} catch (IOException e)
-					{
-						e.printStackTrace();
-					}
-				}else{
-					try
-					{
-						filesize+=length;
-						outFile.write(data, 0, length);
-					} catch (IOException e)
-					{
-						e.printStackTrace();
+				} else {
+					for (int i = 0; i < mono.length; ++i) {
+						int left = (data[i * 2]) & 0xff;
+						int right = (data[i * 2 + 1]) & 0xff;
+						int avg = (left + right) / 2;
+						mono[i] = (byte) (avg);
 					}
 				}
-				
-			}else{
-				if(monoop==0)
-				{
-					byte[] mono = new byte[length/2];
-					if(bits)
-					{
-						for (int i = 0 ; i < mono.length/2; ++i){
-							int HI = 1; int LO = 0;
-							int left = (data[i * 4 + HI] << 8) | (data[i * 4 + LO] & 0xff);
-							int right = (data[i * 4 + 2 + HI] << 8) | (data[i * 4 + 2 + LO] & 0xff);
-							int avg = (left + right) / 2;
-							mono[i * 2 + HI] = (byte)((avg >> 8) & 0xff);
-							mono[i * 2 + LO] = (byte)(avg & 0xff);
-						}
-					}else{
-						for (int i = 0 ; i < mono.length; ++i){
-							int left = (data[i * 2])&0xff;
-							int right = (data[i * 2 + 1])&0xff;
-							int avg = (left + right) / 2;
-							mono[i] = (byte)(avg);
-						}
+				if (currentWavWriter != null && !currentWavWriter.finishedWriting) {
+					try {
+						currentWavWriter.write(data, 0, length);
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
 					}
-					try
-					{
+				} else {
+					try {
 						mAudioTrack.write(mono, 0, mono.length);
-					} catch (IllegalStateException e)
-					{}
-				}else{
-					try
-					{
-						mAudioTrack.write(data, 0, length);
-					} catch (IllegalStateException e)
-					{}
+					} catch (IllegalStateException e) {
+					}
 				}
-				
+			} else {
+				if (currentWavWriter != null && !currentWavWriter.finishedWriting) {
+					try {
+						currentWavWriter.write(data, 0, length);
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				} else {
+					try {
+						mAudioTrack.write(data, 0, length);
+					} catch (IllegalStateException e) {
+					}
+				}
 			}
 		}
-			
 
 	}
 
-	public static int init(String path, String file,int mono, int resamp, boolean sixteen, int b, int r, boolean preserveSilence, boolean reloading, boolean freeInsts)
-	{
-		if (!prepared)
-		{
-			
-			 System.out.println(String.format("Opening Timidity: Path: %s cfgFile: %s resample: %s mono: %s sixteenBit: %s buffer: %d rate: %d",
-			 path, file,
-			 Globals.sampls[resamp],((mono==1)?"true":"false"),(sixteen?"true":"false"),b,r));
-			 System.out.println("Max channels: "+MAX_CHANNELS);
-			for (int i = 0; i < MAX_CHANNELS; i++)
-			{
+	public static int init(String path, String file, int mono, int resamp, boolean sixteen, int b, int r, boolean preserveSilence, boolean reloading, boolean freeInsts) {
+		if (!prepared) {
+
+			System.out.println(String.format("Opening Timidity: Path: %s cfgFile: %s resample: %s mono: %s sixteenBit: %s buffer: %d rate: %d", path, file, Globals.sampls[resamp], ((mono == 1) ? "true" : "false"), (sixteen ? "true" : "false"), b, r));
+			System.out.println("Max channels: " + MAX_CHANNELS);
+			for (int i = 0; i < MAX_CHANNELS; i++) {
 				volumes.add(75); // Assuming not XG
 				programs.add(0);
 				drums.add(i == 9);
 				custInst.add(false);
 				custVol.add(false);
 			}
-			monoop = mono;
-			bits = sixteen;
+			channelMode = mono;
+			sixteenBit = sixteen;
 			rate = r;
 			buffer = b;
-			if(mMediaPlayer == null)
+			if (mMediaPlayer == null)
 				mMediaPlayer = new MediaPlayer();
 
 			prepared = true;
-			return prepareTimidity(path, path + file, (monoop==1) ? 1 : 0, resamp,
-					bits ? 1 : 0, preserveSilence ? 1 : 0, reloading ? 1:0, freeInsts ? 1:0);
-		} else
-		{
+			return prepareTimidity(path, path + file, (channelMode == 1) ? 1 : 0, resamp, sixteenBit ? 1 : 0, preserveSilence ? 1 : 0, reloading ? 1 : 0, freeInsts ? 1 : 0);
+		} else {
 			// Log.w("Warning", "Attempt to prepare again cancelled.");
 			return -99;
 		}
 	}
 
-	
 	static Thread t;
-	public static int play(final String songTitle)
-	{
-		if (new File(songTitle).exists())
-		{
 
-			if (alternativeCheck == 555555)
-			{
-				koffset=0;
-				tb=0;
+	public static int play(final String songTitle) {
+		
+		if (new File(songTitle).exists()) {
+			if (isBlocking == false) {
+				keyOffset = 0;
+				tb = 0;
 				currentLyric = "";
 				overwriteLyricAt = 0;
-				Globals.isPlaying = 0;
-				ultSafetyCheck = 0;
-				type = false;
+				isPlaying = true;
+				finishedCallbackCheck = false;
+				isMediaPlayerFormat = false;
 				paused = false;
-				dataWritten=false;
-				shouldPlayNow=true;
-				for (int i = 0; i < MAX_CHANNELS; i++)
-				{
-					custInst.set(i,false);
-					custVol.set(i,false);
+				dataWritten = false;
+				shouldPlayNow = true;
+				for (int i = 0; i < MAX_CHANNELS; i++) {
+					custInst.set(i, false);
+					custVol.set(i, false);
 				}
-				if (!Globals.isMidi(songTitle))
-				{
-					type = true;
-					try
-					{
+				if (!Globals.isMidi(songTitle)) {
+					isMediaPlayerFormat = true;
+					try {
 						mMediaPlayer.setOnCompletionListener(null);
 						mMediaPlayer.reset();
-						mMediaPlayer
-								.setAudioStreamType(AudioManager.STREAM_MUSIC);
+						mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
 						mMediaPlayer.setVolume(100, 100);
 						mMediaPlayer.setDataSource(songTitle);
-						mMediaPlayer
-								.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-									public void onPrepared(MediaPlayer arg0)
-									{
-										initSeeker(arg0.getDuration());
-									}
-								});
+						mMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+							public void onPrepared(MediaPlayer arg0) {
+								initSeekBar(arg0.getDuration());
+							}
+						});
 						mMediaPlayer.prepare();
 						mMediaPlayer.start();
-						alternativeCheck = 333333;
+						isBlocking = true;
 
-						mMediaPlayer
-								.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-									@Override
-									public void onCompletion(MediaPlayer arg0)
-									{
-										arg0.setOnCompletionListener(null);
+						mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+							@Override
+							public void onCompletion(MediaPlayer arg0) {
+								arg0.setOnCompletionListener(null);
 
-										Globals.isPlaying = 1;
-										ultSafetyCheck = 1;
-										alternativeCheck = 555555;
-									}
-								});
+								isPlaying = false;
+								finishedCallbackCheck = true;
+								isBlocking = false;
+							}
+						});
 
-					} catch (Exception e)
-					{
+					} catch (Exception e) {
 						e.printStackTrace();
 
 					}
 
-
-				} else
-				{
+				} else {
 					// Reset the audio track every time.
 					// The audiotrack should be in the same thread as the
 					// timidity stuff for black midi.
 					t = new Thread(new Runnable() {
-						public void run()
-						{
-							alternativeCheck = 333333;
-							mAudioTrack = new AudioTrack(
-									AudioManager.STREAM_MUSIC, rate,
-									(monoop==2) ? AudioFormat.CHANNEL_OUT_STEREO
-											: AudioFormat.CHANNEL_OUT_MONO,
-									(bits) ? AudioFormat.ENCODING_PCM_16BIT
-											: AudioFormat.ENCODING_PCM_8BIT,
-									buffer, AudioTrack.MODE_STREAM);
+						public void run() {
+							isBlocking = true;
+							mAudioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, rate, 
+									(channelMode == 2) ? AudioFormat.CHANNEL_OUT_STEREO : AudioFormat.CHANNEL_OUT_MONO, 
+											(sixteenBit) ? AudioFormat.ENCODING_PCM_16BIT : AudioFormat.ENCODING_PCM_8BIT, 
+													buffer, AudioTrack.MODE_STREAM);
 
-							if(!(writeToFile&&!finishedWriting))
-								try
-								{
+							if (!(currentWavWriter != null && !currentWavWriter.finishedWriting))
+							{
+								try {
 									mAudioTrack.play();
-								} catch (Exception e)
-								{
+								} catch (Exception e) {
 									exceptional |= 1;
 								}
-							
-							alternativeCheck=loadSongTimidity(songTitle);
-							alternativeCheck = 555555;
-							
-							if(writeToFile&&!finishedWriting)
-								finishOutput();
+							}
+							loadSongTimidity(songTitle);
+							isBlocking = false;
+
+							if (currentWavWriter != null && !currentWavWriter.finishedWriting)
+								currentWavWriter.finishOutput();
 						}
 					});
 					t.setPriority(Thread.MAX_PRIORITY);
@@ -537,8 +370,7 @@ public class JNIHandler {
 				}
 				// }
 				return 0;
-			} else
-			{
+			} else {
 
 				return -9;
 			}
@@ -546,8 +378,7 @@ public class JNIHandler {
 		return -1;
 	}
 
-	public static void controlMe(int y)
-	{
+	public static void controlCallback(int y) {
 		/*
 		 * String[] control = { "PM_REQ_MIDI",
 		 * 
@@ -579,83 +410,70 @@ public class JNIHandler {
 		 * 
 		 * "PM_REQ_DIVISIONS" };
 		 */
-		if (y == 10)
-		{
-			
-			//Globals.isPlaying = 1; // Wait until all is unloaded.
-			if (mAudioTrack != null)
-			{
-				try
-				{
+		if (y == 10) {
+
+			// Globals.isPlaying = 1; // Wait until all is unloaded.
+			if (mAudioTrack != null) {
+				try {
 					mAudioTrack.stop();
-				} catch (IllegalStateException e)
-				{
+				} catch (IllegalStateException e) {
 				}
 			}
 			mAudioTrack.release();
 
-		} /*else if (y == 10)
-		{
-			// TODO something here to tell that timidity is ready
-		}*/
+		} /*
+			 * else if (y == 10) { // TODO something here to tell that timidity
+			 * is ready }
+			 */
 	}
 
-	public static int bufferSize()
-	{
-		if(writeToFile&&!finishedWriting)
-		{
+	public static int bufferSize() {
+		// If a wav file is currently being written,
+		// tell timidity it is doing a great job at playing in realtime
+		// to avoid cutting off notes and such.
+		if (currentWavWriter != null && !currentWavWriter.finishedWriting) {
 			return 0;
 		}
-		try
-		{
-
-			return (((int) (mAudioTrack.getPlaybackHeadPosition()
-					* mAudioTrack.getChannelCount() * (2 - (mAudioTrack
-					.getAudioFormat() & 1))))); // # of frames *4 = comparison
-												// factor
-		} catch (IllegalStateException e)
-		{
+		try {
+			// Samples * Number of Channels * sample size
+			return (((int) (mAudioTrack.getPlaybackHeadPosition() * 
+					mAudioTrack.getChannelCount() * 
+					(2 - (mAudioTrack.getAudioFormat() & 1))))); // 16 bit is 2, 8 bit is 3. We should never have to worry about 4, which is floating.
+		} catch (IllegalStateException e) {
 			return 0;
 		}
 	}
 
-	public static void finishIt()
-	{
-		ultSafetyCheck = 1;
-		Globals.isPlaying = 1;
+	public static void finishCallback() {
+		finishedCallbackCheck = true;
+		isPlaying = false;
 	}
 
-	public static void flushIt()
-	{
+	public static void flushTrack() {
 		mAudioTrack.flush();
 	}
 
-	public static void initSeeker(int seeker)
-	{
+	public static void initSeekBar(int seeker) {
 		maxTime = seeker;
 	}
 
-	public static void updateSeeker(int seekIt, int voices)
-	{
+	public static void updateSeekBar(int seekIt, int voices) {
 		currTime = seekIt;
-		voice=voices;
+		voice = voices;
 	}
 
-	public static int getRate()
-	{
+	public static int getRate() {
 		return mAudioTrack.getSampleRate();
 	}
 
-	public static void updateLyrics(byte[] b)
-	{
+	public static void updateLyrics(byte[] b) {
 		final StringBuilder stb = new StringBuilder(currentLyric);
 		final StringBuilder tmpBuild = new StringBuilder();
-		boolean isNormalLyric = b[0] == 'L';
-		boolean isNewline = b[0] == 'N';
-		boolean isComment = b[0] == 'Q';
+		boolean isNormalLyric = (b[0] == 'L');
+		boolean isNewline = (b[0] == 'N');
+		boolean isComment = (b[0] == 'Q');
 
-		for (int i = 2; i < b.length; i++)
-		{
+		for (int i = 2; i < b.length; i++) {
 			if (b[i] == 0)
 				break;
 			tmpBuild.append((char) b[i]);
@@ -665,16 +483,13 @@ public class JNIHandler {
 			stb.append(tmpBuild);
 			stb.append('\n');
 			overwriteLyricAt = stb.length();
-		} else if (isNewline || isNormalLyric)
-		{
-			if (isNewline)
-			{
+		} else if (isNewline || isNormalLyric) {
+			if (isNewline) {
 				stb.append('\n');
 				overwriteLyricAt = stb.length();
 			}
 			stb.replace(overwriteLyricAt, stb.length(), tmpBuild.toString());
-		} else
-		{ // A marker or something
+		} else { // A marker or something
 			stb.append(tmpBuild);
 			stb.append("\n");
 			overwriteLyricAt = stb.length();
@@ -682,43 +497,44 @@ public class JNIHandler {
 		currentLyric = stb.toString();
 	}
 
-	public static void updateMaxChannels(int val)
-	{
+	public static void updateMaxChannels(int val) {
 		MAX_CHANNELS = val;
 	}
 
-	public static void updateProgramInfo(int ch, int prog)
-	{
+	public static void updateProgramInfo(int ch, int prog) {
 		if (ch < MAX_CHANNELS)
 			programs.set(ch, prog);
 	}
 
-	public static void updateVolInfo(int ch, int vol)
-	{
+	public static void updateVolInfo(int ch, int vol) {
 		if (ch < MAX_CHANNELS)
 			volumes.set(ch, vol);
 	}
 
-	public static void updateDrumInfo(int ch, int isDrum)
-	{
+	public static void updateDrumInfo(int ch, int isDrum) {
 		if (ch < MAX_CHANNELS)
 			drums.set(ch, (isDrum != 0));
 	}
 
-	public static void updateTempo(int t, int tr)
-	{
-		tt=t;
-		ttr=tr;
+	// Called by native. Do not rename or modify declaration.
+	public static void updateTempo(int t, int tr) {
+		playbackTempo = t;
+		playbackPercentage = tr;
+		//System.out.println("T: "+t+" tr "+tr);
 		// TODO something
 		// int x = (int) (500000 / (double) t * 120 * (double) tr / 100 + 0.5);
 		// System.out.println("T: "+t+ " TR: "+tr+" X: "+x);
 	}
-	public static void updateMaxVoice(int vvv)
-	{
-		maxvoice=vvv;
+
+	// Called by native. Do not rename or modify declaration.
+	public static void updateMaxVoice(int vvv) {
+		maxvoice = vvv;
 	}
-	public static void updateKey(int k)
-	{
-		koffset=k;
+
+	// Called by native. Do not rename or modify declaration.
+	public static void updateKey(int k) {
+		keyOffset = k;
 	}
+
+	
 }

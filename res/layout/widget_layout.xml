@@ -3,8 +3,8 @@
     android:id="@+id/widget_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="@dimen/widget_margin"
-    android:background="@color/background_holo_dark">
+    android:background="@color/background_holo_dark"
+    android:padding="@dimen/widget_margin" >
 
     <ImageButton
         android:id="@+id/notStop_widget"
@@ -45,10 +45,10 @@
         android:layout_height="wrap_content"
         android:layout_above="@+id/notNext_widget"
         android:layout_centerHorizontal="true"
-        android:singleLine="true"
-        android:ellipsize="marquee"
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
+        android:ellipsize="marquee"
+        android:singleLine="true"
         android:text="" />
 
     <ImageView

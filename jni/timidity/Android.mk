@@ -39,7 +39,6 @@ LOCAL_SRC_FILES+= mod.c
 LOCAL_SRC_FILES+= mod2midi.c
 LOCAL_SRC_FILES+= modmid_a.c
 LOCAL_SRC_FILES+= mt19937ar.c
-#LOCAL_SRC_FILES+= opensl_io.c
 LOCAL_SRC_FILES+= optcode.c
 LOCAL_SRC_FILES+= output.c
 LOCAL_SRC_FILES+= playmidi.c

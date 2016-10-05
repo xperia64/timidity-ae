@@ -10,7 +10,9 @@
         android:layout_above="@+id/seekBar"
         android:layout_alignParentLeft="true"
         android:layout_alignParentRight="true"
-        android:layout_below="@+id/loopButton" >
+        android:layout_below="@+id/loopButton"
+        android:paddingBottom="5dp" >
+
     </FrameLayout>
 
     <ImageButton
@@ -79,10 +81,10 @@
         android:src="@drawable/ic_media_ff" />
 
     <LinearLayout
+        android:id="@+id/textWorkaround"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
-        android:id="@+id/potato"
         android:orientation="horizontal" >
 
         <TextView
@@ -107,7 +109,7 @@
         android:id="@+id/loopButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/potato"
+        android:layout_below="@+id/textWorkaround"
         android:layout_toLeftOf="@+id/rewindButton"
         android:src="@drawable/ic_menu_refresh" />
 
