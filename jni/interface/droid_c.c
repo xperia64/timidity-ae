@@ -40,6 +40,7 @@
 #include "playmidi.h"
 #include "readmidi.h"
 
+#include "helper.h"
 
 #define CTL_STATUS_UPDATE -98
 #define CTL_STATUS_INIT -99

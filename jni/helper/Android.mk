@@ -4,8 +4,6 @@ include $(CLEAR_VARS)
 
 LOCAL_MODULE := timidityhelper
 
-EMACS = no
-
 #LOCAL_C_INCLUDES := $(LOCAL_PATH)/..
 #LOCAL_C_INCLUDES += $(LOCAL_PATH)/../timidity
 #LOCAL_C_INCLUDES += $(LOCAL_PATH)/../utils

@@ -3323,7 +3323,7 @@ static void make_drum_effect(int ch)
 	struct DrumParts *drum;
 	struct DrumPartEffect *de;
 
-	if (channel[ch].drums == NULL) {return;}
+//	if (channel[ch].drums == NULL) {return;}
 
 	if (channel[ch].drum_effect_flag == 0) {
 		free_drum_effect(ch);

@@ -821,7 +821,8 @@ extern "C" int sfkl_Decode(const char *InFileName, const char *ReqOutFileName)
             if (GlobalErrorFlag)  return EndProcess(GlobalErrorFlag);
 	}
 	
-	if (ProgressPercent != 100)  UpdateProgress(100);
+	if (ProgressPercent != 100) 
+		UpdateProgress(100);
 
     // Check the CheckSum...
     if (Blk.FileCheck != FileHeader->FileCheck)

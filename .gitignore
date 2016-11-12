@@ -4,5 +4,12 @@ build/
 gen/
 libs/*/*.so
 .gradle
+.idea/
 *.o
 *.exe
+*.swp
+*.iml
+local.properties
+gradlew
+gradlew.bat
+gradle/

@@ -3,7 +3,8 @@
 #include <android/log.h>
 #include <dlfcn.h>
 #include <string.h>
-//#include "timidity.h"
+
+#include "helper.h"
 
 typedef double FLOAT_T;
 
@@ -17,7 +18,7 @@ void andro_timidity_log_print(const char* tag, const char* fmt, ...)
 	va_end (listPointer);
 }
 
-extern int skfl_Decode(const char *InFileName, const char *ReqOutFileName);
+extern int sfkl_Decode(const char *InFileName, const char *ReqOutFileName);
 //extern void timidity_start_initialize(void);
 void (*timidity_start)(void);
 

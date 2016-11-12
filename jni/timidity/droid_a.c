@@ -19,7 +19,9 @@
 #include "instrum.h"
 #include "playmidi.h"
 #include "miditrace.h"
-//#include <android/log.h>
+
+#include "helper.h"
+
 static int open_output(void); /* 0=success, 1=warning, -1=fatal error */
 static void close_output(void);
 static int output_data(char *buf, int32 bytes);

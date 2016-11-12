@@ -62,6 +62,7 @@
 #endif
 #define _double2fixmagic 68719476736.0 * 1.5
 
+// These intrinsics break on Android
 /*#if defined(__GNUC__) && defined(__i386__)
 static inline int32 imuldiv8(int32 a, int32 b)
 {
@@ -243,7 +244,7 @@ static inline int32 imuldiv28(int32 a, int32 b)
     return ret;
 }
 
-#else
+#else */
 /* Generic version of imuldiv. */
 #define imuldiv8(a, b) \
     (int32)(((int64)(a) * (int64)(b)) >> 8)

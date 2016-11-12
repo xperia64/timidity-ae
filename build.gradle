@@ -4,7 +4,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.1.2'
+        classpath 'com.android.tools.build:gradle:2.2.2'
     }
 }
 allprojects {
@@ -14,20 +14,20 @@ allprojects {
     }
 }
 
-apply plugin: 'android'
+apply plugin: 'com.android.application'
 
 dependencies {
-    compile 'com.android.support:appcompat-v7:+'
+    compile 'com.android.support:appcompat-v7:25.0.0'
     //compile 'com.android.support:preference-v7:+'
-    compile 'com.android.support:support-v4:+'
+    compile 'com.android.support:support-v4:25.0.0'
     compile 'com.github.machinarius:preferencefragment:0.1.2'
 
     //compile 'com.github.shkschneider:android_PreferenceFragmentCompat:1.2.0@aar'
 }
 
 android {
-    buildToolsVersion "23.0.2"
-    compileSdkVersion "android-23"
+    buildToolsVersion "25.0.0"
+    compileSdkVersion "android-25"
 
     sourceSets {
         main {

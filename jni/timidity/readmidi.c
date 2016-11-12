@@ -4779,6 +4779,7 @@ MidiEvent *read_midi_file(struct timidity_file *tf, int32 *count, int32 *sp,
     current_file_info->readflag = 1;
     return ev;
 	}
+	return NULL;
 }
 
 
