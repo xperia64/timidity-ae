@@ -17,6 +17,7 @@
 package com.xperia64.timidityae.gui;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,18 +33,18 @@ import java.util.List;
 
 public class StableArrayAdapter extends ArrayAdapter<String> {
 
-	final int INVALID_ID = -1;
+	private final int INVALID_ID = -1;
 
-	HashMap<String, Integer> mIdMap = new HashMap<String, Integer>();
+	private HashMap<String, Integer> mIdMap = new HashMap<>();
 
-	Context context;
+	private Context context;
 
-	PlistMenuCallback ayylmao;
-	List<String> list;
-	final boolean shouldHighlight;
+	private PlistMenuCallback ayylmao;
+	private List<String> list;
+	private final boolean shouldHighlight;
 
 	public interface PlistMenuCallback {
-		public void openMenu(int which);
+		void openMenu(int which);
 	}
 
 	public StableArrayAdapter(Context context, int textViewResourceId, List<String> objects, PlistMenuCallback aaaa, boolean shouldHighlight) {
@@ -71,8 +72,9 @@ public class StableArrayAdapter extends ArrayAdapter<String> {
 		return android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.LOLLIPOP;
 	}
 
+	@NonNull
 	@Override
-	public View getView(final int position, View convertView, ViewGroup parent) {
+	public View getView(final int position, View convertView, @NonNull ViewGroup parent) {
 		View view = convertView;
 		if (view == null) {
 			LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
