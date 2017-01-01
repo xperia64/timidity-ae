@@ -1,83 +1,83 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/midi_opt_dlg"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:descendantFocusability="beforeDescendants"
-    android:focusableInTouchMode="true" >
+			android:id="@+id/midi_opt_dlg"
+			android:layout_width="fill_parent"
+			android:layout_height="fill_parent"
+			android:descendantFocusability="beforeDescendants"
+			android:focusableInTouchMode="true">
 
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical" >
+	<RelativeLayout
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:orientation="vertical">
 
-        <Spinner
-            android:id="@+id/instSpin"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:paddingLeft="40dp"
-            android:layout_below="@+id/defInstr" />
+		<Spinner
+			android:id="@+id/instSpin"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:layout_alignParentLeft="true"
+			android:paddingLeft="40dp"
+			android:layout_below="@+id/defInstr"/>
 
-        <CheckBox
-            android:id="@+id/defInstr"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignLeft="@+id/defVol"
-            android:layout_alignParentTop="true"
-            android:layout_alignStart="@+id/defVol"
-            android:checked="true"
-            android:text="@string/trk_dinst" />
+		<CheckBox
+			android:id="@+id/defInstr"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_alignLeft="@+id/defVol"
+			android:layout_alignParentTop="true"
+			android:layout_alignStart="@+id/defVol"
+			android:checked="true"
+			android:text="@string/trk_dinst"/>
 
-        <TextView
-            android:id="@+id/instTxt"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignBaseline="@+id/defInstr"
-            android:layout_alignBottom="@+id/defInstr"
-            android:layout_toLeftOf="@+id/defInstr"
-            android:layout_toStartOf="@+id/defInstr"
-            android:text="@string/trk_inst" />
+		<TextView
+			android:id="@+id/instTxt"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_alignBaseline="@+id/defInstr"
+			android:layout_alignBottom="@+id/defInstr"
+			android:layout_toLeftOf="@+id/defInstr"
+			android:layout_toStartOf="@+id/defInstr"
+			android:text="@string/trk_inst"/>
 
-        <CheckBox
-            android:id="@+id/defVol"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/instSpin"
-            android:layout_centerHorizontal="true"
-            android:checked="true"
-            android:text="@string/trk_dvol" />
+		<CheckBox
+			android:id="@+id/defVol"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_below="@+id/instSpin"
+			android:layout_centerHorizontal="true"
+			android:checked="true"
+			android:text="@string/trk_dvol"/>
 
-        <TextView
-            android:id="@+id/volTxt"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignBaseline="@+id/defVol"
-            android:layout_alignBottom="@+id/defVol"
-            android:layout_alignLeft="@+id/instTxt"
-            android:layout_alignStart="@+id/instTxt"
-            android:text="@string/trk_vol" />
+		<TextView
+			android:id="@+id/volTxt"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_alignBaseline="@+id/defVol"
+			android:layout_alignBottom="@+id/defVol"
+			android:layout_alignLeft="@+id/instTxt"
+			android:layout_alignStart="@+id/instTxt"
+			android:text="@string/trk_vol"/>
 
-        <EditText
-            android:id="@+id/txtVol"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_below="@+id/defVol"
-            android:layout_toRightOf="@+id/defInstr"
-            android:ems="10"
-            android:gravity="center_vertical|center_horizontal"
-            android:inputType="number"
-            android:text="127" />
+		<EditText
+			android:id="@+id/txtVol"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_alignParentBottom="true"
+			android:layout_below="@+id/defVol"
+			android:layout_toRightOf="@+id/defInstr"
+			android:ems="10"
+			android:gravity="center_vertical|center_horizontal"
+			android:inputType="number"
+			android:text="127"/>
 
-        <SeekBar
-            android:id="@+id/volSeek"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignBottom="@+id/txtVol"
-            android:layout_alignTop="@+id/txtVol"
-            android:layout_toLeftOf="@+id/txtVol" />
+		<SeekBar
+			android:id="@+id/volSeek"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:layout_alignBottom="@+id/txtVol"
+			android:layout_alignTop="@+id/txtVol"
+			android:layout_toLeftOf="@+id/txtVol"/>
 
-    </RelativeLayout>
+	</RelativeLayout>
 
 </ScrollView>

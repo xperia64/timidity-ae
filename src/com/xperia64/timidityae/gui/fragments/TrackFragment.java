@@ -1,8 +1,8 @@
 /*******************************************************************************
  * Copyright (C) 2014 xperia64 <xperiancedapps@gmail.com>
- * 
+ * <p>
  * Copyright (C) 1999-2008 Masanao Izumo <iz@onicos.co.jp>
- *     
+ * <p>
  * Copyright (C) 1995 Tuukka Toivonen <tt@cgs.fi>
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Public License v3.0
@@ -11,8 +11,6 @@
  ******************************************************************************/
 package com.xperia64.timidityae.gui.fragments;
 
-import java.util.ArrayList;
-import java.util.List;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -26,20 +24,23 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.EditText;
-import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.ListView;
 import android.widget.SeekBar;
+import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.Spinner;
-import android.widget.AdapterView.OnItemClickListener;
 
 import com.xperia64.timidityae.JNIHandler;
 import com.xperia64.timidityae.R;
 import com.xperia64.timidityae.util.SettingsStorage;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class TrackFragment extends Fragment {
 
@@ -267,13 +268,13 @@ public class TrackFragment extends Fragment {
 			if (needUpdate) {
 				// System.out.println("Need an update");
 				// Prevents 'clear()' from clearing/resetting the listview
-				trackListAdapter.setNotifyOnChange(false); 
+				trackListAdapter.setNotifyOnChange(false);
 				trackListAdapter.clear();
 				for (int i = 0; i < JNIHandler.MAX_CHANNELS; i++) {
 					trackListAdapter.add(String.format(getActivity().getResources().getString(R.string.trk_form),
 							(getActivity().getResources().getString(JNIHandler.drums.get(i) ? R.string.trk_drum : R.string.trk_inst2)),
-							(i + 1), JNIHandler.drums.get(i) ? 0 : localInst.get(i) + 1, 
-									localVol.get(i)));
+							(i + 1), JNIHandler.drums.get(i) ? 0 : localInst.get(i) + 1,
+							localVol.get(i)));
 				}
 				trackListAdapter.notifyDataSetChanged();
 			}

@@ -1,15 +1,5 @@
 package com.xperia64.timidityae.util;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.Locale;
-
-import com.xperia64.timidityae.JNIHandler;
-import com.xperia64.timidityae.R;
-import com.xperia64.timidityae.TimidityActivity;
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
@@ -21,6 +11,16 @@ import android.text.InputFilter;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.xperia64.timidityae.JNIHandler;
+import com.xperia64.timidityae.R;
+import com.xperia64.timidityae.TimidityActivity;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.Locale;
 
 public class WavSaver implements TimidityActivity.SpecialAction {
 	Activity context;
@@ -44,7 +44,7 @@ public class WavSaver implements TimidityActivity.SpecialAction {
 			alert.setTitle(context.getResources().getString(R.string.dynex_alert1));
 			alert.setMessage(context.getResources().getString(R.string.dynex_alert1_msg));
 			final EditText input = new EditText(context);
-			input.setFilters(new InputFilter[] { Globals.fileNameInputFilter });
+			input.setFilters(new InputFilter[]{Globals.fileNameInputFilter});
 			alert.setView(input);
 
 			alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
@@ -75,7 +75,7 @@ public class WavSaver implements TimidityActivity.SpecialAction {
 						String[] tmp = DocumentFileUtils.getExternalFilePaths(context, parent);
 						probablyTheDirectory = tmp[0];
 						probablyTheRoot = tmp[1];
-						
+
 						if (probablyTheDirectory.length() > 1) {
 							needRename = parent.substring(parent.indexOf(probablyTheRoot) + probablyTheRoot.length()) + value;
 							value = probablyTheDirectory + '/' + value;
@@ -188,9 +188,8 @@ public class WavSaver implements TimidityActivity.SpecialAction {
 					context.runOnUiThread(new Runnable() {
 						@Override
 						public void run() {
-							if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.M)
-							{
-								TextView messageView = (TextView)prog.findViewById(android.R.id.message);
+							if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+								TextView messageView = (TextView) prog.findViewById(android.R.id.message);
 								messageView.setText("Copying... Please wait...");
 								messageView.invalidate();
 							}
@@ -198,7 +197,7 @@ public class WavSaver implements TimidityActivity.SpecialAction {
 					});
 					String trueName = finalval;
 					if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && DocumentFileUtils.docFileDevice != null && needToRename != null) {
-						
+
 						if (DocumentFileUtils.renameDocumentFile(context, finalval, needToRename)) {
 							trueName = needToRename;
 						} else {
@@ -208,9 +207,8 @@ public class WavSaver implements TimidityActivity.SpecialAction {
 					final String tn = trueName;
 					context.runOnUiThread(new Runnable() {
 						public void run() {
-							
-							
-							
+
+
 							prog.dismiss();
 							Toast.makeText(context, "Wrote " + tn, Toast.LENGTH_SHORT).show();
 							Intent outgoingIntent = new Intent();

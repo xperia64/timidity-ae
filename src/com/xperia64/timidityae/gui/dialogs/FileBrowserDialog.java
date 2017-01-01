@@ -1,8 +1,8 @@
 /*******************************************************************************
  * Copyright (C) 2014 xperia64 <xperiancedapps@gmail.com>
- * 
+ * <p>
  * Copyright (C) 1999-2008 Masanao Izumo <iz@onicos.co.jp>
- *     
+ * <p>
  * Copyright (C) 1995 Tuukka Toivonen <tt@cgs.fi>
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Public License v3.0
@@ -10,14 +10,6 @@
  * http://www.gnu.org/licenses/gpl.html
  ******************************************************************************/
 package com.xperia64.timidityae.gui.dialogs;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import com.xperia64.timidityae.R;
-import com.xperia64.timidityae.util.FileComparator;
-import com.xperia64.timidityae.util.Globals;
-import com.xperia64.timidityae.util.SettingsStorage;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -33,6 +25,15 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Toast;
+
+import com.xperia64.timidityae.R;
+import com.xperia64.timidityae.util.FileComparator;
+import com.xperia64.timidityae.util.Globals;
+import com.xperia64.timidityae.util.SettingsStorage;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 public class FileBrowserDialog implements OnItemClickListener {
 
@@ -128,16 +129,16 @@ public class FileBrowserDialog implements OnItemClickListener {
 					if (files != null) {
 						Arrays.sort(files, new FileComparator());
 					}
-					if (!currPath.matches(Globals.repeatedSeparatorString) && !(currPath.equals(File.separator+"storage"+File.separator) && !(new File(File.separator).canRead()))) {
+					if (!currPath.matches(Globals.repeatedSeparatorString) && !(currPath.equals(File.separator + "storage" + File.separator) && !(new File(File.separator).canRead()))) {
 						fname.add(Globals.parentString);
 						// Thank you Marshmallow.
 						// Disallowing access to /storage/emulated has now prevent billions of hacking attempts daily.
 						if (new File(f.getParent()).canRead()) {
 							path.add(f.getParent() + File.separator);
-						} else if (new File(File.separator).canRead()){ // N seems to block reading /
+						} else if (new File(File.separator).canRead()) { // N seems to block reading /
 							path.add(File.separator);
-						}else{
-							path.add(File.separator+"storage"+File.separator);
+						} else {
+							path.add(File.separator + "storage" + File.separator);
 						}
 					}
 					for (int i = 0; i < files.length; i++)
@@ -148,15 +149,15 @@ public class FileBrowserDialog implements OnItemClickListener {
 						if ((!file.getName().startsWith(".") && !SettingsStorage.showHiddenFiles) || SettingsStorage.showHiddenFiles) {
 							if (file.isFile() && type == 0) {
 								String extension = Globals.getFileExtension(file);
-									if (extension != null) {
-										if (extension!=null && extensions.contains("*"+extension+"*")) {
-											path.add(file.getAbsolutePath());
-											fname.add(file.getName());
-										}
-									} else if (file.getName().endsWith(File.separator)) {
-										path.add(file.getAbsolutePath() + File.separator);
-										fname.add(file.getName() + File.separator);
+								if (extension != null) {
+									if (extension != null && extensions.contains("*" + extension + "*")) {
+										path.add(file.getAbsolutePath());
+										fname.add(file.getName());
 									}
+								} else if (file.getName().endsWith(File.separator)) {
+									path.add(file.getAbsolutePath() + File.separator);
+									fname.add(file.getName() + File.separator);
+								}
 							} else if (file.isDirectory()) {
 								path.add(file.getAbsolutePath() + File.separator);
 								fname.add(file.getName() + File.separator);
@@ -164,16 +165,16 @@ public class FileBrowserDialog implements OnItemClickListener {
 						}
 					}
 				} else {
-					if (!currPath.matches(Globals.repeatedSeparatorString) &&! (currPath.equals(File.separator+"storage"+File.separator) && !(new File(File.separator).canRead()))) {
+					if (!currPath.matches(Globals.repeatedSeparatorString) && !(currPath.equals(File.separator + "storage" + File.separator) && !(new File(File.separator).canRead()))) {
 						fname.add(Globals.parentString);
 						// Thank you Marshmallow.
 						// Disallowing access to /storage/emulated has now prevent billions of hacking attempts daily.
 						if (new File(f.getParent()).canRead()) {
 							path.add(f.getParent() + File.separator);
-						} else if (new File(File.separator).canRead()){ // N seems to block reading /
+						} else if (new File(File.separator).canRead()) { // N seems to block reading /
 							path.add(File.separator);
-						}else{
-							path.add(File.separator+"storage"+File.separator);
+						} else {
+							path.add(File.separator + "storage" + File.separator);
 						}
 
 					}
@@ -193,17 +194,15 @@ public class FileBrowserDialog implements OnItemClickListener {
 		if (file.isDirectory()) {
 			if (file.canRead()) {
 				getDir(path.get(arg2));
-			} else if (file.getAbsolutePath().equals("/storage/emulated")&&
-					((new File("/storage/emulated/0").exists()&&new File("/storage/emulated/0").canRead())||
-							(new File("/storage/emulated/legacy").exists()&&new File("/storage/emulated/legacy").canRead())||
-							(new File("/storage/self/primary").exists()&&new File("/storage/self/primary").canRead())))
-			{
-				if(new File("/storage/emulated/0").exists()&&new File("/storage/emulated/0").canRead())
-				{
+			} else if (file.getAbsolutePath().equals("/storage/emulated") &&
+					((new File("/storage/emulated/0").exists() && new File("/storage/emulated/0").canRead()) ||
+							(new File("/storage/emulated/legacy").exists() && new File("/storage/emulated/legacy").canRead()) ||
+							(new File("/storage/self/primary").exists() && new File("/storage/self/primary").canRead()))) {
+				if (new File("/storage/emulated/0").exists() && new File("/storage/emulated/0").canRead()) {
 					getDir("/storage/emulated/0");
-				}else if((new File("/storage/emulated/legacy").exists()&&new File("/storage/emulated/legacy").canRead())){
+				} else if ((new File("/storage/emulated/legacy").exists() && new File("/storage/emulated/legacy").canRead())) {
 					getDir("/storage/emulated/legacy");
-				}else{
+				} else {
 					getDir("/storage/self/primary");
 				}
 			} else {

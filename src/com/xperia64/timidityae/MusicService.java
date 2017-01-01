@@ -1,8 +1,8 @@
 /*******************************************************************************
  * Copyright (C) 2014 xperia64 <xperiancedapps@gmail.com>
- * 
+ * <p>
  * Copyright (C) 1999-2008 Masanao Izumo <iz@onicos.co.jp>
- *     
+ * <p>
  * Copyright (C) 1995 Tuukka Toivonen <tt@cgs.fi>
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Public License v3.0
@@ -11,39 +11,13 @@
  ******************************************************************************/
 package com.xperia64.timidityae;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.DataInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.InputStream;
-import java.io.OutputStreamWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Random;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.GZIPOutputStream;
-
-import com.xperia64.timidityae.R;
-import com.xperia64.timidityae.gui.TimidityAEWidgetProvider;
-import com.xperia64.timidityae.util.Globals;
-import com.xperia64.timidityae.util.ObjectSerializer;
-import com.xperia64.timidityae.util.CommandStrings;
-import com.xperia64.timidityae.util.SettingsStorage;
-
 import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.NotificationManager;
-import android.app.Service;
 import android.app.PendingIntent;
+import android.app.Service;
 import android.appwidget.AppWidgetManager;
-//import android.appwidget.AppWidgetManager;
 import android.content.BroadcastReceiver;
-//import android.content.ComponentName;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -61,10 +35,36 @@ import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.util.Log;
 import android.util.SparseIntArray;
-//import android.util.Log;
 import android.view.KeyEvent;
 import android.widget.RemoteViews;
 import android.widget.Toast;
+
+import com.xperia64.timidityae.gui.TimidityAEWidgetProvider;
+import com.xperia64.timidityae.util.CommandStrings;
+import com.xperia64.timidityae.util.Globals;
+import com.xperia64.timidityae.util.ObjectSerializer;
+import com.xperia64.timidityae.util.SettingsStorage;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Random;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
+
+//import android.appwidget.AppWidgetManager;
+//import android.content.ComponentName;
+//import android.util.Log;
 
 public class MusicService extends Service {
 
@@ -110,17 +110,16 @@ public class MusicService extends Service {
 	@SuppressLint("NewApi")
 	@Override
 	public void onTaskRemoved(Intent rootIntent) {
-		
+
 		// Android versions less than M kill the Service if the app is removed for some reason.
-		if(Build.VERSION.SDK_INT < Build.VERSION_CODES.M)
-		{
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
 			Intent intent = new Intent(this, DummyActivity.class);
 			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 			startActivity(intent);
 			super.onTaskRemoved(rootIntent);
 		}
 	}
-	
+
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		handler = new Handler();
@@ -177,28 +176,28 @@ public class MusicService extends Service {
 				KeyEvent event = (KeyEvent) intent.getParcelableExtra(Intent.EXTRA_KEY_EVENT);
 				if (event.getAction() == KeyEvent.ACTION_DOWN) {
 					switch (event.getKeyCode()) {
-					case KeyEvent.KEYCODE_MEDIA_PLAY:
-					case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
-					case KeyEvent.KEYCODE_MEDIA_PAUSE:
-						if (JNIHandler.isPlaying) {
-							pause();
-						} else {
-							play();
-						}
-						break;
-					case KeyEvent.KEYCODE_MEDIA_NEXT:
-						shouldAdvance = false;
-						next();
-						break;
-					case KeyEvent.KEYCODE_MEDIA_PREVIOUS:
-						shouldAdvance = false;
-						previous();
-						break;
-					case KeyEvent.KEYCODE_MEDIA_STOP:
-						fullStop = true;
-						shouldAdvance = false;
-						stop();
-						break;
+						case KeyEvent.KEYCODE_MEDIA_PLAY:
+						case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
+						case KeyEvent.KEYCODE_MEDIA_PAUSE:
+							if (JNIHandler.isPlaying) {
+								pause();
+							} else {
+								play();
+							}
+							break;
+						case KeyEvent.KEYCODE_MEDIA_NEXT:
+							shouldAdvance = false;
+							next();
+							break;
+						case KeyEvent.KEYCODE_MEDIA_PREVIOUS:
+							shouldAdvance = false;
+							previous();
+							break;
+						case KeyEvent.KEYCODE_MEDIA_STOP:
+							fullStop = true;
+							shouldAdvance = false;
+							stop();
+							break;
 					}
 				}
 			} else if (Intent.ACTION_HEADSET_PLUG.equals(intent.getAction())) {
@@ -212,452 +211,452 @@ public class MusicService extends Service {
 				// Sigh. Here we go:
 				Intent outgoingIntent = new Intent();
 				switch (cmd) {
-				case CommandStrings.msrv_cmd_load_plist_play: // We have a new playlist. Load it and the immediate song to load.
-					death = true;
-					ArrayList<String> tmpList = Globals.plist;
-					if (tmpList == null) {
-						break;
-					}
-					int tmpNum = intent.getIntExtra(CommandStrings.msrv_songnum, -1);
-					if (tmpNum <= -1) {
-						break;
-					}
-					boolean shouldCopyPlist = intent.getBooleanExtra(CommandStrings.msrv_cpplist, true);
-					if (shouldCopyPlist) {
-						currSongNumber = realSongNumber = tmpNum;
-						playList = tmpList;
-						genShuffledPlist();
-						
-					} else {
-						currSongNumber = tmpNum;
-						if (shuffleMode == 1) {
-							realSongNumber = shuffledIndices.get(tmpNum);
-						}
-					}
-					Globals.plist = null;
-					tmpList = null;
-					currFold = intent.getStringExtra(CommandStrings.msrv_currfold);
-
-					if (shuffleMode == 1 && shouldCopyPlist) {
-						currSongNumber = reverseShuffledIndices.get(realSongNumber);
-					}
-					outgoingIntent.setAction(CommandStrings.ta_rec);
-					outgoingIntent.putExtra(CommandStrings.ta_cmd, CommandStrings.ta_cmd_copy_plist);
-					if (shuffleMode == 1) {
-						Globals.tmpplist = new ArrayList<String>();
-						for (int i = 0; i < playList.size(); i++) {
-							Globals.tmpplist.add(playList.get(shuffledIndices.get(i)));
-						}
-					} else {
-						Globals.tmpplist = playList;
-					}
-					sendBroadcast(outgoingIntent);
-					// if(shouldStart=intent.getBooleanExtra(ServiceStrings.msrv_begin),false)||true)
-					// {
-					play();
-					// }
-					break;
-				case CommandStrings.msrv_cmd_play: // Initial play cmd
-					play();
-					break;
-				case CommandStrings.msrv_cmd_pause: // Play/pause
-					pause();
-					break;
-				case CommandStrings.msrv_cmd_next: // Next
-					shouldAdvance = false;
-					next();
-					break;
-				case CommandStrings.msrv_cmd_prev: // Previous
-					shouldAdvance = false;
-					previous();
-					break;
-				case CommandStrings.msrv_cmd_stop: // Stop
-					fullStop = true;
-					Globals.hardStop = true;
-					shouldAdvance = false;
-					stop();
-					break;
-				case CommandStrings.msrv_cmd_loop_mode: // Loop mode
-					int tmpMode = intent.getIntExtra(CommandStrings.msrv_loopmode, -1);
-					if (tmpMode < 0 || tmpMode > 2)
-						break;
-					loopMode = tmpMode;
-					break;
-				case CommandStrings.msrv_cmd_shuf_mode: // Shuffle mode
-					if (playList == null) {
-						break;
-					}
-					shuffleMode = intent.getIntExtra(CommandStrings.msrv_shufmode, 0);
-					if (shuffleMode == 1) {
-						fixedShuffle = false;
-						if (SettingsStorage.reShuffle || reverseShuffledIndices == null || shuffledIndices == null) {
-							genShuffledPlist();
-						}
-						if (reverseShuffledIndices == null) {
+					case CommandStrings.msrv_cmd_load_plist_play: // We have a new playlist. Load it and the immediate song to load.
+						death = true;
+						ArrayList<String> tmpList = Globals.plist;
+						if (tmpList == null) {
 							break;
 						}
-						currSongNumber = reverseShuffledIndices.get(currSongNumber);
-					} else {
-						if (!fixedShuffle) {
-							currSongNumber = realSongNumber;
-							fixedShuffle = true;
+						int tmpNum = intent.getIntExtra(CommandStrings.msrv_songnum, -1);
+						if (tmpNum <= -1) {
+							break;
 						}
-					}
-					outgoingIntent.setAction(CommandStrings.ta_rec);
-					outgoingIntent.putExtra(CommandStrings.ta_cmd, CommandStrings.ta_cmd_copy_plist);
-					outgoingIntent.putExtra(CommandStrings.ta_highlight, currSongNumber);
-					if (shuffleMode == 1) {
-						Globals.tmpplist = new ArrayList<String>();
-						for (int i = 0; i < playList.size(); i++) {
-							Globals.tmpplist.add(playList.get(shuffledIndices.get(i)));
-						}
-					} else {
-						Globals.tmpplist = playList;
-					}
-					sendBroadcast(outgoingIntent);
-					break;
-				/*
-				 * case ServiceStrings.msrv_cmd_req_time: // Request seekBar times break;
-				 */
-				case CommandStrings.msrv_cmd_seek: // Actually seek
-					JNIHandler.seekTo(intent.getIntExtra(CommandStrings.msrv_seektime, 1));
-					break;
-				case CommandStrings.msrv_cmd_get_fold: // Request current folder
-					outgoingIntent.setAction(CommandStrings.ta_rec);
-					outgoingIntent.putExtra(CommandStrings.ta_cmd, CommandStrings.ta_cmd_load_filebrowser);
-					outgoingIntent.putExtra(CommandStrings.ta_currpath, currFold);
-					sendBroadcast(outgoingIntent);
-					break;
-				case CommandStrings.msrv_cmd_get_info: // Request player info
-					outgoingIntent.setAction(CommandStrings.ta_rec);
-					outgoingIntent.putExtra(CommandStrings.ta_cmd, CommandStrings.ta_cmd_gui_play_full);
-					outgoingIntent.putExtra(CommandStrings.ta_startt, JNIHandler.maxTime);
-					outgoingIntent.putExtra(CommandStrings.ta_shufmode, shuffleMode);
-					outgoingIntent.putExtra(CommandStrings.ta_loopmode, loopMode);
-					outgoingIntent.putExtra(CommandStrings.ta_songttl, currTitle);
-					if (shuffleMode == 1) {
-						outgoingIntent.putExtra(CommandStrings.ta_filename, playList.get(shuffledIndices.get(currSongNumber)));
-					} else {
-						outgoingIntent.putExtra(CommandStrings.ta_filename, playList.get(currSongNumber));
-					}
+						boolean shouldCopyPlist = intent.getBooleanExtra(CommandStrings.msrv_cpplist, true);
+						if (shouldCopyPlist) {
+							currSongNumber = realSongNumber = tmpNum;
+							playList = tmpList;
+							genShuffledPlist();
 
-					sendBroadcast(outgoingIntent);
-					break;
-				case CommandStrings.msrv_cmd_get_plist: // Request playlist
-					outgoingIntent.setAction(CommandStrings.ta_rec);
-					outgoingIntent.putExtra(CommandStrings.ta_cmd, CommandStrings.ta_cmd_copy_plist);
-					if (shuffleMode == 1) {
-						Globals.tmpplist = new ArrayList<String>();
-						for (int i = 0; i < playList.size(); i++) {
-							Globals.tmpplist.add(playList.get(shuffledIndices.get(i)));
+						} else {
+							currSongNumber = tmpNum;
+							if (shuffleMode == 1) {
+								realSongNumber = shuffledIndices.get(tmpNum);
+							}
 						}
-					} else {
-						Globals.tmpplist = playList;
-					}
-					sendBroadcast(outgoingIntent);
-					break;
-				case CommandStrings.msrv_cmd_play_or_pause:
-					if (JNIHandler.isPlaying) {
-						pause();
-					} else {
+						Globals.plist = null;
+						tmpList = null;
+						currFold = intent.getStringExtra(CommandStrings.msrv_currfold);
+
+						if (shuffleMode == 1 && shouldCopyPlist) {
+							currSongNumber = reverseShuffledIndices.get(realSongNumber);
+						}
+						outgoingIntent.setAction(CommandStrings.ta_rec);
+						outgoingIntent.putExtra(CommandStrings.ta_cmd, CommandStrings.ta_cmd_copy_plist);
+						if (shuffleMode == 1) {
+							Globals.tmpplist = new ArrayList<String>();
+							for (int i = 0; i < playList.size(); i++) {
+								Globals.tmpplist.add(playList.get(shuffledIndices.get(i)));
+							}
+						} else {
+							Globals.tmpplist = playList;
+						}
+						sendBroadcast(outgoingIntent);
+						// if(shouldStart=intent.getBooleanExtra(ServiceStrings.msrv_begin),false)||true)
+						// {
 						play();
-					}
-					break;
-				case CommandStrings.msrv_cmd_write_new: // We want to write an output file
-					fullStop = true;
-					shouldAdvance = false;
-					Globals.hardStop = true;
-					stop();
-					while (((JNIHandler.isPlaying || JNIHandler.isBlocking))) {
-						try {
-							Thread.sleep(10);
-						} catch (InterruptedException e) {
-							e.printStackTrace();
-						}
-					}
-					final String input = intent.getStringExtra(CommandStrings.msrv_infile);
-					String output = intent.getStringExtra(CommandStrings.msrv_outfile);
-					if (input != null && output != null) {
-						JNIHandler.setupOutputFile(output);
-						JNIHandler.play(input);
-					}
-					new Thread(new Runnable() {
-
-						@Override
-						public void run() {
-							while (!death && ((!JNIHandler.isPlaying))) {
-								if (!JNIHandler.isBlocking) {
-									death = true;
-								}
-								try {
-									Thread.sleep(10);
-								} catch (InterruptedException e) {
-								}
-							}
-							if (new File(input + ".def.tcf").exists() || new File(input + ".def.tzf").exists()) {
-								String suffix;
-								if (new File(input + ".def.tcf").exists() && new File(input + ".def.tzf").exists()) {
-									suffix = (SettingsStorage.compressCfg ? ".def.tzf" : ".def.tcf");
-								} else if (new File(input + ".def.tcf").exists()) {
-									suffix = ".def.tcf";
-								} else {
-									suffix = ".def.tzf";
-								}
-								JNIHandler.shouldPlayNow = false;
-								JNIHandler.currTime = 0;
-								while (JNIHandler.isPlaying && !death && !JNIHandler.dataWritten) {
-									try {
-										Thread.sleep(25);
-									} catch (InterruptedException e) {
-										e.printStackTrace();
-									}
-								}
-								Intent loadCfgIntent = new Intent(); // silly, but should be done async. I think.
-								loadCfgIntent.setAction(CommandStrings.msrv_rec);
-								loadCfgIntent.putExtra(CommandStrings.msrv_cmd, CommandStrings.msrv_cmd_load_cfg);
-								loadCfgIntent.putExtra(CommandStrings.msrv_infile, input + suffix);
-								loadCfgIntent.putExtra(CommandStrings.msrv_reset, true);
-								sendBroadcast(loadCfgIntent);
-							}
-							while (((JNIHandler.isPlaying))) {
-								try {
-									Thread.sleep(25);
-								} catch (InterruptedException e) {
-								}
-							}
-
-							Intent outgoingIntent = new Intent();
-							outgoingIntent.setAction(CommandStrings.ta_rec);
-							outgoingIntent.putExtra(CommandStrings.ta_cmd, CommandStrings.ta_cmd_special_notification_finished);
-							sendBroadcast(outgoingIntent);
-							death = false;
-						}
-					}).start();
-					// play();
-					break;
-				case CommandStrings.msrv_cmd_write_curr: // We want to write an output file while playing.
-					shouldAdvance = false;
-					if (JNIHandler.paused) {
-						JNIHandler.pause();
-						JNIHandler.waitUntilReady(50);
-					}
-					JNIHandler.seekTo(0); // Why is this async. Seriously.
-					JNIHandler.waitUntilReady();
-					JNIHandler.pause();
-					JNIHandler.waitUntilReady();
-					String output2 = intent.getStringExtra(CommandStrings.msrv_outfile);
-					if (JNIHandler.isPlaying && output2 != null) {
-						JNIHandler.setupOutputFile(output2);
-						JNIHandler.pause();
-					}
-					new Thread(new Runnable() {
-						@Override
-						public void run() {
-							while (((!JNIHandler.isPlaying))) {
-								try {
-									Thread.sleep(10);
-								} catch (InterruptedException e) {
-								}
-							}
-							while (((JNIHandler.isPlaying))) {
-								try {
-									Thread.sleep(25);
-								} catch (InterruptedException e) {
-								}
-							}
-							Intent outgoingIntent = new Intent();
-							outgoingIntent.setAction(CommandStrings.ta_rec);
-							outgoingIntent.putExtra(CommandStrings.ta_cmd, CommandStrings.ta_cmd_special_notification_finished);
-							sendBroadcast(outgoingIntent);
-							outgoingIntent.setAction(CommandStrings.ta_rec);
-							outgoingIntent.putExtra(CommandStrings.ta_cmd, CommandStrings.ta_cmd_pause_stop);
-							outgoingIntent.putExtra(CommandStrings.ta_pause, false);
-							sendBroadcast(outgoingIntent);
-						}
-					}).start();
-					break;
-				case CommandStrings.msrv_cmd_save_cfg: // store midi settings
-					boolean wasPaused = JNIHandler.paused;
-					if (!JNIHandler.paused) {
-						JNIHandler.pause();
-						JNIHandler.waitUntilReady(50);
-					}
-					String output3 = intent.getStringExtra(CommandStrings.msrv_outfile);
-					int[] numbers = new int[3];
-					numbers[0] = JNIHandler.tb;
-					numbers[1] = JNIHandler.keyOffset;
-					numbers[2] = JNIHandler.maxvoice;
-					String[] serializedSettings = new String[5]; // I'm sorry. I'm sorry.
-					try {
-						serializedSettings[0] = ObjectSerializer.serialize(JNIHandler.custInst);
-						serializedSettings[1] = ObjectSerializer.serialize(JNIHandler.custVol);
-						serializedSettings[2] = ObjectSerializer.serialize(JNIHandler.programs);
-						serializedSettings[3] = ObjectSerializer.serialize(JNIHandler.volumes);
-						serializedSettings[4] = ObjectSerializer.serialize(numbers);
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-
-					if (SettingsStorage.compressCfg) {
-						BufferedWriter writer = null;
-						try {
-							GZIPOutputStream zip = new GZIPOutputStream(new FileOutputStream(new File(output3)));
-
-							writer = new BufferedWriter(new OutputStreamWriter(zip, "US-ASCII"));
-
-							for (String s : serializedSettings) {
-								writer.append(s);
-								writer.newLine();
-							}
-						} catch (IOException e) {
-							e.printStackTrace();
-						} finally {
-							if (writer != null)
-								try {
-									writer.close();
-								} catch (IOException e) {
-									e.printStackTrace();
-								}
-						}
-					} else {
-						FileWriter fw = null;
-						try {
-							fw = new FileWriter(output3, false);
-							for (String s : serializedSettings) {
-								fw.write(s + "\n");
-							}
-							fw.close();
-						} catch (IOException e) {
-							e.printStackTrace();
-						}
-					}
-					if (!wasPaused) {
-						JNIHandler.pause();
-						JNIHandler.waitUntilReady(50);
-					}
-					Intent outgoingIntent15 = new Intent();
-					outgoingIntent15.setAction(CommandStrings.ta_rec);
-					outgoingIntent15.putExtra(CommandStrings.ta_cmd, CommandStrings.ta_cmd_special_notification_finished);
-					sendBroadcast(outgoingIntent15);
-					break;
-				case CommandStrings.msrv_cmd_load_cfg: // load midi settings
-					if (JNIHandler.paused) {
-						JNIHandler.pause();
-						JNIHandler.waitUntilReady(50);
-					}
-					String input2 = intent.getStringExtra(CommandStrings.msrv_infile);
-					ArrayList<Integer> msprograms = new ArrayList<Integer>();
-					ArrayList<Boolean> mscustInst = new ArrayList<Boolean>();
-					ArrayList<Integer> msvolumes = new ArrayList<Integer>();
-					ArrayList<Boolean> mscustVol = new ArrayList<Boolean>();
-					int[] newnumbers = new int[3];
-					FileInputStream fstream;
-					try {
-						BufferedReader br;
-						if (input2.endsWith(".tzf")) {
-							InputStream fileStream = new FileInputStream(input2);
-							InputStream gzipStream = new GZIPInputStream(fileStream);
-							InputStreamReader decoder = new InputStreamReader(gzipStream, "US-ASCII");
-							br = new BufferedReader(decoder);
-						} else {
-
-							fstream = new FileInputStream(input2);
-							DataInputStream in = new DataInputStream(fstream);
-							br = new BufferedReader(new InputStreamReader(in));
-						}
-						// I could check if all of these are actually ArrayLists, but eclipse still won't be happy
-						mscustInst = (ArrayList<Boolean>) ObjectSerializer.deserialize(br.readLine());
-						mscustVol = (ArrayList<Boolean>) ObjectSerializer.deserialize(br.readLine());
-						msprograms = (ArrayList<Integer>) ObjectSerializer.deserialize(br.readLine());
-						msvolumes = (ArrayList<Integer>) ObjectSerializer.deserialize(br.readLine());
-						newnumbers = (int[]) ObjectSerializer.deserialize(br.readLine());
-						br.close();
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-					if (mscustInst.size() != mscustVol.size() || mscustVol.size() != msprograms.size() || msprograms.size() != msvolumes.size()) {
-						// wat
+						// }
 						break;
-					}
-					for (int i = 0; i < mscustInst.size(); i++) {
-						if (mscustInst.get(i)) {
-							JNIHandler.setChannelTimidity(i | 0x800, msprograms.get(i));
-							JNIHandler.programs.set(i, msprograms.get(i));
-						} else {
-
-							JNIHandler.setChannelTimidity(i | 0x8000, msprograms.get(i));
-						}
-						JNIHandler.custInst.set(i, mscustInst.get(i));
-						if (mscustVol.get(i)) {
-							JNIHandler.setChannelVolumeTimidity(i | 0x800, msvolumes.get(i));
-							JNIHandler.volumes.set(i, msvolumes.get(i));
-						} else {
-							JNIHandler.setChannelVolumeTimidity(i | 0x8000, msvolumes.get(i));
-						}
-						JNIHandler.custVol.set(i, mscustVol.get(i));
-					}
-					int newtb = newnumbers[0] - JNIHandler.tb;
-					if (newtb > 0) {
-						JNIHandler.controlTimidity(CommandStrings.jni_speedup, newtb);
-						JNIHandler.waitUntilReady();
-					} else if (newtb < 0) {
-						JNIHandler.controlTimidity(CommandStrings.jni_speeddown, -1 * newtb);
-						JNIHandler.waitUntilReady();
-					}
-					JNIHandler.tb = newnumbers[0];
-
-					int newko = newnumbers[1] - JNIHandler.keyOffset;
-					if (newko > 0) {
-						JNIHandler.controlTimidity(CommandStrings.jni_keyup, newko);
-						JNIHandler.waitUntilReady();
-					} else if (newko < 0) {
-						JNIHandler.controlTimidity(CommandStrings.jni_keydown, newko);
-						JNIHandler.waitUntilReady();
-					}
-					JNIHandler.keyOffset = newnumbers[1];
-					int newvoice = newnumbers[2] - JNIHandler.maxvoice;
-					if (newvoice != 0) {
-						if (newvoice > 0) {
-							JNIHandler.controlTimidity(CommandStrings.jni_voiceincr, newvoice);
-						} else {
-							JNIHandler.controlTimidity(CommandStrings.jni_voicedecr, -1 * newvoice);
-						}
-						JNIHandler.waitUntilReady();
-					}
-					if (intent.getBooleanExtra(CommandStrings.msrv_reset, false)) {
-						JNIHandler.seekTo(0);
-						JNIHandler.shouldPlayNow = true;
-						JNIHandler.waitUntilReady();
-					}
-					break;
-				case CommandStrings.msrv_cmd_reload_libs: // Reload native libs
-					if (!JNIHandler.isMediaPlayerFormat) {
+					case CommandStrings.msrv_cmd_play: // Initial play cmd
+						play();
+						break;
+					case CommandStrings.msrv_cmd_pause: // Play/pause
+						pause();
+						break;
+					case CommandStrings.msrv_cmd_next: // Next
+						shouldAdvance = false;
+						next();
+						break;
+					case CommandStrings.msrv_cmd_prev: // Previous
+						shouldAdvance = false;
+						previous();
+						break;
+					case CommandStrings.msrv_cmd_stop: // Stop
 						fullStop = true;
 						Globals.hardStop = true;
 						shouldAdvance = false;
 						stop();
-						JNIHandler.waitForStop();
-					}
-					int logRet = JNIHandler.unloadLib();
-					Log.d("TIMIDITY", "Unloading: " + logRet);
-					JNIHandler.prepared = false;
-					JNIHandler.volumes = new ArrayList<Integer>();
-					JNIHandler.programs = new ArrayList<Integer>();
-					JNIHandler.drums = new ArrayList<Boolean>();
-					JNIHandler.custInst = new ArrayList<Boolean>();
-					JNIHandler.custVol = new ArrayList<Boolean>();
-					logRet = JNIHandler.loadLib(Globals.getLibDir(MusicService.this) + "libtimidityplusplus.so");
-					Log.d("TIMIDITY", "Reloading: " + logRet);
-					int x = JNIHandler.init(SettingsStorage.dataFolder + "timidity/", "timidity.cfg", SettingsStorage.channelMode, SettingsStorage.defaultResamp, SettingsStorage.sixteenBit, SettingsStorage.bufferSize, SettingsStorage.audioRate, SettingsStorage.preserveSilence, true, SettingsStorage.freeInsts);
-					if (x != 0 && x != -99) {
-						SettingsStorage.onlyNative = SettingsStorage.nativeMidi = true;
-						Toast.makeText(MusicService.this, String.format(getResources().getString(R.string.tcfg_error), x), Toast.LENGTH_LONG).show();
-						Intent outgoingIntent16 = new Intent();
-						outgoingIntent16.setAction(CommandStrings.ta_rec);
-						outgoingIntent16.putExtra(CommandStrings.ta_cmd, CommandStrings.ta_cmd_refresh_filebrowser);
-						sendBroadcast(outgoingIntent16);
-					}
-					break;
+						break;
+					case CommandStrings.msrv_cmd_loop_mode: // Loop mode
+						int tmpMode = intent.getIntExtra(CommandStrings.msrv_loopmode, -1);
+						if (tmpMode < 0 || tmpMode > 2)
+							break;
+						loopMode = tmpMode;
+						break;
+					case CommandStrings.msrv_cmd_shuf_mode: // Shuffle mode
+						if (playList == null) {
+							break;
+						}
+						shuffleMode = intent.getIntExtra(CommandStrings.msrv_shufmode, 0);
+						if (shuffleMode == 1) {
+							fixedShuffle = false;
+							if (SettingsStorage.reShuffle || reverseShuffledIndices == null || shuffledIndices == null) {
+								genShuffledPlist();
+							}
+							if (reverseShuffledIndices == null) {
+								break;
+							}
+							currSongNumber = reverseShuffledIndices.get(currSongNumber);
+						} else {
+							if (!fixedShuffle) {
+								currSongNumber = realSongNumber;
+								fixedShuffle = true;
+							}
+						}
+						outgoingIntent.setAction(CommandStrings.ta_rec);
+						outgoingIntent.putExtra(CommandStrings.ta_cmd, CommandStrings.ta_cmd_copy_plist);
+						outgoingIntent.putExtra(CommandStrings.ta_highlight, currSongNumber);
+						if (shuffleMode == 1) {
+							Globals.tmpplist = new ArrayList<String>();
+							for (int i = 0; i < playList.size(); i++) {
+								Globals.tmpplist.add(playList.get(shuffledIndices.get(i)));
+							}
+						} else {
+							Globals.tmpplist = playList;
+						}
+						sendBroadcast(outgoingIntent);
+						break;
+				/*
+				 * case ServiceStrings.msrv_cmd_req_time: // Request seekBar times break;
+				 */
+					case CommandStrings.msrv_cmd_seek: // Actually seek
+						JNIHandler.seekTo(intent.getIntExtra(CommandStrings.msrv_seektime, 1));
+						break;
+					case CommandStrings.msrv_cmd_get_fold: // Request current folder
+						outgoingIntent.setAction(CommandStrings.ta_rec);
+						outgoingIntent.putExtra(CommandStrings.ta_cmd, CommandStrings.ta_cmd_load_filebrowser);
+						outgoingIntent.putExtra(CommandStrings.ta_currpath, currFold);
+						sendBroadcast(outgoingIntent);
+						break;
+					case CommandStrings.msrv_cmd_get_info: // Request player info
+						outgoingIntent.setAction(CommandStrings.ta_rec);
+						outgoingIntent.putExtra(CommandStrings.ta_cmd, CommandStrings.ta_cmd_gui_play_full);
+						outgoingIntent.putExtra(CommandStrings.ta_startt, JNIHandler.maxTime);
+						outgoingIntent.putExtra(CommandStrings.ta_shufmode, shuffleMode);
+						outgoingIntent.putExtra(CommandStrings.ta_loopmode, loopMode);
+						outgoingIntent.putExtra(CommandStrings.ta_songttl, currTitle);
+						if (shuffleMode == 1) {
+							outgoingIntent.putExtra(CommandStrings.ta_filename, playList.get(shuffledIndices.get(currSongNumber)));
+						} else {
+							outgoingIntent.putExtra(CommandStrings.ta_filename, playList.get(currSongNumber));
+						}
+
+						sendBroadcast(outgoingIntent);
+						break;
+					case CommandStrings.msrv_cmd_get_plist: // Request playlist
+						outgoingIntent.setAction(CommandStrings.ta_rec);
+						outgoingIntent.putExtra(CommandStrings.ta_cmd, CommandStrings.ta_cmd_copy_plist);
+						if (shuffleMode == 1) {
+							Globals.tmpplist = new ArrayList<String>();
+							for (int i = 0; i < playList.size(); i++) {
+								Globals.tmpplist.add(playList.get(shuffledIndices.get(i)));
+							}
+						} else {
+							Globals.tmpplist = playList;
+						}
+						sendBroadcast(outgoingIntent);
+						break;
+					case CommandStrings.msrv_cmd_play_or_pause:
+						if (JNIHandler.isPlaying) {
+							pause();
+						} else {
+							play();
+						}
+						break;
+					case CommandStrings.msrv_cmd_write_new: // We want to write an output file
+						fullStop = true;
+						shouldAdvance = false;
+						Globals.hardStop = true;
+						stop();
+						while (((JNIHandler.isPlaying || JNIHandler.isBlocking))) {
+							try {
+								Thread.sleep(10);
+							} catch (InterruptedException e) {
+								e.printStackTrace();
+							}
+						}
+						final String input = intent.getStringExtra(CommandStrings.msrv_infile);
+						String output = intent.getStringExtra(CommandStrings.msrv_outfile);
+						if (input != null && output != null) {
+							JNIHandler.setupOutputFile(output);
+							JNIHandler.play(input);
+						}
+						new Thread(new Runnable() {
+
+							@Override
+							public void run() {
+								while (!death && ((!JNIHandler.isPlaying))) {
+									if (!JNIHandler.isBlocking) {
+										death = true;
+									}
+									try {
+										Thread.sleep(10);
+									} catch (InterruptedException e) {
+									}
+								}
+								if (new File(input + ".def.tcf").exists() || new File(input + ".def.tzf").exists()) {
+									String suffix;
+									if (new File(input + ".def.tcf").exists() && new File(input + ".def.tzf").exists()) {
+										suffix = (SettingsStorage.compressCfg ? ".def.tzf" : ".def.tcf");
+									} else if (new File(input + ".def.tcf").exists()) {
+										suffix = ".def.tcf";
+									} else {
+										suffix = ".def.tzf";
+									}
+									JNIHandler.shouldPlayNow = false;
+									JNIHandler.currTime = 0;
+									while (JNIHandler.isPlaying && !death && !JNIHandler.dataWritten) {
+										try {
+											Thread.sleep(25);
+										} catch (InterruptedException e) {
+											e.printStackTrace();
+										}
+									}
+									Intent loadCfgIntent = new Intent(); // silly, but should be done async. I think.
+									loadCfgIntent.setAction(CommandStrings.msrv_rec);
+									loadCfgIntent.putExtra(CommandStrings.msrv_cmd, CommandStrings.msrv_cmd_load_cfg);
+									loadCfgIntent.putExtra(CommandStrings.msrv_infile, input + suffix);
+									loadCfgIntent.putExtra(CommandStrings.msrv_reset, true);
+									sendBroadcast(loadCfgIntent);
+								}
+								while (((JNIHandler.isPlaying))) {
+									try {
+										Thread.sleep(25);
+									} catch (InterruptedException e) {
+									}
+								}
+
+								Intent outgoingIntent = new Intent();
+								outgoingIntent.setAction(CommandStrings.ta_rec);
+								outgoingIntent.putExtra(CommandStrings.ta_cmd, CommandStrings.ta_cmd_special_notification_finished);
+								sendBroadcast(outgoingIntent);
+								death = false;
+							}
+						}).start();
+						// play();
+						break;
+					case CommandStrings.msrv_cmd_write_curr: // We want to write an output file while playing.
+						shouldAdvance = false;
+						if (JNIHandler.paused) {
+							JNIHandler.pause();
+							JNIHandler.waitUntilReady(50);
+						}
+						JNIHandler.seekTo(0); // Why is this async. Seriously.
+						JNIHandler.waitUntilReady();
+						JNIHandler.pause();
+						JNIHandler.waitUntilReady();
+						String output2 = intent.getStringExtra(CommandStrings.msrv_outfile);
+						if (JNIHandler.isPlaying && output2 != null) {
+							JNIHandler.setupOutputFile(output2);
+							JNIHandler.pause();
+						}
+						new Thread(new Runnable() {
+							@Override
+							public void run() {
+								while (((!JNIHandler.isPlaying))) {
+									try {
+										Thread.sleep(10);
+									} catch (InterruptedException e) {
+									}
+								}
+								while (((JNIHandler.isPlaying))) {
+									try {
+										Thread.sleep(25);
+									} catch (InterruptedException e) {
+									}
+								}
+								Intent outgoingIntent = new Intent();
+								outgoingIntent.setAction(CommandStrings.ta_rec);
+								outgoingIntent.putExtra(CommandStrings.ta_cmd, CommandStrings.ta_cmd_special_notification_finished);
+								sendBroadcast(outgoingIntent);
+								outgoingIntent.setAction(CommandStrings.ta_rec);
+								outgoingIntent.putExtra(CommandStrings.ta_cmd, CommandStrings.ta_cmd_pause_stop);
+								outgoingIntent.putExtra(CommandStrings.ta_pause, false);
+								sendBroadcast(outgoingIntent);
+							}
+						}).start();
+						break;
+					case CommandStrings.msrv_cmd_save_cfg: // store midi settings
+						boolean wasPaused = JNIHandler.paused;
+						if (!JNIHandler.paused) {
+							JNIHandler.pause();
+							JNIHandler.waitUntilReady(50);
+						}
+						String output3 = intent.getStringExtra(CommandStrings.msrv_outfile);
+						int[] numbers = new int[3];
+						numbers[0] = JNIHandler.tb;
+						numbers[1] = JNIHandler.keyOffset;
+						numbers[2] = JNIHandler.maxvoice;
+						String[] serializedSettings = new String[5]; // I'm sorry. I'm sorry.
+						try {
+							serializedSettings[0] = ObjectSerializer.serialize(JNIHandler.custInst);
+							serializedSettings[1] = ObjectSerializer.serialize(JNIHandler.custVol);
+							serializedSettings[2] = ObjectSerializer.serialize(JNIHandler.programs);
+							serializedSettings[3] = ObjectSerializer.serialize(JNIHandler.volumes);
+							serializedSettings[4] = ObjectSerializer.serialize(numbers);
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+
+						if (SettingsStorage.compressCfg) {
+							BufferedWriter writer = null;
+							try {
+								GZIPOutputStream zip = new GZIPOutputStream(new FileOutputStream(new File(output3)));
+
+								writer = new BufferedWriter(new OutputStreamWriter(zip, "US-ASCII"));
+
+								for (String s : serializedSettings) {
+									writer.append(s);
+									writer.newLine();
+								}
+							} catch (IOException e) {
+								e.printStackTrace();
+							} finally {
+								if (writer != null)
+									try {
+										writer.close();
+									} catch (IOException e) {
+										e.printStackTrace();
+									}
+							}
+						} else {
+							FileWriter fw = null;
+							try {
+								fw = new FileWriter(output3, false);
+								for (String s : serializedSettings) {
+									fw.write(s + "\n");
+								}
+								fw.close();
+							} catch (IOException e) {
+								e.printStackTrace();
+							}
+						}
+						if (!wasPaused) {
+							JNIHandler.pause();
+							JNIHandler.waitUntilReady(50);
+						}
+						Intent outgoingIntent15 = new Intent();
+						outgoingIntent15.setAction(CommandStrings.ta_rec);
+						outgoingIntent15.putExtra(CommandStrings.ta_cmd, CommandStrings.ta_cmd_special_notification_finished);
+						sendBroadcast(outgoingIntent15);
+						break;
+					case CommandStrings.msrv_cmd_load_cfg: // load midi settings
+						if (JNIHandler.paused) {
+							JNIHandler.pause();
+							JNIHandler.waitUntilReady(50);
+						}
+						String input2 = intent.getStringExtra(CommandStrings.msrv_infile);
+						ArrayList<Integer> msprograms = new ArrayList<Integer>();
+						ArrayList<Boolean> mscustInst = new ArrayList<Boolean>();
+						ArrayList<Integer> msvolumes = new ArrayList<Integer>();
+						ArrayList<Boolean> mscustVol = new ArrayList<Boolean>();
+						int[] newnumbers = new int[3];
+						FileInputStream fstream;
+						try {
+							BufferedReader br;
+							if (input2.endsWith(".tzf")) {
+								InputStream fileStream = new FileInputStream(input2);
+								InputStream gzipStream = new GZIPInputStream(fileStream);
+								InputStreamReader decoder = new InputStreamReader(gzipStream, "US-ASCII");
+								br = new BufferedReader(decoder);
+							} else {
+
+								fstream = new FileInputStream(input2);
+								DataInputStream in = new DataInputStream(fstream);
+								br = new BufferedReader(new InputStreamReader(in));
+							}
+							// I could check if all of these are actually ArrayLists, but eclipse still won't be happy
+							mscustInst = (ArrayList<Boolean>) ObjectSerializer.deserialize(br.readLine());
+							mscustVol = (ArrayList<Boolean>) ObjectSerializer.deserialize(br.readLine());
+							msprograms = (ArrayList<Integer>) ObjectSerializer.deserialize(br.readLine());
+							msvolumes = (ArrayList<Integer>) ObjectSerializer.deserialize(br.readLine());
+							newnumbers = (int[]) ObjectSerializer.deserialize(br.readLine());
+							br.close();
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+						if (mscustInst.size() != mscustVol.size() || mscustVol.size() != msprograms.size() || msprograms.size() != msvolumes.size()) {
+							// wat
+							break;
+						}
+						for (int i = 0; i < mscustInst.size(); i++) {
+							if (mscustInst.get(i)) {
+								JNIHandler.setChannelTimidity(i | 0x800, msprograms.get(i));
+								JNIHandler.programs.set(i, msprograms.get(i));
+							} else {
+
+								JNIHandler.setChannelTimidity(i | 0x8000, msprograms.get(i));
+							}
+							JNIHandler.custInst.set(i, mscustInst.get(i));
+							if (mscustVol.get(i)) {
+								JNIHandler.setChannelVolumeTimidity(i | 0x800, msvolumes.get(i));
+								JNIHandler.volumes.set(i, msvolumes.get(i));
+							} else {
+								JNIHandler.setChannelVolumeTimidity(i | 0x8000, msvolumes.get(i));
+							}
+							JNIHandler.custVol.set(i, mscustVol.get(i));
+						}
+						int newtb = newnumbers[0] - JNIHandler.tb;
+						if (newtb > 0) {
+							JNIHandler.controlTimidity(CommandStrings.jni_speedup, newtb);
+							JNIHandler.waitUntilReady();
+						} else if (newtb < 0) {
+							JNIHandler.controlTimidity(CommandStrings.jni_speeddown, -1 * newtb);
+							JNIHandler.waitUntilReady();
+						}
+						JNIHandler.tb = newnumbers[0];
+
+						int newko = newnumbers[1] - JNIHandler.keyOffset;
+						if (newko > 0) {
+							JNIHandler.controlTimidity(CommandStrings.jni_keyup, newko);
+							JNIHandler.waitUntilReady();
+						} else if (newko < 0) {
+							JNIHandler.controlTimidity(CommandStrings.jni_keydown, newko);
+							JNIHandler.waitUntilReady();
+						}
+						JNIHandler.keyOffset = newnumbers[1];
+						int newvoice = newnumbers[2] - JNIHandler.maxvoice;
+						if (newvoice != 0) {
+							if (newvoice > 0) {
+								JNIHandler.controlTimidity(CommandStrings.jni_voiceincr, newvoice);
+							} else {
+								JNIHandler.controlTimidity(CommandStrings.jni_voicedecr, -1 * newvoice);
+							}
+							JNIHandler.waitUntilReady();
+						}
+						if (intent.getBooleanExtra(CommandStrings.msrv_reset, false)) {
+							JNIHandler.seekTo(0);
+							JNIHandler.shouldPlayNow = true;
+							JNIHandler.waitUntilReady();
+						}
+						break;
+					case CommandStrings.msrv_cmd_reload_libs: // Reload native libs
+						if (!JNIHandler.isMediaPlayerFormat) {
+							fullStop = true;
+							Globals.hardStop = true;
+							shouldAdvance = false;
+							stop();
+							JNIHandler.waitForStop();
+						}
+						int logRet = JNIHandler.unloadLib();
+						Log.d("TIMIDITY", "Unloading: " + logRet);
+						JNIHandler.prepared = false;
+						JNIHandler.volumes = new ArrayList<Integer>();
+						JNIHandler.programs = new ArrayList<Integer>();
+						JNIHandler.drums = new ArrayList<Boolean>();
+						JNIHandler.custInst = new ArrayList<Boolean>();
+						JNIHandler.custVol = new ArrayList<Boolean>();
+						logRet = JNIHandler.loadLib(Globals.getLibDir(MusicService.this) + "libtimidityplusplus.so");
+						Log.d("TIMIDITY", "Reloading: " + logRet);
+						int x = JNIHandler.init(SettingsStorage.dataFolder + "timidity/", "timidity.cfg", SettingsStorage.channelMode, SettingsStorage.defaultResamp, SettingsStorage.sixteenBit, SettingsStorage.bufferSize, SettingsStorage.audioRate, SettingsStorage.preserveSilence, true, SettingsStorage.freeInsts);
+						if (x != 0 && x != -99) {
+							SettingsStorage.onlyNative = SettingsStorage.nativeMidi = true;
+							Toast.makeText(MusicService.this, String.format(getResources().getString(R.string.tcfg_error), x), Toast.LENGTH_LONG).show();
+							Intent outgoingIntent16 = new Intent();
+							outgoingIntent16.setAction(CommandStrings.ta_rec);
+							outgoingIntent16.putExtra(CommandStrings.ta_cmd, CommandStrings.ta_cmd_refresh_filebrowser);
+							sendBroadcast(outgoingIntent16);
+						}
+						break;
 				}
 			}
 		}
@@ -701,46 +700,45 @@ public class MusicService extends Service {
 		unregisterReceiver(serviceReceiver);
 	}
 
-	public void toastErrorCode(final int code)
-	{
+	public void toastErrorCode(final int code) {
 		switch (code) {
-		case -1:
-			handler.post(new Runnable() {
-				@Override
-				public void run() {
-					Toast.makeText(getApplicationContext(), getResources().getString(R.string.srv_fnf), Toast.LENGTH_SHORT).show();
-				}
-			});
+			case -1:
+				handler.post(new Runnable() {
+					@Override
+					public void run() {
+						Toast.makeText(getApplicationContext(), getResources().getString(R.string.srv_fnf), Toast.LENGTH_SHORT).show();
+					}
+				});
 
-			break;
-		case -3:
-			handler.post(new Runnable() {
-				@Override
-				public void run() {
-					Toast.makeText(getApplicationContext(), "Error initializing AudioTrack. Try decreasing the buffer size.", Toast.LENGTH_LONG).show();
-				}
-			});
+				break;
+			case -3:
+				handler.post(new Runnable() {
+					@Override
+					public void run() {
+						Toast.makeText(getApplicationContext(), "Error initializing AudioTrack. Try decreasing the buffer size.", Toast.LENGTH_LONG).show();
+					}
+				});
 
-			break;
-		case -9:
-			handler.post(new Runnable() {
-				@Override
-				public void run() {
-					Toast.makeText(getApplicationContext(), getResources().getString(R.string.srv_loading), Toast.LENGTH_SHORT).show();
-				}
-			});
-			break;
-		default:
-			handler.post(new Runnable() {
-				@Override
-				public void run() {
-					Toast.makeText(getApplicationContext(), String.format(getResources().getString(R.string.srv_unk), code), Toast.LENGTH_SHORT).show();
-				}
-			});
-			break;
+				break;
+			case -9:
+				handler.post(new Runnable() {
+					@Override
+					public void run() {
+						Toast.makeText(getApplicationContext(), getResources().getString(R.string.srv_loading), Toast.LENGTH_SHORT).show();
+					}
+				});
+				break;
+			default:
+				handler.post(new Runnable() {
+					@Override
+					public void run() {
+						Toast.makeText(getApplicationContext(), String.format(getResources().getString(R.string.srv_unk), code), Toast.LENGTH_SHORT).show();
+					}
+				});
+				break;
 		}
 	}
-	
+
 	@SuppressLint("NewApi")
 	public String handleMetadata(String fileName) {
 		MediaMetadataRetriever mmr = new MediaMetadataRetriever();

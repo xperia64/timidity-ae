@@ -1,14 +1,5 @@
 package com.xperia64.timidityae.util;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.Locale;
-
-import com.xperia64.timidityae.JNIHandler;
-import com.xperia64.timidityae.TimidityActivity;
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
@@ -19,6 +10,15 @@ import android.os.Environment;
 import android.text.InputFilter;
 import android.widget.EditText;
 import android.widget.Toast;
+
+import com.xperia64.timidityae.JNIHandler;
+import com.xperia64.timidityae.TimidityActivity;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.Locale;
 
 public class ConfigSaver implements TimidityActivity.SpecialAction {
 
@@ -32,11 +32,10 @@ public class ConfigSaver implements TimidityActivity.SpecialAction {
 		this.currSongName = currSongName;
 	}
 
-	public void saveDefaultCfg(String songTitle)
-	{
-		
+	public void saveDefaultCfg(String songTitle) {
+
 	}
-	
+
 	public void promptSaveCfg() {
 		localfinished = false;
 		if (Globals.isMidi(currSongName) && JNIHandler.isPlaying) {
@@ -47,7 +46,7 @@ public class ConfigSaver implements TimidityActivity.SpecialAction {
 
 			// Set an EditText view to get user input
 			final EditText input = new EditText(context);
-			input.setFilters(new InputFilter[] { Globals.fileNameInputFilter});
+			input.setFilters(new InputFilter[]{Globals.fileNameInputFilter});
 			saveMidiConfigDialog.setView(input);
 
 			saveMidiConfigDialog.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
@@ -76,7 +75,7 @@ public class ConfigSaver implements TimidityActivity.SpecialAction {
 		String needRename = null;
 		String probablyTheRoot = "";
 		String probablyTheDirectory = "";
-		
+
 		// Safest way to check if we truly have write access to a file.
 		// We will be touching this file anyway.
 		// File.canWrite() lies with Lollipop's storage handling.

@@ -1,147 +1,147 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent" >
+				  android:layout_width="match_parent"
+				  android:layout_height="match_parent">
 
-    <PreferenceScreen
-        android:key="dsKey"
-        android:summary="@string/sett_ds_sum"
-        android:title="@string/sett_ds" >
-        <PreferenceCategory android:title="@string/sett_title" >
-            <ListPreference
-                android:defaultValue="1"
-                android:entries="@array/theme_items"
-                android:entryValues="@array/background_theme_items"
-                android:key="fbTheme"
-                android:summary="@string/sett_theme_sum"
-                android:title="@string/sett_theme" />
+	<PreferenceScreen
+		android:key="dsKey"
+		android:summary="@string/sett_ds_sum"
+		android:title="@string/sett_ds">
+		<PreferenceCategory android:title="@string/sett_title">
+			<ListPreference
+				android:defaultValue="1"
+				android:entries="@array/theme_items"
+				android:entryValues="@array/background_theme_items"
+				android:key="fbTheme"
+				android:summary="@string/sett_theme_sum"
+				android:title="@string/sett_theme"/>
 
-            <CheckBoxPreference
-                android:defaultValue="false"
-                android:key="hiddenSwitch"
-                android:summary="@string/sett_shf_sum"
-                android:title="@string/sett_shf" />
-            <CheckBoxPreference
-                android:defaultValue="true"
-                android:key="videoSwitch"
-                android:summary="@string/sett_shv_sum"
-                android:title="@string/sett_shv" />
-            <CheckBoxPreference
-                android:defaultValue="true"
-                android:key="fpSwitch"
-                android:summary="@string/sett_fancy_plist_sum"
-                android:title="@string/sett_fancy_plist" />
+			<CheckBoxPreference
+				android:defaultValue="false"
+				android:key="hiddenSwitch"
+				android:summary="@string/sett_shf_sum"
+				android:title="@string/sett_shf"/>
+			<CheckBoxPreference
+				android:defaultValue="true"
+				android:key="videoSwitch"
+				android:summary="@string/sett_shv_sum"
+				android:title="@string/sett_shv"/>
+			<CheckBoxPreference
+				android:defaultValue="true"
+				android:key="fpSwitch"
+				android:summary="@string/sett_fancy_plist_sum"
+				android:title="@string/sett_fancy_plist"/>
 
-            <PreferenceScreen
-                android:key="defFold"
-                android:summary="@string/sett_brows4fb_sum"
-                android:title="@string/sett_brows4fb" />
+			<PreferenceScreen
+				android:key="defFold"
+				android:summary="@string/sett_brows4fb_sum"
+				android:title="@string/sett_brows4fb"/>
 
-            <EditTextPreference
-                android:defaultValue="/sdcard/"
-                android:key="defaultPath"
-                android:summary="@string/sett_fbpath"
-                android:title="@string/sett_fbpath" />
-        </PreferenceCategory>
-    </PreferenceScreen>
-    <PreferenceScreen
-        android:key="tplusKey"
-        android:summary="@string/sett_plus_sum"
-        android:title="@string/sett_plus" >
-        <PreferenceCategory android:title="@string/sett_plus" >
-            <CheckBoxPreference
-                android:defaultValue="false"
-                android:key="manualConfig"
-                android:summary="@string/sett_mancfg_sum"
-                android:title="@string/sett_mancfg" />
+			<EditTextPreference
+				android:defaultValue="/sdcard/"
+				android:key="defaultPath"
+				android:summary="@string/sett_fbpath"
+				android:title="@string/sett_fbpath"/>
+		</PreferenceCategory>
+	</PreferenceScreen>
+	<PreferenceScreen
+		android:key="tplusKey"
+		android:summary="@string/sett_plus_sum"
+		android:title="@string/sett_plus">
+		<PreferenceCategory android:title="@string/sett_plus">
+			<CheckBoxPreference
+				android:defaultValue="false"
+				android:key="manualConfig"
+				android:summary="@string/sett_mancfg_sum"
+				android:title="@string/sett_mancfg"/>
 
-            <PreferenceScreen
-                android:key="sfConfig"
-                android:summary="@string/soundfont2"
-                android:title="@string/soundfont" >
-            </PreferenceScreen>
+			<PreferenceScreen
+				android:key="sfConfig"
+				android:summary="@string/soundfont2"
+				android:title="@string/soundfont">
+			</PreferenceScreen>
 
-            <CheckBoxPreference
-                android:defaultValue="true"
-                android:key="tplusSilKey"
-                android:summary="@string/sett_sil_sum"
-                android:title="@string/sett_sil" />
-            <CheckBoxPreference
-                android:defaultValue="true"
-                android:key="tplusUnload"
-                android:summary="@string/sett_unload_sum"
-                android:title="@string/sett_unload" />
+			<CheckBoxPreference
+				android:defaultValue="true"
+				android:key="tplusSilKey"
+				android:summary="@string/sett_sil_sum"
+				android:title="@string/sett_sil"/>
+			<CheckBoxPreference
+				android:defaultValue="true"
+				android:key="tplusUnload"
+				android:summary="@string/sett_unload_sum"
+				android:title="@string/sett_unload"/>
 
-            <ListPreference
-                android:defaultValue="0"
-                android:entries="@array/resamp_items"
-                android:entryValues="@array/background_resamp_items"
-                android:key="tplusResamp"
-                android:summary="@string/sett_res_sum"
-                android:title="@string/sett_res" />
-            <ListPreference
-                android:defaultValue="2"
-                android:entries="@array/select_channel_items"
-                android:entryValues="@array/background_channel_items"
-                android:key="sdlChanValue"
-                android:summary="@string/sett_chan_sum"
-                android:title="@string/sett_chan" />
-            <ListPreference
-                android:key="tplusRate"
-                android:summary="@string/sett_rate_sum"
-                android:title="@string/sett_rate" />
+			<ListPreference
+				android:defaultValue="0"
+				android:entries="@array/resamp_items"
+				android:entryValues="@array/background_resamp_items"
+				android:key="tplusResamp"
+				android:summary="@string/sett_res_sum"
+				android:title="@string/sett_res"/>
+			<ListPreference
+				android:defaultValue="2"
+				android:entries="@array/select_channel_items"
+				android:entryValues="@array/background_channel_items"
+				android:key="sdlChanValue"
+				android:summary="@string/sett_chan_sum"
+				android:title="@string/sett_chan"/>
+			<ListPreference
+				android:key="tplusRate"
+				android:summary="@string/sett_rate_sum"
+				android:title="@string/sett_rate"/>
 
-            <EditTextPreference
-                android:defaultValue="192000"
-                android:inputType="number"
-                android:key="tplusBuff"
-                android:summary="@string/sett_buff_sum"
-                android:title="@string/sett_buff" />
-        </PreferenceCategory>
-        <PreferenceCategory android:title="@string/sett_dat" >
-            <PreferenceScreen
-                android:key="reSF"
-                android:summary="@string/sett_resf_sum"
-                android:title="@string/sett_resf" />
-            <PreferenceScreen
-                android:key="defData"
-                android:summary="@string/sett_ddir_sum"
-                android:title="@string/sett_ddir" />
+			<EditTextPreference
+				android:defaultValue="192000"
+				android:inputType="number"
+				android:key="tplusBuff"
+				android:summary="@string/sett_buff_sum"
+				android:title="@string/sett_buff"/>
+		</PreferenceCategory>
+		<PreferenceCategory android:title="@string/sett_dat">
+			<PreferenceScreen
+				android:key="reSF"
+				android:summary="@string/sett_resf_sum"
+				android:title="@string/sett_resf"/>
+			<PreferenceScreen
+				android:key="defData"
+				android:summary="@string/sett_ddir_sum"
+				android:title="@string/sett_ddir"/>
 
-            <EditTextPreference
-                android:defaultValue="/sdcard/TimidityAE/"
-                android:key="dataDir"
-                android:summary="@string/sett_mandir_sum"
-                android:title="@string/sett_mandir" />
-        </PreferenceCategory>
-    </PreferenceScreen>
+			<EditTextPreference
+				android:defaultValue="/sdcard/TimidityAE/"
+				android:key="dataDir"
+				android:summary="@string/sett_mandir_sum"
+				android:title="@string/sett_mandir"/>
+		</PreferenceCategory>
+	</PreferenceScreen>
 
-    <PreferenceCategory android:title="@string/sett_other" >
-        <CheckBoxPreference
-            android:defaultValue="false"
-            android:key="reShuffle"
-            android:summary="@string/sett_reshuff_sum"
-            android:title="@string/sett_reshuff" />
-        <CheckBoxPreference
-            android:defaultValue="false"
-            android:key="nativeMidiSwitch"
-            android:summary="@string/sett_nm_sum"
-            android:title="@string/sett_nm" />
-        <CheckBoxPreference
-            android:defaultValue="false"
-            android:key="keepPartialWav"
-            android:summary="@string/sett_kpw_sum"
-            android:title="@string/sett_kpw" />
-        <CheckBoxPreference
-            android:defaultValue="false"
-            android:key="useDefBack"
-            android:summary="@string/sett_defback_sum"
-            android:title="@string/sett_defback" />
-        <CheckBoxPreference
-            android:defaultValue="true"
-            android:key="compressCfg"
-            android:summary="@string/sett_compcfg_sum"
-            android:title="@string/sett_compcfg" />
-    </PreferenceCategory>
+	<PreferenceCategory android:title="@string/sett_other">
+		<CheckBoxPreference
+			android:defaultValue="false"
+			android:key="reShuffle"
+			android:summary="@string/sett_reshuff_sum"
+			android:title="@string/sett_reshuff"/>
+		<CheckBoxPreference
+			android:defaultValue="false"
+			android:key="nativeMidiSwitch"
+			android:summary="@string/sett_nm_sum"
+			android:title="@string/sett_nm"/>
+		<CheckBoxPreference
+			android:defaultValue="false"
+			android:key="keepPartialWav"
+			android:summary="@string/sett_kpw_sum"
+			android:title="@string/sett_kpw"/>
+		<CheckBoxPreference
+			android:defaultValue="false"
+			android:key="useDefBack"
+			android:summary="@string/sett_defback_sum"
+			android:title="@string/sett_defback"/>
+		<CheckBoxPreference
+			android:defaultValue="true"
+			android:key="compressCfg"
+			android:summary="@string/sett_compcfg_sum"
+			android:title="@string/sett_compcfg"/>
+	</PreferenceCategory>
 
 </PreferenceScreen>

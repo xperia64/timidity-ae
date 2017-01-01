@@ -1,8 +1,8 @@
 /*******************************************************************************
  * Copyright (C) 2014 xperia64 <xperiancedapps@gmail.com>
- * 
+ * <p>
  * Copyright (C) 1999-2008 Masanao Izumo <iz@onicos.co.jp>
- *     
+ * <p>
  * Copyright (C) 1995 Tuukka Toivonen <tt@cgs.fi>
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Public License v3.0
@@ -11,18 +11,18 @@
  ******************************************************************************/
 package com.xperia64.timidityae;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
+import android.media.AudioFormat;
+import android.media.AudioManager;
+import android.media.AudioTrack;
+import android.media.MediaPlayer;
 
 import com.xperia64.timidityae.util.CommandStrings;
 import com.xperia64.timidityae.util.Globals;
 import com.xperia64.timidityae.util.WavWriter;
 
-import android.media.AudioFormat;
-import android.media.AudioManager;
-import android.media.AudioTrack;
-import android.media.MediaPlayer;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
 
 //import android.util.Log;
 
@@ -63,7 +63,7 @@ public class JNIHandler {
 	public static boolean sixteenBit;
 	public static int rate;
 	public static int buffer;
-	
+
 	// Timidity Stuff
 	public static int MAX_CHANNELS = 32;
 	public static int currsamp = 0;
@@ -85,14 +85,12 @@ public class JNIHandler {
 	public static boolean dataWritten = false;
 
 	public static boolean shouldPlayNow = true;
-	
-	
-	
-	
+
+
 	public static boolean finishedCallbackCheck = true; // Is set
 	public static boolean isPlaying = false;
 	public static boolean isBlocking = false; // false = not currently blocking, true = blocking. Makes sure timidity actually returned. 
-	
+
 	// public static ArrayList<String> lyricLines;
 	// End Timidity Stuff
 
@@ -177,15 +175,14 @@ public class JNIHandler {
 	}
 
 	public static void waitForStop(int interval) {
-		if(isMediaPlayerFormat)
-		{
+		if (isMediaPlayerFormat) {
 			while (isPlaying || isBlocking || !finishedCallbackCheck) {
 				try {
 					Thread.sleep(interval);
 				} catch (InterruptedException e) {
 				}
 			}
-		}else{
+		} else {
 			try {
 				t.join();
 			} catch (InterruptedException e1) {
@@ -287,7 +284,7 @@ public class JNIHandler {
 	static Thread t;
 
 	public static int play(final String songTitle) {
-		
+
 		if (new File(songTitle).exists()) {
 			if (isBlocking == false) {
 				keyOffset = 0;
@@ -344,13 +341,12 @@ public class JNIHandler {
 					t = new Thread(new Runnable() {
 						public void run() {
 							isBlocking = true;
-							mAudioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, rate, 
-									(channelMode == 2) ? AudioFormat.CHANNEL_OUT_STEREO : AudioFormat.CHANNEL_OUT_MONO, 
-											(sixteenBit) ? AudioFormat.ENCODING_PCM_16BIT : AudioFormat.ENCODING_PCM_8BIT, 
-													buffer, AudioTrack.MODE_STREAM);
+							mAudioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, rate,
+									(channelMode == 2) ? AudioFormat.CHANNEL_OUT_STEREO : AudioFormat.CHANNEL_OUT_MONO,
+									(sixteenBit) ? AudioFormat.ENCODING_PCM_16BIT : AudioFormat.ENCODING_PCM_8BIT,
+									buffer, AudioTrack.MODE_STREAM);
 
-							if (!(currentWavWriter != null && !currentWavWriter.finishedWriting))
-							{
+							if (!(currentWavWriter != null && !currentWavWriter.finishedWriting)) {
 								try {
 									mAudioTrack.play();
 								} catch (Exception e) {
@@ -436,8 +432,8 @@ public class JNIHandler {
 		}
 		try {
 			// Samples * Number of Channels * sample size
-			return (((int) (mAudioTrack.getPlaybackHeadPosition() * 
-					mAudioTrack.getChannelCount() * 
+			return (((int) (mAudioTrack.getPlaybackHeadPosition() *
+					mAudioTrack.getChannelCount() *
 					(2 - (mAudioTrack.getAudioFormat() & 1))))); // 16 bit is 2, 8 bit is 3. We should never have to worry about 4, which is floating.
 		} catch (IllegalStateException e) {
 			return 0;
@@ -536,5 +532,5 @@ public class JNIHandler {
 		keyOffset = k;
 	}
 
-	
+
 }

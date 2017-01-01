@@ -1,8 +1,8 @@
 /*******************************************************************************
  * Copyright (C) 2014 xperia64 <xperiancedapps@gmail.com>
- * 
+ * <p>
  * Copyright (C) 1999-2008 Masanao Izumo <iz@onicos.co.jp>
- *     
+ * <p>
  * Copyright (C) 1995 Tuukka Toivonen <tt@cgs.fi>
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Public License v3.0
@@ -10,15 +10,6 @@
  * http://www.gnu.org/licenses/gpl.html
  ******************************************************************************/
 package com.xperia64.timidityae.gui.dialogs;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Locale;
-
-import com.xperia64.timidityae.util.Globals;
-import com.xperia64.timidityae.JNIHandler;
-import com.xperia64.timidityae.R;
-import com.xperia64.timidityae.gui.dialogs.FileBrowserDialog.FileBrowserDialogListener;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -34,6 +25,15 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Toast;
+
+import com.xperia64.timidityae.JNIHandler;
+import com.xperia64.timidityae.R;
+import com.xperia64.timidityae.gui.dialogs.FileBrowserDialog.FileBrowserDialogListener;
+import com.xperia64.timidityae.util.Globals;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Locale;
 
 public class SoundfontDialog implements OnItemLongClickListener, FileBrowserDialogListener, SoundfontArrayAdapter.SoundfontArrayAdapterListener {
 

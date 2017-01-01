@@ -1,62 +1,62 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/widget_container"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/background_holo_dark"
-    android:padding="@dimen/widget_margin" >
+				android:id="@+id/widget_container"
+				android:layout_width="match_parent"
+				android:layout_height="match_parent"
+				android:background="@color/background_holo_dark"
+				android:padding="@dimen/widget_margin">
 
-    <ImageButton
-        android:id="@+id/notStop_widget"
-        android:layout_width="wrap_content"
-        android:layout_height="60dp"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignTop="@+id/notNext_widget"
-        android:src="@android:drawable/ic_menu_close_clear_cancel" />
+	<ImageButton
+		android:id="@+id/notStop_widget"
+		android:layout_width="wrap_content"
+		android:layout_height="60dp"
+		android:layout_alignParentBottom="true"
+		android:layout_alignParentRight="true"
+		android:layout_alignTop="@+id/notNext_widget"
+		android:src="@android:drawable/ic_menu_close_clear_cancel"/>
 
-    <ImageButton
-        android:id="@+id/notPrev_widget"
-        android:layout_width="wrap_content"
-        android:layout_height="60dp"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentLeft="true"
-        android:src="@android:drawable/ic_media_previous" />
+	<ImageButton
+		android:id="@+id/notPrev_widget"
+		android:layout_width="wrap_content"
+		android:layout_height="60dp"
+		android:layout_alignParentBottom="true"
+		android:layout_alignParentLeft="true"
+		android:src="@android:drawable/ic_media_previous"/>
 
-    <ImageButton
-        android:id="@+id/notPause_widget"
-        android:layout_width="wrap_content"
-        android:layout_height="60dp"
-        android:layout_alignParentBottom="true"
-        android:layout_toRightOf="@+id/notPrev_widget"
-        android:src="@android:drawable/ic_media_play" />
+	<ImageButton
+		android:id="@+id/notPause_widget"
+		android:layout_width="wrap_content"
+		android:layout_height="60dp"
+		android:layout_alignParentBottom="true"
+		android:layout_toRightOf="@+id/notPrev_widget"
+		android:src="@android:drawable/ic_media_play"/>
 
-    <ImageButton
-        android:id="@+id/notNext_widget"
-        android:layout_width="wrap_content"
-        android:layout_height="60dp"
-        android:layout_alignParentBottom="true"
-        android:layout_toRightOf="@+id/notPause_widget"
-        android:src="@android:drawable/ic_media_next" />
+	<ImageButton
+		android:id="@+id/notNext_widget"
+		android:layout_width="wrap_content"
+		android:layout_height="60dp"
+		android:layout_alignParentBottom="true"
+		android:layout_toRightOf="@+id/notPause_widget"
+		android:src="@android:drawable/ic_media_next"/>
 
-    <TextView
-        android:id="@+id/titley_widget"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/notNext_widget"
-        android:layout_centerHorizontal="true"
-        android:layout_marginLeft="10dp"
-        android:layout_marginRight="10dp"
-        android:ellipsize="marquee"
-        android:singleLine="true"
-        android:text="" />
+	<TextView
+		android:id="@+id/titley_widget"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_above="@+id/notNext_widget"
+		android:layout_centerHorizontal="true"
+		android:layout_marginLeft="10dp"
+		android:layout_marginRight="10dp"
+		android:ellipsize="marquee"
+		android:singleLine="true"
+		android:text=""/>
 
-    <ImageView
-        android:id="@+id/art_widget"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:layout_above="@+id/titley_widget"
-        android:layout_alignParentLeft="true"
-        android:src="@drawable/timidity" />
+	<ImageView
+		android:id="@+id/art_widget"
+		android:layout_width="fill_parent"
+		android:layout_height="fill_parent"
+		android:layout_above="@+id/titley_widget"
+		android:layout_alignParentLeft="true"
+		android:src="@drawable/timidity"/>
 
 </RelativeLayout>

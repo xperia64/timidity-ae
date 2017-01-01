@@ -1,23 +1,23 @@
 package com.xperia64.timidityae.util;
 
 public class CommandStrings {
-	
+
 	public static final String pkg_name = "com.xperia64.timidityae";
 	// MusicService Broadcast Arguments
 	private static final String msrv_PRFX = ".MusicService";
 	private static final String msrv = pkg_name + msrv_PRFX;
-	public static final String msrv_rec = msrv+"_RECEIVER";
-	public static final String msrv_cmd = msrv+"_CMD";
-	public static final String msrv_songnum = msrv+"_SONGNUM";
-	public static final String msrv_currfold = msrv+"_CURRFOLD";
-	public static final String msrv_begin = msrv+"_Begin";
-	public static final String msrv_loopmode = msrv+"_LoopMode";
-	public static final String msrv_shufmode = msrv+"_ShuffleMode";
-	public static final String msrv_seektime = msrv+"_SeekTime";
-	public static final String msrv_infile = msrv+"_InputFile";
-	public static final String msrv_outfile = msrv+"_OutputFile";
-	public static final String msrv_reset = msrv+"_Reset";
-	public static final String msrv_cpplist = msrv+"_CopyPlist";
+	public static final String msrv_rec = msrv + "_RECEIVER";
+	public static final String msrv_cmd = msrv + "_CMD";
+	public static final String msrv_songnum = msrv + "_SONGNUM";
+	public static final String msrv_currfold = msrv + "_CURRFOLD";
+	public static final String msrv_begin = msrv + "_Begin";
+	public static final String msrv_loopmode = msrv + "_LoopMode";
+	public static final String msrv_shufmode = msrv + "_ShuffleMode";
+	public static final String msrv_seektime = msrv + "_SeekTime";
+	public static final String msrv_infile = msrv + "_InputFile";
+	public static final String msrv_outfile = msrv + "_OutputFile";
+	public static final String msrv_reset = msrv + "_Reset";
+	public static final String msrv_cpplist = msrv + "_CopyPlist";
 
 	// MusicService Broadcast Commands
 	public static final int msrv_cmd_error = -5;
@@ -44,17 +44,17 @@ public class CommandStrings {
 	// TimidityActivity Broadcast Arguments
 	private static final String ta_PRFX = ".TimidityActivity";
 	private static final String ta = pkg_name + ta_PRFX;
-	public static final String ta_rec = ta+"_RECEIVER";
-	public static final String ta_cmd = ta+"_CMD";
-	public static final String ta_filename = ta+"_FileName";
-	public static final String ta_startt = ta+"_StartTime";
-	public static final String ta_songttl = ta+"_SongTitle";
-	public static final String ta_currpath = ta+"_CurrPath";
-	public static final String ta_shufmode = ta+"_ShuffleMode";
-	public static final String ta_loopmode = ta+"_LoopMode";
-	public static final String ta_pause = ta+"_Pause";
-	public static final String ta_pausea = ta+"_PauseArg";
-	public static final String ta_highlight = ta+"_Highlight";
+	public static final String ta_rec = ta + "_RECEIVER";
+	public static final String ta_cmd = ta + "_CMD";
+	public static final String ta_filename = ta + "_FileName";
+	public static final String ta_startt = ta + "_StartTime";
+	public static final String ta_songttl = ta + "_SongTitle";
+	public static final String ta_currpath = ta + "_CurrPath";
+	public static final String ta_shufmode = ta + "_ShuffleMode";
+	public static final String ta_loopmode = ta + "_LoopMode";
+	public static final String ta_pause = ta + "_Pause";
+	public static final String ta_pausea = ta + "_PauseArg";
+	public static final String ta_highlight = ta + "_Highlight";
 	// TimidityActivity Broadcast Commands
 	public static final int ta_cmd_error = -5;
 	public static final int ta_cmd_gui_play = 0;
@@ -90,12 +90,12 @@ public class CommandStrings {
 	public static final String sett_native_midi = "nativeMidiSwitch";
 	public static final String sett_fancy_plist = "fpSwitch";
 	public static final String sett_soundfonts = "tplusSoundfonts";
-	
+
 	// Fragment Keys
 	public static final String currFoldKey = "CURRENT_FOLDER";
 	public static final String currPlistDirectory = "CURRENT_PLIST_DIR";
 
-	
+
 	// controlTimidity commands
 	public static final int jni_none = 0;
 	public static final int jni_quit = 1;
@@ -180,7 +180,7 @@ public class CommandStrings {
 	#define RC_TOGGLE_MUTE	31
 	#define RC_SOLO_PLAY	32
 	#define RC_MUTE_CLEAR	33*/
-		// @formatter:on
-	
-	
+	// @formatter:on
+
+
 }

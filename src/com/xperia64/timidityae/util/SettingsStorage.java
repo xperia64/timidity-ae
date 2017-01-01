@@ -1,21 +1,5 @@
 package com.xperia64.timidityae.util;
 
-import java.io.BufferedReader;
-import java.io.DataInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Locale;
-
-import com.xperia64.timidityae.JNIHandler;
-import com.xperia64.timidityae.R;
-import com.xperia64.timidityae.TimidityActivity;
-
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ProgressDialog;
@@ -33,6 +17,22 @@ import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.util.SparseIntArray;
 import android.widget.Toast;
+
+import com.xperia64.timidityae.JNIHandler;
+import com.xperia64.timidityae.R;
+import com.xperia64.timidityae.TimidityActivity;
+
+import java.io.BufferedReader;
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Locale;
 
 public class SettingsStorage {
 	// ---------SETTINGS STORAGE----------
@@ -61,20 +61,20 @@ public class SettingsStorage {
 	public static boolean freeInsts = true;
 	public static boolean isTV;
 	public static boolean enableDragNDrop = true;
-	
-	
+
+
 	// Delay: d = disabled, l = Left, r = Right, b = Both 
 	public static int delay = 0;
 	public static int delayLevel = -1;
-	
+
 	// Chorus: d = disabled, n = normal, s = surround, level = [0,127]
 	public static int chorus = 0;
 	public static int chorusLevel = -1;
-	
+
 	// Reverb: d = disabled, n = normal, g = global, f = freeverb, G = global freeverb
 	public static int reverb = 0;
 	public static int reverbLevel = -1;
-	
+
 	@SuppressLint("NewApi")
 	public static void reloadSettings(Activity c, AssetManager assets) {
 
@@ -103,7 +103,7 @@ public class SettingsStorage {
 			nativeMidi = prefs.getBoolean(CommandStrings.sett_native_midi, false);
 		else
 			nativeMidi = true;
-		
+
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.FROYO) {
 			UiModeManager uiModeManager = (UiModeManager) c.getSystemService(Context.UI_MODE_SERVICE);
 			isTV = (uiModeManager.getCurrentModeType() == Configuration.UI_MODE_TYPE_TELEVISION);
@@ -212,10 +212,8 @@ public class SettingsStorage {
 								} catch (ArrayIndexOutOfBoundsException e1) {
 									e1.printStackTrace();
 								}
-							}else if(line.indexOf("#extension opt ")==0)
-							{
-								if(line.indexOf("--no-unload-instruments")>0)
-								{
+							} else if (line.indexOf("#extension opt ") == 0) {
+								if (line.indexOf("--no-unload-instruments") > 0) {
 									SettingsStorage.freeInsts = false;
 								}/*else if(line.indexOf("")>0)
 								{
@@ -295,7 +293,7 @@ public class SettingsStorage {
 			return true;
 		}
 	}
-	
+
 	// This can probably be removed soon.
 	public static void migrateFrom1X(File newData) {
 		File oldPlists = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Android/data/com.xperia64.timidityae/playlists/");
@@ -406,10 +404,9 @@ public class SettingsStorage {
 						Toast.makeText(c, "Renaming manually edited cfg... (6)", Toast.LENGTH_LONG).show();
 						theConfig.renameTo(new File(path + ".manualTimidityCfg." + Long.toString(System.currentTimeMillis()))); // manual config, rename for later
 					}
-				}else{
-					File parent = new File(path.substring(0,path.lastIndexOf(File.separator)));
-					if(!parent.mkdirs() && !parent.isDirectory())
-					{
+				} else {
+					File parent = new File(path.substring(0, path.lastIndexOf(File.separator)));
+					if (!parent.mkdirs() && !parent.isDirectory()) {
 						Toast.makeText(c, "Error writing config. Make sure data directory is writable (7)", Toast.LENGTH_LONG).show();
 						return;
 					}
@@ -421,8 +418,7 @@ public class SettingsStorage {
 
 					e.printStackTrace();
 				}
-				if(fw == null)
-				{
+				if (fw == null) {
 					Toast.makeText(c, "Error writing config. Make sure data directory is writable (8)", Toast.LENGTH_LONG).show();
 					return;
 				}
@@ -468,7 +464,7 @@ public class SettingsStorage {
 
 	public static int[] validRates(boolean stereo, boolean sixteen) {
 		ArrayList<Integer> valid = new ArrayList<Integer>();
-		for (int rate : new int[] { 8000, 11025, 16000, 22050, 44100, 48000, 88200, 96000 }) {
+		for (int rate : new int[]{8000, 11025, 16000, 22050, 44100, 48000, 88200, 96000}) {
 
 			int bufferSize = AudioTrack.getMinBufferSize(rate, (stereo) ? AudioFormat.CHANNEL_OUT_STEREO : AudioFormat.CHANNEL_OUT_MONO, (sixteen) ? AudioFormat.ENCODING_PCM_16BIT : AudioFormat.ENCODING_PCM_8BIT);
 			if (bufferSize > 0) {

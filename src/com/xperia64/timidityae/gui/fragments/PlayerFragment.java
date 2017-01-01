@@ -1,8 +1,8 @@
 /*******************************************************************************
  * Copyright (C) 2014 xperia64 <xperiancedapps@gmail.com>
- * 
+ * <p>
  * Copyright (C) 1999-2008 Masanao Izumo <iz@onicos.co.jp>
- *     
+ * <p>
  * Copyright (C) 1995 Tuukka Toivonen <tt@cgs.fi>
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Public License v3.0
@@ -10,13 +10,6 @@
  * http://www.gnu.org/licenses/gpl.html
  ******************************************************************************/
 package com.xperia64.timidityae.gui.fragments;
-
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
@@ -41,18 +34,25 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.SeekBar;
+import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.SeekBar.OnSeekBarChangeListener;
 
 import com.xperia64.timidityae.JNIHandler;
 import com.xperia64.timidityae.R;
 import com.xperia64.timidityae.TimidityActivity;
+import com.xperia64.timidityae.util.CommandStrings;
 import com.xperia64.timidityae.util.DocumentFileUtils;
 import com.xperia64.timidityae.util.Globals;
-import com.xperia64.timidityae.util.CommandStrings;
 import com.xperia64.timidityae.util.SettingsStorage;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 @SuppressLint("Recycle")
 public class PlayerFragment extends Fragment {
@@ -415,15 +415,15 @@ public class PlayerFragment extends Fragment {
 					shuffleMode = 0;
 				int shufRes = R.drawable.ic_menu_forward;
 				switch (shuffleMode) {
-				case 0:
-					shufRes = R.drawable.ic_menu_forward;
-					break;
-				case 1:
-					shufRes = R.drawable.ic_menu_shuffle;
-					break;
-				case 2:
-					shufRes = R.drawable.ic_menu_revert;
-					break;
+					case 0:
+						shufRes = R.drawable.ic_menu_forward;
+						break;
+					case 1:
+						shufRes = R.drawable.ic_menu_shuffle;
+						break;
+					case 2:
+						shufRes = R.drawable.ic_menu_revert;
+						break;
 				}
 				((ImageButton) arg0).setImageResource(shufRes);
 				mActivity.shuffle(shuffleMode);
@@ -439,15 +439,15 @@ public class PlayerFragment extends Fragment {
 					@Override
 					public void run() {
 						switch (loopMode) {
-						case 0:
-							((ImageButton) arg0).setImageResource(R.drawable.ic_menu_forward);
-							break;
-						case 1:
-							((ImageButton) arg0).setImageResource(R.drawable.ic_menu_refresh);
-							break;
-						case 2:
-							((ImageButton) arg0).setImageResource(R.drawable.ic_menu_rotate);
-							break;
+							case 0:
+								((ImageButton) arg0).setImageResource(R.drawable.ic_menu_forward);
+								break;
+							case 1:
+								((ImageButton) arg0).setImageResource(R.drawable.ic_menu_refresh);
+								break;
+							case 2:
+								((ImageButton) arg0).setImageResource(R.drawable.ic_menu_rotate);
+								break;
 						}
 					}
 				});
@@ -542,27 +542,27 @@ public class PlayerFragment extends Fragment {
 					if (!JNIHandler.isMediaPlayerFormat)
 						lyricUpdation();
 					switch (loopMode) {
-					case 0:
-						loopButton.setImageResource(R.drawable.ic_menu_forward);
-						break;
-					case 1:
-						loopButton.setImageResource(R.drawable.ic_menu_refresh);
-						break;
-					case 2:
-						loopButton.setImageResource(R.drawable.ic_menu_rotate);
-						break;
+						case 0:
+							loopButton.setImageResource(R.drawable.ic_menu_forward);
+							break;
+						case 1:
+							loopButton.setImageResource(R.drawable.ic_menu_refresh);
+							break;
+						case 2:
+							loopButton.setImageResource(R.drawable.ic_menu_rotate);
+							break;
 					}
 					int shufRes = R.drawable.ic_menu_forward;
 					switch (shuffleMode) {
-					case 0:
-						shufRes = R.drawable.ic_menu_forward;
-						break;
-					case 1:
-						shufRes = R.drawable.ic_menu_shuffle;
-						break;
-					case 2:
-						shufRes = R.drawable.ic_menu_revert;
-						break;
+						case 0:
+							shufRes = R.drawable.ic_menu_forward;
+							break;
+						case 1:
+							shufRes = R.drawable.ic_menu_shuffle;
+							break;
+						case 2:
+							shufRes = R.drawable.ic_menu_revert;
+							break;
 					}
 					shuffleButton.setImageResource(shufRes);
 				}
@@ -629,21 +629,21 @@ public class PlayerFragment extends Fragment {
 			fragMode = 0;
 		}
 		switch (fragMode) {
-		case 0:
-			artsy = new ArtFragment();
-			ft.replace(R.id.midiContainer, artsy);
-			ft.commitAllowingStateLoss();
-			break;
-		case 1:
-			tracky = new TrackFragment();
-			ft.replace(R.id.midiContainer, tracky);
-			ft.commitAllowingStateLoss();
-			break;
-		case 2:
-			lyrical = new LyricFragment();
-			ft.replace(R.id.midiContainer, lyrical);
-			ft.commitAllowingStateLoss();
-			break;
+			case 0:
+				artsy = new ArtFragment();
+				ft.replace(R.id.midiContainer, artsy);
+				ft.commitAllowingStateLoss();
+				break;
+			case 1:
+				tracky = new TrackFragment();
+				ft.replace(R.id.midiContainer, tracky);
+				ft.commitAllowingStateLoss();
+				break;
+			case 2:
+				lyrical = new LyricFragment();
+				ft.replace(R.id.midiContainer, lyrical);
+				ft.commitAllowingStateLoss();
+				break;
 		}
 	}
 
@@ -659,21 +659,21 @@ public class PlayerFragment extends Fragment {
 			fragMode = 0;
 		}
 		switch (fragMode) {
-		case 0:
-			artsy = new ArtFragment();
-			ft.replace(R.id.midiContainer, artsy);
-			ft.commitAllowingStateLoss();
-			break;
-		case 1:
-			tracky = new TrackFragment();
-			ft.replace(R.id.midiContainer, tracky);
-			ft.commitAllowingStateLoss();
-			break;
-		case 2:
-			lyrical = new LyricFragment();
-			ft.replace(R.id.midiContainer, lyrical);
-			ft.commitAllowingStateLoss();
-			break;
+			case 0:
+				artsy = new ArtFragment();
+				ft.replace(R.id.midiContainer, artsy);
+				ft.commitAllowingStateLoss();
+				break;
+			case 1:
+				tracky = new TrackFragment();
+				ft.replace(R.id.midiContainer, tracky);
+				ft.commitAllowingStateLoss();
+				break;
+			case 2:
+				lyrical = new LyricFragment();
+				ft.replace(R.id.midiContainer, lyrical);
+				ft.commitAllowingStateLoss();
+				break;
 		}
 	}
 

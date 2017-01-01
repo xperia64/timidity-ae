@@ -31,7 +31,7 @@ public class WavWriter {
 	}
 
 	private byte[] shortToByteArray(short data) {
-		return new byte[] { (byte) (data & 0xff), (byte) ((data >>> 8) & 0xff) };
+		return new byte[]{(byte) (data & 0xff), (byte) ((data >>> 8) & 0xff)};
 	}
 
 	public void setupOutputFile(String filename, boolean bitSize, boolean mono, long sampleRate) {

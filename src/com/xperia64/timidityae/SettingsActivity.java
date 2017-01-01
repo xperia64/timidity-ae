@@ -1,8 +1,8 @@
 /*******************************************************************************
  * Copyright (C) 2014 xperia64 <xperiancedapps@gmail.com>
- * 
+ * <p>
  * Copyright (C) 1999-2008 Masanao Izumo <iz@onicos.co.jp>
- *     
+ * <p>
  * Copyright (C) 1995 Tuukka Toivonen <tt@cgs.fi>
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Public License v3.0
@@ -11,46 +11,6 @@
  ******************************************************************************/
 package com.xperia64.timidityae;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-import com.xperia64.timidityae.util.DocumentFileUtils;
-import com.xperia64.timidityae.util.Globals;
-import com.xperia64.timidityae.util.ObjectSerializer;
-import com.xperia64.timidityae.util.CommandStrings;
-import com.xperia64.timidityae.util.SettingsStorage;
-import com.xperia64.timidityae.R;
-import com.xperia64.timidityae.gui.dialogs.FileBrowserDialog;
-import com.xperia64.timidityae.gui.dialogs.SoundfontDialog;
-import com.xperia64.timidityae.gui.dialogs.FileBrowserDialog.FileBrowserDialogListener;
-import com.xperia64.timidityae.gui.dialogs.SoundfontDialog.SoundfontDialogListener;
-
-import android.preference.CheckBoxPreference;
-import android.preference.EditTextPreference;
-import android.preference.ListPreference;
-import android.preference.Preference;
-import android.preference.Preference.OnPreferenceChangeListener;
-import android.preference.Preference.OnPreferenceClickListener;
-import android.preference.PreferenceManager;
-import android.preference.PreferenceScreen;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
-import com.github.machinarius.preferencefragment.PreferenceFragment;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
-import android.text.TextUtils;
-import android.util.SparseIntArray;
-import android.util.TypedValue;
-import android.view.LayoutInflater;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.BaseAdapter;
-import android.widget.FrameLayout;
-import android.widget.LinearLayout;
-import android.widget.ListView;
-import android.widget.Toast;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -65,6 +25,45 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.preference.CheckBoxPreference;
+import android.preference.EditTextPreference;
+import android.preference.ListPreference;
+import android.preference.Preference;
+import android.preference.Preference.OnPreferenceChangeListener;
+import android.preference.Preference.OnPreferenceClickListener;
+import android.preference.PreferenceManager;
+import android.preference.PreferenceScreen;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
+import android.util.SparseIntArray;
+import android.util.TypedValue;
+import android.view.LayoutInflater;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.Toast;
+
+import com.github.machinarius.preferencefragment.PreferenceFragment;
+import com.xperia64.timidityae.gui.dialogs.FileBrowserDialog;
+import com.xperia64.timidityae.gui.dialogs.FileBrowserDialog.FileBrowserDialogListener;
+import com.xperia64.timidityae.gui.dialogs.SoundfontDialog;
+import com.xperia64.timidityae.gui.dialogs.SoundfontDialog.SoundfontDialogListener;
+import com.xperia64.timidityae.util.CommandStrings;
+import com.xperia64.timidityae.util.DocumentFileUtils;
+import com.xperia64.timidityae.util.Globals;
+import com.xperia64.timidityae.util.ObjectSerializer;
+import com.xperia64.timidityae.util.SettingsStorage;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 @SuppressLint("NewApi")
 public class SettingsActivity extends AppCompatActivity implements FileBrowserDialogListener, SoundfontDialogListener {
@@ -132,17 +131,16 @@ public class SettingsActivity extends AppCompatActivity implements FileBrowserDi
 		Toolbar bar;
 
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-			try{
-			       LinearLayout root = (LinearLayout) dialog.findViewById(android.R.id.list).getParent();
-			       bar = (Toolbar) LayoutInflater.from(this).inflate(R.layout.settings_toolbar, root, false);
-			       bar.setElevation(abElevation);
-			       root.addView(bar, 0);
-			}catch(ClassCastException e)
-			{
-			       FrameLayout root = (FrameLayout) dialog.findViewById(android.R.id.list).getParent();
-			       bar = (Toolbar) LayoutInflater.from(this).inflate(R.layout.settings_toolbar, root, false);
-			       bar.setElevation(abElevation);
-			       root.addView(bar, 0);
+			try {
+				LinearLayout root = (LinearLayout) dialog.findViewById(android.R.id.list).getParent();
+				bar = (Toolbar) LayoutInflater.from(this).inflate(R.layout.settings_toolbar, root, false);
+				bar.setElevation(abElevation);
+				root.addView(bar, 0);
+			} catch (ClassCastException e) {
+				FrameLayout root = (FrameLayout) dialog.findViewById(android.R.id.list).getParent();
+				bar = (Toolbar) LayoutInflater.from(this).inflate(R.layout.settings_toolbar, root, false);
+				bar.setElevation(abElevation);
+				root.addView(bar, 0);
 			}
 		} else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
 			LinearLayout root = (LinearLayout) dialog.findViewById(android.R.id.list).getParent();
@@ -201,7 +199,7 @@ public class SettingsActivity extends AppCompatActivity implements FileBrowserDi
 		if (needUpdateSf) {
 			SettingsStorage.writeCfg(SettingsActivity.this, SettingsStorage.dataFolder + "/timidity/timidity.cfg", tmpSounds); // TODO																						// ??
 		}
-		
+
 		if (needRestart) {
 			Intent new_intent = new Intent();
 			new_intent.setAction(CommandStrings.msrv_rec);
@@ -219,20 +217,20 @@ public class SettingsActivity extends AppCompatActivity implements FileBrowserDi
 		if (path != null) {
 			if (!TextUtils.isEmpty(path)) {
 				switch (type) {
-				case 3:
-					prefs.edit().putString("defaultPath", path).commit();
-					manHomeFolder.setText(path);
-					SettingsStorage.homeFolder = path;
-					((BaseAdapter) pf.getPreferenceScreen().getRootAdapter()).notifyDataSetChanged();
-					break;
-				case 4:
-					prefs.edit().putString("dataDir", path).commit();
-					manDataFolder.setText(path);
-					((BaseAdapter) pf.getPreferenceScreen().getRootAdapter()).notifyDataSetChanged();
-					break;
-				case 5:
-					// soundfont fun
-					break;
+					case 3:
+						prefs.edit().putString("defaultPath", path).commit();
+						manHomeFolder.setText(path);
+						SettingsStorage.homeFolder = path;
+						((BaseAdapter) pf.getPreferenceScreen().getRootAdapter()).notifyDataSetChanged();
+						break;
+					case 4:
+						prefs.edit().putString("dataDir", path).commit();
+						manDataFolder.setText(path);
+						((BaseAdapter) pf.getPreferenceScreen().getRootAdapter()).notifyDataSetChanged();
+						break;
+					case 5:
+						// soundfont fun
+						break;
 				}
 				return;
 			}
@@ -246,7 +244,7 @@ public class SettingsActivity extends AppCompatActivity implements FileBrowserDi
 		// Check which request we're responding to
 		if (requestCode == 42) {
 			if (resultCode == RESULT_OK) {
-				
+
 				Uri treeUri = data.getData();
 				getContentResolver().takePersistableUriPermission(treeUri, Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
 				DocumentFileUtils.docFileDevice = treeUri;
@@ -357,16 +355,15 @@ public class SettingsActivity extends AppCompatActivity implements FileBrowserDi
 				}
 
 			});
-			if(s.fplist!=null)
-			{
+			if (s.fplist != null) {
 				s.fplist.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
-	
+
 					@Override
 					public boolean onPreferenceChange(Preference arg0, Object arg1) {
 						SettingsStorage.enableDragNDrop = (Boolean) arg1;
 						return true;
 					}
-	
+
 				});
 			}
 			s.keepWav.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
@@ -517,8 +514,7 @@ public class SettingsActivity extends AppCompatActivity implements FileBrowserDi
 					s.sfPref.setEnabled(!manual);
 					s.needRestart = true;
 					s.needUpdateSf = !manual;
-					if(!manual)
-					{
+					if (!manual) {
 						s.needUpdateSf = true;
 					}
 					return true;
