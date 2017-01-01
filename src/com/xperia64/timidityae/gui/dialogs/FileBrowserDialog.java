@@ -37,27 +37,26 @@ import java.util.Arrays;
 
 public class FileBrowserDialog implements OnItemClickListener {
 
-	ListView fbdList;
-	LinearLayout fbdLayout;
-	String currPath;
-	ArrayList<String> fname;
-	ArrayList<String> path;
-	String extensions;
-	Activity context;
-	int type;
-	String msg;
-	FileBrowserDialogListener onSelectedCallback;
-	AlertDialog ddd;
+	private ListView fbdList;
+	private String currPath;
+	private ArrayList<String> fname;
+	private ArrayList<String> path;
+	private String extensions;
+	private Activity context;
+	private int type;
+	private String msg;
+	private FileBrowserDialogListener onSelectedCallback;
+	private AlertDialog ddd;
 
 	public interface FileBrowserDialogListener {
-		public void setItem(String path, int type);
+		void setItem(String path, int type);
 
-		public void write();
+		void write();
 
-		public void ignore();
+		void ignore();
 	}
 
-	boolean closeImmediately; // Should the dialog be closed immediately after selecting the file?
+	private boolean closeImmediately; // Should the dialog be closed immediately after selecting the file?
 
 	@SuppressLint("InflateParams")
 	public void create(int type, String extensions, FileBrowserDialogListener onSelectedCallback, Activity context, LayoutInflater layoutInflater, boolean closeImmediately, String path, String msg) {
@@ -69,7 +68,7 @@ public class FileBrowserDialog implements OnItemClickListener {
 		// folders
 		this.closeImmediately = closeImmediately; // Close immediately after selecting a file/folder
 		AlertDialog.Builder b = new AlertDialog.Builder(context);
-		fbdLayout = (LinearLayout) layoutInflater.inflate(R.layout.list, null);
+		LinearLayout fbdLayout = (LinearLayout) layoutInflater.inflate(R.layout.list, null);
 		fbdList = (ListView) fbdLayout.findViewById(android.R.id.list);
 		fbdList.setOnItemClickListener(this);
 		b.setView(fbdLayout);
@@ -116,19 +115,16 @@ public class FileBrowserDialog implements OnItemClickListener {
 			});
 	}
 
-	public void getDir(String dirPath) {
+	private void getDir(String dirPath) {
 		currPath = dirPath;
-		fname = new ArrayList<String>();
-		path = new ArrayList<String>();
+		fname = new ArrayList<>();
+		path = new ArrayList<>();
 		if (currPath != null) {
 			File f = new File(currPath);
 			if (f.exists()) {
 				File[] files = f.listFiles();
-
 				if (files.length > 0) {
-					if (files != null) {
-						Arrays.sort(files, new FileComparator());
-					}
+					Arrays.sort(files, new FileComparator());
 					if (!currPath.matches(Globals.repeatedSeparatorString) && !(currPath.equals(File.separator + "storage" + File.separator) && !(new File(File.separator).canRead()))) {
 						fname.add(Globals.parentString);
 						// Thank you Marshmallow.
@@ -141,16 +137,12 @@ public class FileBrowserDialog implements OnItemClickListener {
 							path.add(File.separator + "storage" + File.separator);
 						}
 					}
-					for (int i = 0; i < files.length; i++)
-
-					{
-						File file = files[i];
-
+					for (File file : files) {
 						if ((!file.getName().startsWith(".") && !SettingsStorage.showHiddenFiles) || SettingsStorage.showHiddenFiles) {
 							if (file.isFile() && type == 0) {
 								String extension = Globals.getFileExtension(file);
 								if (extension != null) {
-									if (extension != null && extensions.contains("*" + extension + "*")) {
+									if (extensions.contains("*" + extension + "*")) {
 										path.add(file.getAbsolutePath());
 										fname.add(file.getName());
 									}
@@ -180,7 +172,7 @@ public class FileBrowserDialog implements OnItemClickListener {
 					}
 				}
 
-				ArrayAdapter<String> fileList = new ArrayAdapter<String>(context, R.layout.row, fname);
+				ArrayAdapter<String> fileList = new ArrayAdapter<>(context, R.layout.row, fname);
 				fbdList.setFastScrollEnabled(true);
 				fbdList.setAdapter(fileList);
 			}
