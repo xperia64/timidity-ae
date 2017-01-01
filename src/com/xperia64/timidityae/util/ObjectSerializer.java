@@ -36,8 +36,8 @@ public class ObjectSerializer {
 			objStream.writeObject(obj);
 			objStream.close();
 			return encodeBytes(serialObj.toByteArray());
-		} catch (Exception e) {
-			throw (IOException) e;
+		} catch (IOException e) {
+			throw e;
 		}
 	}
 
@@ -53,18 +53,18 @@ public class ObjectSerializer {
 		}
 	}
 
-	public static String encodeBytes(byte[] bytes) {
-		StringBuffer strBuf = new StringBuffer();
+	private static String encodeBytes(byte[] bytes) {
+		StringBuilder strBuf = new StringBuilder();
 
-		for (int i = 0; i < bytes.length; i++) {
-			strBuf.append((char) (((bytes[i] >> 4) & 0xF) + ((int) 'a')));
-			strBuf.append((char) (((bytes[i]) & 0xF) + ((int) 'a')));
+		for (byte aByte : bytes) {
+			strBuf.append((char) (((aByte >> 4) & 0xF) + ((int) 'a')));
+			strBuf.append((char) (((aByte) & 0xF) + ((int) 'a')));
 		}
 
 		return strBuf.toString();
 	}
 
-	public static byte[] decodeBytes(String str) {
+	private static byte[] decodeBytes(String str) {
 		byte[] bytes = new byte[str.length() / 2];
 		for (int i = 0; i < str.length(); i += 2) {
 			char c = str.charAt(i);
