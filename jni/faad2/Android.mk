@@ -47,9 +47,9 @@ LOCAL_SRC_FILES := \
  
 
 LOCAL_C_INCLUDES += \
- include/ \
- libfaad/ \
- libfaad/codebook
+ $(LOCAL_PATH)/include/ \
+ $(LOCAL_PATH)/libfaad/ \
+ $(LOCAL_PATH)libfaad/codebook
 
 #LOCAL_LDLIBS := 
 

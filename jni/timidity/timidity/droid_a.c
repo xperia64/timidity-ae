@@ -86,7 +86,7 @@ static int acntl(int request, void *arg)
 			//char b1[256];
 		//char b2[256];
 	//int i;
-	if(request!=12&&request!=11)
+	if(request!=PM_REQ_GETFILLABLE&&request!=PM_REQ_GETFILLED)
 		controller(request);
 	switch(request)
 	{

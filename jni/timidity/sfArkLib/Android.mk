@@ -6,10 +6,6 @@ LOCAL_MODULE := sfark
 
 LOCAL_C_INCLUDES := $(LOCAL_PATH)
 
-EMACS = no
-
-CFLAGS = -fPIC -Ofast
-
 LOCAL_CPP_EXTENSION := .cpp
 
 LOCAL_SRC_FILES:= sfklCoding.cpp
