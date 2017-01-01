@@ -37,26 +37,25 @@ import java.util.Locale;
 
 public class SoundfontDialog implements OnItemLongClickListener, FileBrowserDialogListener, SoundfontArrayAdapter.SoundfontArrayAdapterListener {
 
-	ArrayList<String> sfList;
-	ArrayList<String> tmpList;
-	Context context;
-	ListView mList;
-	LinearLayout mLayout;
-	SoundfontDialogListener mCallback;
+	private ArrayList<String> sfList;
+	private ArrayList<String> tmpList;
+	private Context context;
+	private ListView mList;
+	private SoundfontDialogListener mCallback;
 
 	public interface SoundfontDialogListener {
-		public void writeSoundfonts(ArrayList<String> l);
+		void writeSoundfonts(ArrayList<String> l);
 	}
 
 	public void create(ArrayList<String> currList, SoundfontDialogListener sl, final Activity c, final LayoutInflater f, final String path) {
-		sfList = new ArrayList<String>(currList.size());
+		sfList = new ArrayList<>(currList.size());
 		for (String foo : currList) {
-			sfList.add((String) foo);
+			sfList.add(foo);
 		}
 		context = c;
 		mCallback = sl;
 		AlertDialog.Builder b = new AlertDialog.Builder(context);
-		mLayout = (LinearLayout) f.inflate(R.layout.list, null);
+		LinearLayout mLayout = (LinearLayout) f.inflate(R.layout.list, null);
 		mList = (ListView) mLayout.findViewById(android.R.id.list);
 
 		SoundfontArrayAdapter fileList = new SoundfontArrayAdapter(this, context, sfList);
@@ -88,7 +87,7 @@ public class SoundfontDialog implements OnItemLongClickListener, FileBrowserDial
 		theButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				tmpList = new ArrayList<String>();
+				tmpList = new ArrayList<>();
 				new FileBrowserDialog().create(0, Globals.fontFiles, SoundfontDialog.this, c, f, false, path, c.getResources().getString(R.string.fb_add));
 			}
 		});
