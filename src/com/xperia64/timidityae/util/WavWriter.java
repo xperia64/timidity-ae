@@ -10,16 +10,16 @@ import java.io.OutputStream;
 import java.io.RandomAccessFile;
 
 public class WavWriter {
-	public boolean writeToFile = false;
-	public long filesize = 0;
-	public String fileToWrite = "";
+	//private boolean writeToFile = false;
+	private long filesize = 0;
+	private String fileToWrite = "";
 	public boolean finishedWriting = false;
-	public boolean dataWritten = false;
-	public DataOutputStream outFile;
+	//public boolean dataWritten = false;
+	private DataOutputStream outFile;
 
-	boolean bitSize;
-	boolean mono;
-	long sampleRate;
+	private boolean bitSize;
+	private boolean mono;
+	//private long sampleRate;
 
 	private byte[] intToByteArray(int i) {
 		byte[] b = new byte[4];
@@ -34,11 +34,10 @@ public class WavWriter {
 		return new byte[]{(byte) (data & 0xff), (byte) ((data >>> 8) & 0xff)};
 	}
 
-	public void setupOutputFile(String filename, boolean bitSize, boolean mono, long sampleRate) {
+	public void setupOutputFile(String filename, boolean bitSize, boolean mono, long mySampleRate) {
 		this.bitSize = bitSize;
-		this.sampleRate = sampleRate;
+		//this.sampleRate = sampleRate;
 		this.mono = mono;
-		writeToFile = true;
 		finishedWriting = false;
 		fileToWrite = filename;
 		filesize = 0;
@@ -47,7 +46,7 @@ public class WavWriter {
 			int myBitsPerSample = (bitSize ? 16 : 8);
 			int myFormat = 1;
 			long myChannels = ((mono) ? 1 : 2);
-			long mySampleRate = sampleRate;
+			//long mySampleRate = sampleRate;
 			long myByteRate = mySampleRate * myChannels * myBitsPerSample / 8;
 			int myBlockAlign = (int) (myChannels * myBitsPerSample / 8);
 
@@ -104,6 +103,7 @@ public class WavWriter {
 			raf = new RandomAccessFile(fileToWrite, "rw");
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
+			return;
 		}
 
 		try {

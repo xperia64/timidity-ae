@@ -23,11 +23,11 @@ import java.io.IOException;
 import java.util.Locale;
 
 public class WavSaver implements TimidityActivity.SpecialAction {
-	Activity context;
-	String currSongName;
-	boolean localfinished;
-	AlertDialog exportAlert;
-	boolean playingExport; // export while playing
+	private Activity context;
+	private String currSongName;
+	private boolean localfinished;
+	private AlertDialog exportAlert;
+	private boolean playingExport; // export while playing
 
 	public WavSaver(Activity context, String currSongName, boolean playingExport) {
 		this.context = context;
@@ -132,7 +132,7 @@ public class WavSaver implements TimidityActivity.SpecialAction {
 		}
 	}
 
-	public void saveWavPart2(final String finalval, final String needToRename) {
+	private void saveWavPart2(final String finalval, final String needToRename) {
 		Intent new_intent = new Intent();
 		new_intent.setAction(Constants.msrv_rec);
 		new_intent.putExtra(Constants.msrv_cmd, playingExport ? Constants.msrv_cmd_write_curr : Constants.msrv_cmd_write_new);
@@ -164,8 +164,7 @@ public class WavSaver implements TimidityActivity.SpecialAction {
 					try {
 
 						Thread.sleep(25);
-					} catch (InterruptedException e) {
-					}
+					} catch (InterruptedException ignored) {}
 				}
 				if (!localfinished) {
 					JNIHandler.stop();
