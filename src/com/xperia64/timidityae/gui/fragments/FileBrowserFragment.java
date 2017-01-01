@@ -42,15 +42,14 @@ import java.util.Locale;
 
 public class FileBrowserFragment extends ListFragment {
 	public String currPath;
-	List<String> path;
-	List<String> fname;
-	boolean gotDir = false;
-	ActionFileBackListener mCallback;
-	public boolean localfinished = false;
+
+	private List<String> path;
+	private boolean gotDir = false;
+	private ActionFileBackListener mCallback;
 	private Activity mActivity;
 
 	public interface ActionFileBackListener {
-		public void needFileBackCallback(boolean yes);
+		void needFileBackCallback(boolean yes);
 	}
 
 	public static FileBrowserFragment create(String fold) {
@@ -74,8 +73,7 @@ public class FileBrowserFragment extends ListFragment {
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		View v = inflater.inflate(R.layout.list, container, false);
-		return v;
+		return inflater.inflate(R.layout.list, container, false);
 	}
 
 	@Override
@@ -133,8 +131,8 @@ public class FileBrowserFragment extends ListFragment {
 			return;
 		}
 		currPath = dirPath;
-		fname = new ArrayList<String>();
-		path = new ArrayList<String>();
+		List<String> fname = new ArrayList<>();
+		path = new ArrayList<>();
 		if (currPath != null) {
 			File f = new File(currPath);
 			if (f.exists()) {
@@ -157,8 +155,7 @@ public class FileBrowserFragment extends ListFragment {
 					} else {
 						mCallback.needFileBackCallback(false);
 					}
-					for (int i = 0; i < files.length; i++) {
-						File file = files[i];
+					for (File file : files) {
 						if ((!file.getName().startsWith(".") && !SettingsStorage.showHiddenFiles) || SettingsStorage.showHiddenFiles) {
 							if (file.isFile()) {
 								String extension = Globals.getFileExtension(file);
@@ -195,7 +192,7 @@ public class FileBrowserFragment extends ListFragment {
 
 					}
 				}
-				ArrayAdapter<String> fileList = new ArrayAdapter<String>(mActivity, R.layout.row, fname);
+				ArrayAdapter<String> fileList = new ArrayAdapter<>(mActivity, R.layout.row, fname);
 				getListView().setFastScrollEnabled(true);
 				getListView().setOnItemLongClickListener(new OnItemLongClickListener() {
 
@@ -244,7 +241,7 @@ public class FileBrowserFragment extends ListFragment {
 			}
 		} else {
 			if (file.canRead()) {
-				ArrayList<String> files = new ArrayList<String>();
+				ArrayList<String> files = new ArrayList<>();
 				int firstFile = -1;
 				for (int i = 0; i < path.size(); i++) {
 					if (!path.get(i).endsWith(File.separator)) {
