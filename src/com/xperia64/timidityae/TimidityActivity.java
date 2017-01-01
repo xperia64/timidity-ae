@@ -33,6 +33,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.OpenableColumns;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentPagerAdapter;
@@ -68,12 +69,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-//import android.content.SharedPreferences;
-//import android.preference.PreferenceManager;
-//import com.actionbarsherlock.app.SherlockFragment;
-
-// Eclipse Stahp
-@SuppressLint("NewApi")
 public class TimidityActivity extends AppCompatActivity implements FileBrowserFragment.ActionFileBackListener, PlaylistFragment.ActionPlaylistBackListener, FileBrowserDialog.FileBrowserDialogListener {
 	private MenuItem menuButton;
 	private MenuItem menuButton2;
@@ -87,7 +82,6 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 	boolean needService = true;
 	public String currSongName;
 	boolean needInit = false;
-	boolean fromIntent = false;
 	boolean deadlyDeath = false;
 
 	boolean serviceStarted = false;
@@ -100,9 +94,9 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 	int queuedPosition = -1;
 
 	public interface SpecialAction {
-		public AlertDialog getAlertDialog();
+		AlertDialog getAlertDialog();
 
-		public void setLocalFinished(boolean finished);
+		void setLocalFinished(boolean finished);
 	}
 
 	SpecialAction special;
@@ -134,8 +128,7 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 							int x = plistFrag.getListView().getFirstVisiblePosition();
 							plistFrag.getPlaylists(plistFrag.isPlaylist ? plistFrag.plistName : null);
 							plistFrag.getListView().setSelection(x);
-						} catch (Exception e) {
-						}
+						} catch (Exception ignored) {}
 					}
 
 					break;
@@ -149,9 +142,7 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 						if (fileFrag != null) {
 							fileFrag.getDir(intent.getStringExtra(CommandStrings.ta_currpath));
 						}
-					} catch (IllegalStateException e) {
-
-					}
+					} catch (IllegalStateException ignored) {}
 					break;
 				case CommandStrings.ta_cmd_gui_play_full:
 					currSongName = intent.getStringExtra(CommandStrings.ta_filename);
@@ -179,8 +170,7 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 							int x = plistFrag.getListView().getFirstVisiblePosition();
 							plistFrag.getPlaylists(plistFrag.isPlaylist ? plistFrag.plistName : null);
 							plistFrag.getListView().setSelection(x);
-						} catch (Exception e) {
-						}
+						} catch (Exception ignored) {}
 					}
 					break;
 				case CommandStrings.ta_cmd_pause_stop: // Notifiy pause/stop
@@ -211,7 +201,6 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 									AlertDialog alerty = special.getAlertDialog();
 									if (alerty.isShowing()) {
 										alerty.dismiss();
-										alerty = null;
 									}
 								}
 							}
@@ -331,7 +320,7 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 
 	@TargetApi(23)
 	@Override
-	public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+	public void onRequestPermissionsResult(int requestCode, @NonNull String permissions[], @NonNull int[] grantResults) {
 		super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 		switch (requestCode) {
 			case PERMISSION_REQUEST: {
@@ -368,20 +357,16 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 					if (!Environment.getExternalStorageDirectory().canRead()) {
 						// Buggy emulator? Try restarting the app
 						AlarmManager alm = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
-						alm.set(AlarmManager.RTC, System.currentTimeMillis() + 1000, PendingIntent.getActivity(this, 237462, new Intent(this, TimidityActivity.class), Intent.FLAG_ACTIVITY_NEW_TASK));
+						alm.set(AlarmManager.RTC, System.currentTimeMillis() + 1000, PendingIntent.getActivity(this, 237462, new Intent(this, TimidityActivity.class), PendingIntent.FLAG_ONE_SHOT));
 						System.exit(0);
 					}
 					yetAnotherInit();
 				}
-				return;
 			}
-
-			// other 'case' lines to check for other
-			// permissions this app might request
 		}
 	}
 
-	@SuppressLint("InlinedApi")
+	@SuppressLint({"InlinedApi", "PrivateResource"})
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		deadlyDeath = false;
@@ -505,9 +490,6 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 								menuButton2.setEnabled(true);
 							}
 							getSupportActionBar().setDisplayHomeAsUpEnabled(needFileBack);
-						} else {
-							getSupportActionBar().setDisplayHomeAsUpEnabled(false);
-							getSupportActionBar().setHomeButtonEnabled(false);
 						}
 						if (fileFrag != null)
 							if (fileFrag.getListView() != null)
@@ -548,8 +530,12 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 								menuButton2.setTitle(getResources().getString(R.string.add));
 								menuButton2.setTitleCondensed(getResources().getString(R.string.addcon));
 								if (plistFrag != null) {
-									menuButton2.setVisible((plistFrag.plistName != null && plistFrag.isPlaylist) ? !plistFrag.plistName.equals("CURRENT") : true);
-									menuButton2.setEnabled((plistFrag.plistName != null && plistFrag.isPlaylist) ? !plistFrag.plistName.equals("CURRENT") : true);
+									// Enable if:
+									// Not currently in a playlist OR
+									// the playlist is not in the current playlist.
+									// TODO: This could probably be simplified further
+									menuButton2.setVisible(!(plistFrag.plistName != null && plistFrag.isPlaylist) || !plistFrag.plistName.equals("CURRENT"));
+									menuButton2.setEnabled(!(plistFrag.plistName != null && plistFrag.isPlaylist) || !plistFrag.plistName.equals("CURRENT"));
 								}
 							}
 							if (plistFrag != null)
@@ -558,9 +544,6 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 							if (needPlaylistBack) {
 								getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 							}
-						} else {
-							getSupportActionBar().setDisplayHomeAsUpEnabled(false);
-							getSupportActionBar().setHomeButtonEnabled(false);
 						}
 						break;
 				}
@@ -591,7 +574,7 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 				if (f != null)
 					trueExt++;
 			}
-			if ((permissions == null || permissions.isEmpty()) && SettingsStorage.shouldExtStorageNag && trueExt > 1) {
+			if (permissions.isEmpty() && SettingsStorage.shouldExtStorageNag && trueExt > 1) {
 				new AlertDialog.Builder(this).setTitle("SD Card Access").setCancelable(false).setMessage("Would you like to give Timidity AE write access to your external sd card? This is recommended if you're converting files or would like to place Timidity AE's data directory there. Problems may occur if a directory other than the root of your SD card is selected.").setPositiveButton("Yes", new OnClickListener() {
 
 					@Override
@@ -644,11 +627,13 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 		if (in.getData() != null) {
 			String data;
 			if ((data = in.getData().getPath()) != null && in.getData().getScheme() != null) {
+				System.out.println("We have data! "+data);
+				serviceStarted = isMyServiceRunning(MusicService.class);
 				if (in.getData().getScheme().equals("file")) {
 					if (new File(data).exists()) {
 						File f = new File(data.substring(0, data.lastIndexOf('/') + 1));
-						if (f != null && f.exists() && f.isDirectory() && f.listFiles() != null) {
-							ArrayList<String> files = new ArrayList<String>();
+						if (f.exists() && f.isDirectory() && f.listFiles() != null) {
+							ArrayList<String> files = new ArrayList<>();
 							int position = -1;
 							int goodCounter = 0;
 							File[] filesz = f.listFiles();
@@ -667,19 +652,19 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 								Toast.makeText(this, getResources().getString(R.string.intErr1), Toast.LENGTH_SHORT).show();
 							else {
 								stop();
-
-								if (serviceStarted) {
-									selectedSong(files, position, true, false, true);
-								} else {
-									queuedPlist = files;
-									queuedPosition = position;
-								}
 								if (fileFrag != null) {
 									fileFrag.getDir(data.substring(0, data.lastIndexOf('/') + 1));
 								} else {
 									fileFragDir = data.substring(0, data.lastIndexOf('/') + 1);
 								}
-
+								if (serviceStarted) {
+									System.out.println("Service is started");
+									selectedSong(files, position, true, false, true);
+								} else {
+									System.out.println("Service is dead");
+									queuedPlist = files;
+									queuedPosition = position;
+								}
 							}
 						}
 					} else {
@@ -731,7 +716,7 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 					File f = new File(Globals.getExternalCacheDir(this).getAbsolutePath() + '/');
 					if (f.exists()) {
 						if (f.isDirectory()) {
-							ArrayList<String> files = new ArrayList<String>();
+							ArrayList<String> files = new ArrayList<>();
 							int position = -1;
 							int goodCounter = 0;
 							File[] filesz = f.listFiles();
@@ -750,16 +735,16 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 								Toast.makeText(this, getResources().getString(R.string.intErr1), Toast.LENGTH_SHORT).show();
 							else {
 								stop();
+								if (fileFrag != null) {
+									fileFrag.getDir(Globals.getExternalCacheDir(this).getAbsolutePath());
+								} else {
+									fileFragDir = (Globals.getExternalCacheDir(this).getAbsolutePath());
+								}
 								if (serviceStarted) {
 									selectedSong(files, position, true, false, true);
 								} else {
 									queuedPlist = files;
 									queuedPosition = position;
-								}
-								if (fileFrag != null) {
-									fileFrag.getDir(Globals.getExternalCacheDir(this).getAbsolutePath());
-								} else {
-									fileFragDir = (Globals.getExternalCacheDir(this).getAbsolutePath());
 								}
 							}
 						}
@@ -774,23 +759,22 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 	}
 
 	public void downloadFinished(String data, String theFilename) {
-		ArrayList<String> files = new ArrayList<String>();
+		ArrayList<String> files = new ArrayList<>();
 		String name = Globals.getExternalCacheDir(this).getAbsolutePath() + '/' + theFilename;
 		if (Globals.hasSupportedExtension(name)) {
 
 			files.add(name);
 			stop();
-
+			if (fileFrag != null) {
+				fileFrag.getDir(name.substring(0, name.lastIndexOf('/') + 1));
+			} else {
+				fileFragDir = data.substring(0, name.lastIndexOf('/') + 1);
+			}
 			if (serviceStarted) {
 				selectedSong(files, 0, true, false, true);
 			} else {
 				queuedPlist = files;
 				queuedPosition = 0;
-			}
-			if (fileFrag != null) {
-				fileFrag.getDir(name.substring(0, name.lastIndexOf('/') + 1));
-			} else {
-				fileFragDir = data.substring(0, name.lastIndexOf('/') + 1);
 			}
 		}
 	}
@@ -799,12 +783,8 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 	public void onDestroy() {
 		try {
 			unregisterReceiver(activityReceiver);
-		} catch (IllegalArgumentException e) {
-
-		}
+		} catch (IllegalArgumentException ignored) {}
 		super.onDestroy();
-		// if(deadlyDeath)
-		// System.exit(0);
 	}
 
 	private boolean isMyServiceRunning(Class<?> serviceClass) {
@@ -854,9 +834,6 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 						menuButton2.setEnabled(true);
 					}
 					getSupportActionBar().setDisplayHomeAsUpEnabled(needFileBack);
-				} else {
-					getSupportActionBar().setDisplayHomeAsUpEnabled(false);
-					getSupportActionBar().setHomeButtonEnabled(false);
 				}
 				if (fileFrag != null)
 					if (fileFrag.getListView() != null)
@@ -897,8 +874,12 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 						menuButton2.setTitle(getResources().getString(R.string.add));
 						menuButton2.setTitleCondensed(getResources().getString(R.string.addcon));
 						if (plistFrag != null) {
-							menuButton2.setVisible((plistFrag.plistName != null && plistFrag.isPlaylist) ? !plistFrag.plistName.equals("CURRENT") : true);
-							menuButton2.setEnabled((plistFrag.plistName != null && plistFrag.isPlaylist) ? !plistFrag.plistName.equals("CURRENT") : true);
+							// Enable if:
+							// Not currently in a playlist OR
+							// the playlist is not in the current playlist.
+							// TODO: This could probably be simplified further
+							menuButton2.setVisible(!(plistFrag.plistName != null && plistFrag.isPlaylist) || !plistFrag.plistName.equals("CURRENT"));
+							menuButton2.setEnabled(!(plistFrag.plistName != null && plistFrag.isPlaylist) || !plistFrag.plistName.equals("CURRENT"));
 						}
 					}
 					if (plistFrag != null)
@@ -907,9 +888,6 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 					if (needPlaylistBack) {
 						getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 					}
-				} else {
-					getSupportActionBar().setDisplayHomeAsUpEnabled(false);
-					getSupportActionBar().setHomeButtonEnabled(false);
 				}
 				break;
 		}
@@ -998,7 +976,7 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 				if (fileFrag != null)
 					if (fileFrag.currPath != null)
 						if (!(fileFrag.currPath.matches(Globals.repeatedSeparatorString))) {
-							fileFrag.getDir(new File(fileFrag.currPath).getParent().toString());
+							fileFrag.getDir(new File(fileFrag.currPath).getParent());
 						} else {
 							if (SettingsStorage.useDefaultBack) {
 								super.onBackPressed();
@@ -1257,7 +1235,7 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 	public class TimidityFragmentPagerAdapter extends FragmentPagerAdapter {
 		final String[] pages = {"Files", "Player", "Playlists"};
 
-		public TimidityFragmentPagerAdapter() {
+		TimidityFragmentPagerAdapter() {
 			super(getSupportFragmentManager());
 		}
 
