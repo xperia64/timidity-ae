@@ -1,5 +1,6 @@
 package com.xperia64.timidityae.util;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.app.UiModeManager;
@@ -33,6 +34,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Locale;
 
+@SuppressLint("CommitPrefEdits")
 public class SettingsStorage {
 	// ---------SETTINGS STORAGE----------
 	private static SharedPreferences prefs; // The preferences used by this class
@@ -123,7 +125,7 @@ public class SettingsStorage {
 			}
 
 			if (!validRate)
-				prefs.edit().putString("tplusRate", Integer.toString(AudioTrack.getNativeOutputSampleRate(AudioTrack.MODE_STREAM))).apply();
+				prefs.edit().putString("tplusRate", Integer.toString(AudioTrack.getNativeOutputSampleRate(AudioTrack.MODE_STREAM))).commit();
 
 			return values;
 		}
@@ -135,7 +137,7 @@ public class SettingsStorage {
 			SparseIntArray buffMap = validBuffers(rata, prefs.getString(Constants.sett_channel_mode, "2").equals("2"), true);
 			int realMin = buffMap.get(Integer.parseInt(prefs.getString(Constants.sett_audio_rate, Integer.toString(AudioTrack.getNativeOutputSampleRate(AudioTrack.MODE_STREAM)))));
 			if (bufferSize < realMin) {
-				prefs.edit().putString(Constants.sett_buffer_size, Integer.toString(bufferSize = realMin)).apply();
+				prefs.edit().putString(Constants.sett_buffer_size, Integer.toString(bufferSize = realMin)).commit();
 				return false;
 			}
 		}
@@ -143,7 +145,7 @@ public class SettingsStorage {
 	}
 
 	public static void disableLollipopStorageNag() {
-		prefs.edit().putBoolean(Constants.sett_should_ext_storage_nag, shouldExtStorageNag = false).apply();
+		prefs.edit().putBoolean(Constants.sett_should_ext_storage_nag, shouldExtStorageNag = false).commit();
 	}
 
 	public static boolean initialize(final Activity a) {
@@ -234,7 +236,7 @@ public class SettingsStorage {
 						e.printStackTrace();
 					}
 				}
-				eee.apply();
+				eee.commit();
 				return true;
 			} else {
 				// Should probably check if 8rock11e exists no matter what

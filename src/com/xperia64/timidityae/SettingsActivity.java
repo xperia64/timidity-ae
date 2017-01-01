@@ -33,6 +33,7 @@ import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
+import android.support.annotation.RequiresApi;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
@@ -65,7 +66,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-@SuppressLint("NewApi")
+@SuppressLint("CommitPrefEdits")
 public class SettingsActivity extends AppCompatActivity implements FileBrowserDialogListener, SoundfontDialogListener {
 
 	public static SettingsActivity mInstance = null;
@@ -103,7 +104,6 @@ public class SettingsActivity extends AppCompatActivity implements FileBrowserDi
 	private TimidityPrefsFragment pf;
 	private float abElevation;
 
-	@SuppressLint("InlinedApi")
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 
@@ -238,7 +238,7 @@ public class SettingsActivity extends AppCompatActivity implements FileBrowserDi
 		Toast.makeText(this, getResources().getString(R.string.invalidfold), Toast.LENGTH_SHORT).show();
 	}
 
-	@SuppressLint("NewApi")
+	@RequiresApi(api = Build.VERSION_CODES.KITKAT)
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		// Check which request we're responding to
@@ -288,8 +288,6 @@ public class SettingsActivity extends AppCompatActivity implements FileBrowserDi
 	public static class TimidityPrefsFragment extends PreferenceFragment {
 
 		SettingsActivity s;
-
-		@SuppressWarnings("unchecked")
 		@Override
 		public void onCreate(Bundle savedInstanceState) {
 
@@ -385,11 +383,11 @@ public class SettingsActivity extends AppCompatActivity implements FileBrowserDi
 			});
 			if (s.lolPref != null)
 				s.lolPref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
-					@SuppressLint("NewApi")
+					@RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
 					public boolean onPreferenceClick(Preference preference) {
 						// dialog code here
 						List<UriPermission> permissions = s.getContentResolver().getPersistedUriPermissions();
-						if (!(permissions == null || permissions.isEmpty())) {
+						if (!permissions.isEmpty()) {
 							for (UriPermission p : permissions) {
 								s.getContentResolver().releasePersistableUriPermission(p.getUri(), Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
 							}
@@ -481,12 +479,12 @@ public class SettingsActivity extends AppCompatActivity implements FileBrowserDi
 				@Override
 				public boolean onPreferenceChange(Preference preference, Object newValue) {
 
-					if (!((String) s.rates.getValue()).equals((String) newValue)) {
+					if (!(s.rates.getValue()).equals(newValue)) {
 						s.needRestart = true;
 						String stereo = s.stereoMode.getValue();
 						String sixteen = "16";// s.bitMode.getValue();
-						boolean sb = (stereo != null) ? stereo.equals("2") : true;
-						boolean sxb = (sixteen != null) ? sixteen.equals("16") : true;
+						boolean sb = stereo == null || stereo.equals("2");
+						boolean sxb = sixteen.equals("16");
 						SparseIntArray mmm = SettingsStorage.validBuffers(SettingsStorage.validRates(sb, sxb), sb, sxb);
 						if (mmm != null) {
 							int minBuff = mmm.get(Integer.parseInt((String) newValue));
@@ -505,7 +503,7 @@ public class SettingsActivity extends AppCompatActivity implements FileBrowserDi
 				}
 			});
 			if (s.tmpSounds == null)
-				s.tmpSounds = new ArrayList<String>();
+				s.tmpSounds = new ArrayList<>();
 			s.manTcfg.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
 
 				@Override
@@ -553,7 +551,7 @@ public class SettingsActivity extends AppCompatActivity implements FileBrowserDi
 
 				@Override
 				public boolean onPreferenceChange(Preference preference, Object newValue) {
-					if (!((String) s.resampMode.getValue()).equals((String) newValue)) {
+					if (!(s.resampMode.getValue()).equals(newValue)) {
 						s.needRestart = true;
 					}
 					return true;
@@ -563,7 +561,7 @@ public class SettingsActivity extends AppCompatActivity implements FileBrowserDi
 			s.manDataFolder.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
 				@Override
 				public boolean onPreferenceChange(Preference preference, Object newValue) {
-					if (!((String) s.manDataFolder.getText()).equals((String) newValue)) {
+					if (!(s.manDataFolder.getText()).equals(newValue)) {
 						s.needRestart = true;
 					}
 					return true;
@@ -590,7 +588,7 @@ public class SettingsActivity extends AppCompatActivity implements FileBrowserDi
 
 				@Override
 				public boolean onPreferenceChange(Preference preference, final Object newValue) {
-					if (!((String) s.bufferSize.getText()).equals((String) newValue)) {
+					if (!s.bufferSize.getText().equals(newValue)) {
 						s.needRestart = true;
 						String txt = (String) newValue;
 						if (txt != null) {
@@ -598,8 +596,8 @@ public class SettingsActivity extends AppCompatActivity implements FileBrowserDi
 
 								String stereo = s.stereoMode.getValue();
 								String sixteen = "16"; // s.bitMode.getValue();
-								boolean sb = (stereo != null) ? stereo.equals("2") : true;
-								boolean sxb = (sixteen != null) ? sixteen.equals("16") : true;
+								boolean sb = stereo == null || stereo.equals("2");
+								boolean sxb = sixteen.equals("16");
 								SparseIntArray mmm = SettingsStorage.validBuffers(SettingsStorage.validRates(sb, sxb), sb, sxb);
 								if (mmm != null) {
 
@@ -628,12 +626,12 @@ public class SettingsActivity extends AppCompatActivity implements FileBrowserDi
 
 				@Override
 				public boolean onPreferenceChange(Preference preference, Object newValue) {
-					if (!((String) s.stereoMode.getValue()).equals((String) newValue)) {
+					if (!s.stereoMode.getValue().equals(newValue)) {
 						s.needRestart = true;
 						String stereo = (String) newValue;
 						String sixteen = "16"; // s.bitMode.getValue();
-						boolean sb = (stereo != null) ? stereo.equals("2") : true;
-						boolean sxb = (sixteen != null) ? sixteen.equals("16") : true;
+						boolean sb = stereo == null || stereo.equals("2");
+						boolean sxb = sixteen.equals("16");
 						SparseIntArray mmm = SettingsStorage.validBuffers(SettingsStorage.validRates(sb, sxb), sb, sxb);
 						if (mmm != null) {
 
@@ -653,32 +651,6 @@ public class SettingsActivity extends AppCompatActivity implements FileBrowserDi
 					return true;
 				}
 			});
-			/*
-			 * s.bitMode.setOnPreferenceChangeListener(new
-			 * OnPreferenceChangeListener(){
-			 * 
-			 * @Override public boolean onPreferenceChange( Preference
-			 * preference, Object newValue) {
-			 * if(!((String)s.bitMode.getValue()).equals((String) newValue)) {
-			 * s.needRestart=true; String stereo = s.stereoMode.getValue();
-			 * String sixteen = (String) newValue; boolean
-			 * sb=(stereo!=null)?stereo.equals("2"):true; boolean
-			 * sxb=(sixteen!=null)?sixteen.equals("16"):true; SparseIntArray mmm
-			 * = Globals.validBuffers(Globals.validRates(sb,sxb),sb,sxb);
-			 * if(mmm!=null) {
-			 * 
-			 * int minBuff = mmm.get(Integer.parseInt(s.rates.getValue()));
-			 * 
-			 * int buff = Integer.parseInt(s.bufferSize.getText());
-			 * if(buff<minBuff) {
-			 * s.prefs.edit().putString("tplusBuff",Integer.toString(minBuff)).
-			 * commit(); s.bufferSize.setText(Integer.toString(minBuff));
-			 * Toast.makeText(s, getResources().getString(R.string.invalidbuff),
-			 * Toast.LENGTH_SHORT).show();
-			 * ((BaseAdapter)s.tplus.getRootAdapter()).notifyDataSetChanged();
-			 * ((BaseAdapter)s.tplus.getRootAdapter()).notifyDataSetInvalidated(
-			 * ); } } } return true; } });
-			 */
 			s.themePref.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
 
 				@Override
