@@ -113,7 +113,7 @@ public class DocumentFileUtils {
 	 * @param subTo   the path to the new file without the mount point prefix
 	 * @return whether the operation was successful
 	 */
-	public static boolean renameDocumentFile21(Context context, String from, String subTo) {
+	private static boolean renameDocumentFile21(Context context, String from, String subTo) {
 		// From is the full path
 		// subTo is the path without the device prefix.
 		// So /storage/sdcard1/folder/file.mid should be folder/file.mid
@@ -142,15 +142,12 @@ public class DocumentFileUtils {
 				return false;
 			}
 		}
-		if (df != null && upper.length() > 3) {
-			// DocumentFile's rename renames in the context of the current working directory.
-			// The relative root directory must be specified in terms of many "../"
-			return df.renameTo(upper.substring(0, upper.length() - 3) + subTo);
-		}
-		return false;
+		// DocumentFile's rename renames in the context of the current working directory.
+		// The relative root directory must be specified in terms of many "../"
+		return df != null && upper.length() > 3 && df.renameTo(upper.substring(0, upper.length() - 3) + subTo);
 	}
 
-	public static boolean renameDocumentFile23(Context context, String from, String subTo) {
+	private static boolean renameDocumentFile23(Context context, String from, String subTo) {
 		if (docFileDevice == null)
 			return false;
 		from = fixRepeatedSeparator(from);
@@ -213,8 +210,8 @@ public class DocumentFileUtils {
 	 * This method attempts to find the temporary folder on the filesystem containing parent.
 	 *
 	 * @param context the android context
-	 * @param parent  the parent directory of the file we want
-	 * @return
+	 * @param parent  the file/folder we want to find the storage device of
+	 * @return String array in the form {Package-writable 'files' folder, Best guess at the path to the root of the storage device}
 	 */
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	public static String[] getExternalFilePaths(Context context, String parent) {
@@ -236,7 +233,7 @@ public class DocumentFileUtils {
 		for (File f : exf) {
 			if (f != null) {
 				String ex = f.getAbsolutePath();
-				if (ex.indexOf("Android") < 0) {
+				if (!ex.contains("Android")) {
 					break;
 				}
 				ex = ex.substring(0, ex.indexOf("/Android/") + 1);
@@ -258,15 +255,14 @@ public class DocumentFileUtils {
 				String theRoot = absoluteParent.substring(0, lastmatch);
 				File testFile = new File(theRoot);
 				// The root must have the path of a folder, exist, and actually be a folder
-				if (!theRoot.endsWith(File.separator) || !testFile.exists() || !testFile.isDirectory()) {
-					continue;
-				} else {
+				if (theRoot.endsWith(File.separator) && testFile.exists() && testFile.isDirectory()) {
 					probablyTheDirectory = f.getAbsolutePath();
 					probablyTheRoot = theRoot;
 					break;
 				}
 			}
 		}
+		System.out.println(String.format("A %s B %s C %s", parent, probablyTheDirectory, probablyTheRoot));
 		String[] rets = new String[2];
 		rets[0] = probablyTheDirectory;
 		rets[1] = probablyTheRoot;
