@@ -3,7 +3,7 @@
     package="com.xperia64.timidityae"
     android:installLocation="auto"
     android:versionCode="81"
-    android:versionName="2.7.6" >
+    android:versionName="2.X" >
 
     <uses-feature
         android:name="android.software.leanback"
@@ -14,7 +14,7 @@
 
     <uses-sdk
         android:minSdkVersion="9"
-        android:targetSdkVersion="23" />
+        android:targetSdkVersion="25" />
 
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
