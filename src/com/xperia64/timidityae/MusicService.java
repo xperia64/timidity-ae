@@ -62,10 +62,6 @@ import java.util.Random;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
-//import android.appwidget.AppWidgetManager;
-//import android.content.ComponentName;
-//import android.util.Log;
-
 public class MusicService extends Service {
 
 	public ArrayList<String> playList;
@@ -73,7 +69,7 @@ public class MusicService extends Service {
 	public SparseIntArray reverseShuffledIndices; // HashMap<Integer, Integer>
 	public int currSongNumber = -1;
 	public int realSongNumber = -1;
-	public boolean shouldStart;
+	//public boolean shouldStart; // In case I ever enable loading but not immediately playing a song.
 	public boolean shouldAdvance = true;
 	public String currFold;
 	public int loopMode = 1;
@@ -142,9 +138,9 @@ public class MusicService extends Service {
 					phonepause = false;
 					pause();
 				}
-			} else if (state == TelephonyManager.CALL_STATE_OFFHOOK) {
+			}/* else if (state == TelephonyManager.CALL_STATE_OFFHOOK) {
 				// A call is dialing, active or on hold
-			}
+			}*/
 			super.onCallStateChanged(state, incomingNumber);
 		}
 	};
@@ -153,7 +149,7 @@ public class MusicService extends Service {
 		if (playList != null) {
 			shuffledIndices = new SparseIntArray();
 			reverseShuffledIndices = new SparseIntArray();
-			ArrayList<Integer> tmp = new ArrayList<Integer>();
+			ArrayList<Integer> tmp = new ArrayList<>();
 			for (int i = 0; i < playList.size(); i++) {
 				tmp.add(i);
 			}
@@ -173,7 +169,7 @@ public class MusicService extends Service {
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			if (intent.getAction().equals(Intent.ACTION_MEDIA_BUTTON)) {
-				KeyEvent event = (KeyEvent) intent.getParcelableExtra(Intent.EXTRA_KEY_EVENT);
+				KeyEvent event = intent.getParcelableExtra(Intent.EXTRA_KEY_EVENT);
 				if (event.getAction() == KeyEvent.ACTION_DOWN) {
 					switch (event.getKeyCode()) {
 						case KeyEvent.KEYCODE_MEDIA_PLAY:
@@ -234,7 +230,7 @@ public class MusicService extends Service {
 							}
 						}
 						Globals.plist = null;
-						tmpList = null;
+						//tmpList = null;
 						currFold = intent.getStringExtra(Constants.msrv_currfold);
 
 						if (shuffleMode == 1 && shouldCopyPlist) {
@@ -243,7 +239,7 @@ public class MusicService extends Service {
 						outgoingIntent.setAction(Constants.ta_rec);
 						outgoingIntent.putExtra(Constants.ta_cmd, Constants.ta_cmd_copy_plist);
 						if (shuffleMode == 1) {
-							Globals.tmpplist = new ArrayList<String>();
+							Globals.tmpplist = new ArrayList<>();
 							for (int i = 0; i < playList.size(); i++) {
 								Globals.tmpplist.add(playList.get(shuffledIndices.get(i)));
 							}
@@ -306,7 +302,7 @@ public class MusicService extends Service {
 						outgoingIntent.putExtra(Constants.ta_cmd, Constants.ta_cmd_copy_plist);
 						outgoingIntent.putExtra(Constants.ta_highlight, currSongNumber);
 						if (shuffleMode == 1) {
-							Globals.tmpplist = new ArrayList<String>();
+							Globals.tmpplist = new ArrayList<>();
 							for (int i = 0; i < playList.size(); i++) {
 								Globals.tmpplist.add(playList.get(shuffledIndices.get(i)));
 							}
@@ -346,7 +342,7 @@ public class MusicService extends Service {
 						outgoingIntent.setAction(Constants.ta_rec);
 						outgoingIntent.putExtra(Constants.ta_cmd, Constants.ta_cmd_copy_plist);
 						if (shuffleMode == 1) {
-							Globals.tmpplist = new ArrayList<String>();
+							Globals.tmpplist = new ArrayList<>();
 							for (int i = 0; i < playList.size(); i++) {
 								Globals.tmpplist.add(playList.get(shuffledIndices.get(i)));
 							}
@@ -390,8 +386,7 @@ public class MusicService extends Service {
 									}
 									try {
 										Thread.sleep(10);
-									} catch (InterruptedException e) {
-									}
+									} catch (InterruptedException ignored) {}
 								}
 								if (new File(input + ".def.tcf").exists() || new File(input + ".def.tzf").exists()) {
 									String suffix;
@@ -421,8 +416,7 @@ public class MusicService extends Service {
 								while (((JNIHandler.isPlaying))) {
 									try {
 										Thread.sleep(25);
-									} catch (InterruptedException e) {
-									}
+									} catch (InterruptedException ignored) {}
 								}
 
 								Intent outgoingIntent = new Intent();
@@ -455,14 +449,12 @@ public class MusicService extends Service {
 								while (((!JNIHandler.isPlaying))) {
 									try {
 										Thread.sleep(10);
-									} catch (InterruptedException e) {
-									}
+									} catch (InterruptedException ignored) {}
 								}
 								while (((JNIHandler.isPlaying))) {
 									try {
 										Thread.sleep(25);
-									} catch (InterruptedException e) {
-									}
+									} catch (InterruptedException ignored) {}
 								}
 								Intent outgoingIntent = new Intent();
 								outgoingIntent.setAction(Constants.ta_rec);
@@ -519,7 +511,7 @@ public class MusicService extends Service {
 									}
 							}
 						} else {
-							FileWriter fw = null;
+							FileWriter fw;
 							try {
 								fw = new FileWriter(output3, false);
 								for (String s : serializedSettings) {
@@ -545,10 +537,10 @@ public class MusicService extends Service {
 							JNIHandler.waitUntilReady(50);
 						}
 						String input2 = intent.getStringExtra(Constants.msrv_infile);
-						ArrayList<Integer> msprograms = new ArrayList<Integer>();
-						ArrayList<Boolean> mscustInst = new ArrayList<Boolean>();
-						ArrayList<Integer> msvolumes = new ArrayList<Integer>();
-						ArrayList<Boolean> mscustVol = new ArrayList<Boolean>();
+						ArrayList<Integer> msprograms = new ArrayList<>();
+						ArrayList<Boolean> mscustInst = new ArrayList<>();
+						ArrayList<Integer> msvolumes = new ArrayList<>();
+						ArrayList<Boolean> mscustVol = new ArrayList<>();
 						int[] newnumbers = new int[3];
 						FileInputStream fstream;
 						try {
@@ -640,11 +632,11 @@ public class MusicService extends Service {
 						int logRet = JNIHandler.unloadLib();
 						Log.d("TIMIDITY", "Unloading: " + logRet);
 						JNIHandler.prepared = false;
-						JNIHandler.volumes = new ArrayList<Integer>();
-						JNIHandler.programs = new ArrayList<Integer>();
-						JNIHandler.drums = new ArrayList<Boolean>();
-						JNIHandler.custInst = new ArrayList<Boolean>();
-						JNIHandler.custVol = new ArrayList<Boolean>();
+						JNIHandler.volumes = new ArrayList<>();
+						JNIHandler.programs = new ArrayList<>();
+						JNIHandler.drums = new ArrayList<>();
+						JNIHandler.custInst = new ArrayList<>();
+						JNIHandler.custVol = new ArrayList<>();
 						logRet = JNIHandler.loadLib(Globals.getLibDir(MusicService.this) + "libtimidityplusplus.so");
 						Log.d("TIMIDITY", "Reloading: " + logRet);
 						int x = JNIHandler.init(SettingsStorage.dataFolder + "timidity/", "timidity.cfg", SettingsStorage.channelMode, SettingsStorage.defaultResamp, SettingsStorage.sixteenBit, SettingsStorage.bufferSize, SettingsStorage.audioRate, SettingsStorage.preserveSilence, true, SettingsStorage.freeInsts);
@@ -812,8 +804,7 @@ public class MusicService extends Service {
 								// System.out.println(String.format("alt check: %d death: %s isplaying: %d shouldAdvance: %s seekBarReady: %s",JNIHandler.alternativeCheck,death?"true":"false",Globals.isPlaying,shouldAdvance?"true":"false",JNIHandler.seekbarReady?"true":"false"));
 								try {
 									Thread.sleep(10);
-								} catch (InterruptedException e) {
-								}
+								} catch (InterruptedException ignored) {}
 							}
 							if (!death) {
 								final Intent guiIntent = new Intent();
@@ -986,7 +977,7 @@ public class MusicService extends Service {
 		// System.out.println("Updating notification");
 
 		remoteViews = new RemoteViews(getPackageName(), R.layout.music_notification);
-		remoteViews.setTextViewText(R.id.titley, currTitle);
+		remoteViews.setTextViewText(R.id.titley, title);
 		remoteViews.setImageViewResource(R.id.notPause, (paused) ? R.drawable.ic_media_play : R.drawable.ic_media_pause);
 		// Previous
 		final Intent prevIntent = new Intent();
@@ -1076,25 +1067,21 @@ public class MusicService extends Service {
 					Globals.currArt = BitmapFactory.decodeByteArray(art, 0, art.length);
 					goodart = Globals.currArt != null;
 				}
-			} catch (Exception e) {
-			}
+			} catch (Exception ignored) {}
 		}
 		if (!goodart) {
 			String goodPath = fileName.substring(0, fileName.lastIndexOf('/') + 1) + "folder.jpg";
 			if (new File(goodPath).exists()) {
 				try {
 					Globals.currArt = BitmapFactory.decodeFile(goodPath);
-				} catch (RuntimeException e) {
-				}
+				} catch (RuntimeException ignored) {}
 			} else {
 				// Try albumart.jpg
 				goodPath = fileName.substring(0, fileName.lastIndexOf('/') + 1) + "AlbumArt.jpg";
 				if (new File(goodPath).exists()) {
 					try {
 						Globals.currArt = BitmapFactory.decodeFile(goodPath);
-					} catch (RuntimeException e) {
-						//
-					}
+					} catch (RuntimeException ignored) {}
 				}
 			}
 		}
