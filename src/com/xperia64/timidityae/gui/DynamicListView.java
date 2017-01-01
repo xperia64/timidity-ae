@@ -29,6 +29,8 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
+import android.os.Build;
+import android.support.annotation.RequiresApi;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.view.MotionEvent;
@@ -62,7 +64,7 @@ import java.util.ArrayList;
  * When the hover cell is either above or below the bounds of the listview, this
  * listview also scrolls on its own so as to reveal additional content.
  */
-@SuppressLint("NewAPI")
+@RequiresApi(api = Build.VERSION_CODES.ICE_CREAM_SANDWICH)
 public class DynamicListView extends ListView {
 
 	private final int SMOOTH_SCROLL_AMOUNT_AT_EDGE = 15;
@@ -123,9 +125,9 @@ public class DynamicListView extends ListView {
 
 	public interface DraggerCallback {
 		@SuppressWarnings("rawtypes")
-		public ArrayList getArrayList();
+		ArrayList getArrayList();
 
-		public void saveReordering();
+		void saveReordering();
 	}
 
 	public void setDraggerCallback(DraggerCallback al) {
@@ -359,11 +361,6 @@ public class DynamicListView extends ListView {
 			View switchView = isBelow ? belowView : aboveView;
 			final int originalItem = getPositionForView(mobileView);
 
-			if (switchView == null) {
-				updateNeighborViewsForID(mMobileItemId);
-				return;
-			}
-
 			swapElements(arrayListCallback.getArrayList(), originalItem, getPositionForView(switchView));
 
 			((BaseAdapter) getAdapter()).notifyDataSetChanged();
@@ -495,7 +492,7 @@ public class DynamicListView extends ListView {
 					interpolate(startValue.bottom, endValue.bottom, fraction));
 		}
 
-		public int interpolate(int start, int end, float fraction) {
+		int interpolate(int start, int end, float fraction) {
 			return (int) (start + fraction * (end - start));
 		}
 	};
@@ -595,7 +592,7 @@ public class DynamicListView extends ListView {
 		 * Determines if the listview scrolled up enough to reveal a new cell at the
 		 * top of the list. If so, then the appropriate parameters are updated.
 		 */
-		public void checkAndHandleFirstVisibleCellChange() {
+		private void checkAndHandleFirstVisibleCellChange() {
 			if (mCurrentFirstVisibleItem != mPreviousFirstVisibleItem) {
 				if (mCellIsMobile && mMobileItemId != INVALID_ID) {
 					updateNeighborViewsForID(mMobileItemId);
@@ -608,7 +605,7 @@ public class DynamicListView extends ListView {
 		 * Determines if the listview scrolled down enough to reveal a new cell at the
 		 * bottom of the list. If so, then the appropriate parameters are updated.
 		 */
-		public void checkAndHandleLastVisibleCellChange() {
+		private void checkAndHandleLastVisibleCellChange() {
 			int currentLastVisibleItem = mCurrentFirstVisibleItem + mCurrentVisibleItemCount;
 			int previousLastVisibleItem = mPreviousFirstVisibleItem + mPreviousVisibleItemCount;
 			if (currentLastVisibleItem != previousLastVisibleItem) {
