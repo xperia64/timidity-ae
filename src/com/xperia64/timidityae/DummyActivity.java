@@ -3,6 +3,43 @@ package com.xperia64.timidityae;
 import android.app.Activity;
 import android.os.Bundle;
 
+// @formatter:off
+/*
+           ,Mk      ,MMMMMMMMMMMk
+           .:cddddddOMMkooooKM0oodd.
+             ,MMMMKxxxd;.;dxXMx.;dxol.
+           .:cddXM0oc..cokMMOd:....OM,
+         ..:Kd..OMMM0::0MMMMc......OM,
+         kMk ,MMMMMMMMMMMMMMMMl  ..OM,
+      :00l:' ,MMMMd.cMMc.cMMMMl  ..OM,
+    lOd::,....''''lOx::xOd''''..:KKc'
+ .ddoo:...........;oc..coodd,.:kd::.
+ddoo,....................lMM0kKMk
+MO..................;ddddOMMMMMMKll.
+ddoo;...........coookMMMMMMMMMKk0MM,
+ ,MMl...........OMMMMMMMMMMMMMd.lMM,
+  ..xXXXXXXXXXXKWMMMMMMMM0::::,.lMM,
+    ............OMMM0::::;......lMM,
+             'OOo:::;...........,::xO'
+           .ddoo,..................OM,
+           ,MO.....................OM,
+           ,MKoo;......coc......;ooxkl::
+         ..:KKKKo::::::0M0::::::oKKc.OMM
+         kMO....OMMMMMMMMMMMMMMMO....OMM
+         kMO....;::::::0M0::::::,....OMM
+         kMO...........;:;...........OMM
+         kMO.........................OMM
+         ':lkkkk:.............ckkkkkkl::
+           .llllddddddddddddddollllll.
+                :dddOMMMMMMMMMl
+                    ,MMMMMMMMMl
+                    ,MMMM0::0Ml
+             '000000XMMd:,..OMN000000'
+           'Ox:::::::::,....;::::::::xOO
+           ,MNkkkkkkkkkkkkkkkkkkkkkkkNMM
+           ,MMMMMMMMMMMMMMMMMMMMMMMMMMMM
+*/
+// @formatter:on
 public class DummyActivity extends Activity {
 	@Override
 	public void onCreate(Bundle potato) {
