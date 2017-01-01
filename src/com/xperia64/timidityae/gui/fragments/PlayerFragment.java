@@ -52,7 +52,9 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 @SuppressLint("Recycle")
 public class PlayerFragment extends Fragment {
@@ -98,8 +100,7 @@ public class PlayerFragment extends Fragment {
 
 	//
 	public static PlayerFragment create() {
-		PlayerFragment fragment = new PlayerFragment();
-		return fragment;
+		return new PlayerFragment();
 	}
 
 	@Override
@@ -151,9 +152,7 @@ public class PlayerFragment extends Fragment {
 							trackBar.setEnabled(true);
 							playButton.setEnabled(true);
 						}
-					} catch (Exception e) {
-
-					}
+					} catch (Exception ignored) {}
 				}
 			} else {
 				enabledControls = true;
@@ -179,8 +178,7 @@ public class PlayerFragment extends Fragment {
 				{
 					JNIHandler.currTime = JNIHandler.mMediaPlayer.getCurrentPosition();
 				}
-			} catch (Exception e) {
-			}
+			} catch (Exception ignored) {}
 			if (getActivity() != null && !changingTime) {
 				shouldUpdateSeekBar = false;
 				totalMinutes = 0;
@@ -202,7 +200,7 @@ public class PlayerFragment extends Fragment {
 						trackBar.setProgress(JNIHandler.currTime);
 						trackBar.invalidate();
 
-						timeCounter.setText(String.format("%d:%02d/%d:%02d", currMinutes, currSeconds, totalMinutes, totalSeconds));
+						timeCounter.setText(String.format(Locale.US, "%1$d:%2$02d/%3$d:%4$02d", currMinutes, currSeconds, totalMinutes, totalSeconds));
 						timeCounter.invalidate();
 					}
 				});
@@ -276,7 +274,6 @@ public class PlayerFragment extends Fragment {
 		FragmentManager fm = getFragmentManager();
 		FragmentTransaction ft = fm.beginTransaction();
 
-		fm.beginTransaction();
 		artsy = new ArtFragment();
 		ft.replace(R.id.midiContainer, artsy);
 		ft.commit();
@@ -488,7 +485,7 @@ public class PlayerFragment extends Fragment {
 						@Override
 						public void run() {
 
-							timeCounter.setText(String.format("%d:%02d/%d:%02d", currMinutes, currSeconds, totalMinutes, totalSeconds));
+							timeCounter.setText(String.format(Locale.US, "%1$d:%2$02d/%3$d:%4$02d", currMinutes, currSeconds, totalMinutes, totalSeconds));
 							timeCounter.invalidate();
 						}
 					});
@@ -571,7 +568,6 @@ public class PlayerFragment extends Fragment {
 				FragmentManager fm = getFragmentManager();
 				FragmentTransaction ft = fm.beginTransaction();
 				fragMode = 0;
-				fm.beginTransaction();
 				artsy = new ArtFragment();
 				ft.replace(R.id.midiContainer, artsy);
 				ft.commitAllowingStateLoss();
@@ -610,7 +606,6 @@ public class PlayerFragment extends Fragment {
 			FragmentManager fm = getFragmentManager();
 			FragmentTransaction ft = fm.beginTransaction();
 			fragMode = 0;
-			fm.beginTransaction();
 			artsy = new ArtFragment();
 			ft.replace(R.id.midiContainer, artsy);
 			ft.commitAllowingStateLoss();
@@ -621,7 +616,6 @@ public class PlayerFragment extends Fragment {
 		FragmentManager fm = getFragmentManager();
 		FragmentTransaction ft = fm.beginTransaction();
 
-		fm.beginTransaction();
 		if ((!JNIHandler.isMediaPlayerFormat) && JNIHandler.isPlaying) {
 			if (++fragMode > 2)
 				fragMode = 0;
@@ -651,7 +645,6 @@ public class PlayerFragment extends Fragment {
 		FragmentManager fm = getFragmentManager();
 		FragmentTransaction ft = fm.beginTransaction();
 		fragMode = which;
-		fm.beginTransaction();
 		if ((!JNIHandler.isMediaPlayerFormat) && JNIHandler.isPlaying) {
 			if (fragMode > 2)
 				fragMode = 0;
@@ -797,7 +790,7 @@ public class PlayerFragment extends Fragment {
 				String needRename1 = null;
 				String needRename2 = null;
 				String probablyTheRoot = "";
-				String probablyTheDirectory = "";
+				String probablyTheDirectory;
 				try {
 					if (SettingsStorage.compressCfg)
 						new FileOutputStream(mActivity.currSongName + ".def.tzf", true).close();
@@ -855,15 +848,10 @@ public class PlayerFragment extends Fragment {
 					dialog.setButton(DialogInterface.BUTTON_POSITIVE, getResources().getString(android.R.string.yes), new DialogInterface.OnClickListener() {
 						public void onClick(DialogInterface dialog, int buttonId) {
 							if (!canWrite && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-								if (needToRename1 != null) {
-									DocumentFileUtils.tryToDeleteFile(getActivity(), probRoot + needToRename1);
-									DocumentFileUtils.tryToDeleteFile(getActivity(), finalval1);
-									DocumentFileUtils.tryToDeleteFile(getActivity(), probRoot + needToRename2);
-									DocumentFileUtils.tryToDeleteFile(getActivity(), finalval2);
-								} else {
-									DocumentFileUtils.tryToDeleteFile(getActivity(), finalval1);
-									DocumentFileUtils.tryToDeleteFile(getActivity(), finalval2);
-								}
+								DocumentFileUtils.tryToDeleteFile(getActivity(), probRoot + needToRename1);
+								DocumentFileUtils.tryToDeleteFile(getActivity(), finalval1);
+								DocumentFileUtils.tryToDeleteFile(getActivity(), probRoot + needToRename2);
+								DocumentFileUtils.tryToDeleteFile(getActivity(), finalval2);
 							} else {
 								new File(mActivity.currSongName + ".def.tcf").delete();
 								new File(mActivity.currSongName + ".def.tzf").delete();
@@ -937,10 +925,9 @@ public class PlayerFragment extends Fragment {
 		});
 
 		final Spinner x = (Spinner) midiDialogView.findViewById(R.id.resampSpinner);
-		List<String> arrayAdapter = new ArrayList<String>();
-		for (String yyy : Globals.sampls)
-			arrayAdapter.add(yyy);
-		ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item, arrayAdapter);
+		List<String> arrayAdapter = new ArrayList<>();
+		Collections.addAll(arrayAdapter, Globals.sampls);
+		ArrayAdapter<String> dataAdapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_spinner_item, arrayAdapter);
 		dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		x.setAdapter(dataAdapter);
 		firstSelection = true;
