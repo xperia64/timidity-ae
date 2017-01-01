@@ -22,18 +22,14 @@ import java.util.Locale;
 
 public class ConfigSaver implements TimidityActivity.SpecialAction {
 
-	Activity context;
-	String currSongName;
-	AlertDialog alerty;
-	boolean localfinished;
+	private Activity context;
+	private String currSongName;
+	private AlertDialog alerty;
+	private boolean localfinished;
 
 	public ConfigSaver(Activity context, String currSongName) {
 		this.context = context;
 		this.currSongName = currSongName;
-	}
-
-	public void saveDefaultCfg(String songTitle) {
-
 	}
 
 	public void promptSaveCfg() {
@@ -74,7 +70,7 @@ public class ConfigSaver implements TimidityActivity.SpecialAction {
 		boolean alreadyExists = new File(parent + configFileName).exists();
 		String needRename = null;
 		String probablyTheRoot = "";
-		String probablyTheDirectory = "";
+		String probablyTheDirectory;
 
 		// Safest way to check if we truly have write access to a file.
 		// We will be touching this file anyway.
@@ -171,8 +167,7 @@ public class ConfigSaver implements TimidityActivity.SpecialAction {
 					try {
 
 						Thread.sleep(25);
-					} catch (InterruptedException e) {
-					}
+					} catch (InterruptedException ignored) {}
 				}
 
 				context.runOnUiThread(new Runnable() {
