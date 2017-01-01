@@ -12,15 +12,12 @@ public class MeterFragment extends Fragment {
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		View v = inflater.inflate(R.layout.art_fragment, container, false);
-
-		return v;
+		return inflater.inflate(R.layout.art_fragment, container, false);
 	}
 
 	@Override
 	public void onViewCreated(View view, Bundle savedInstanceState) {
 		// If the view is set up, we can set the album art
-
 	}
 
 }
