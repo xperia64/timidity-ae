@@ -72,21 +72,17 @@ public class TimidityAEWidgetProvider extends AppWidgetProvider {
 		super.onReceive(context, intent);
 	}
 
-	@SuppressLint("NewApi")
-	public static Bitmap scaleDownBitmap(Bitmap photo, Context context) {
+	public static Bitmap scaleDownBitmap(Bitmap photo) {
 
-		int currSize = (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB_MR1) ?
-				photo.getRowBytes() * photo.getHeight() : photo.getByteCount();
+		int currSize;
+		if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB_MR1) {
+			 currSize = photo.getByteCount();
+		}else{
+			currSize = photo.getRowBytes() * photo.getHeight();
+		}
 		if (currSize > maxBitmap) {
-			//final float densityMultiplier = context.getResources().getDisplayMetrics().density;
-
 			int h = (int) (Math.sqrt(maxBitmap)) / (photo.getRowBytes() / photo.getWidth());
-
 			int w = (int) (h * photo.getWidth() / ((double) photo.getHeight()));
-			//Bitmap p2 = ;
-			//System.out.println(String.format("Height: %d Width: %d Size: %d",h,w,(Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB_MR1)?
-			// p2.getRowBytes() * p2.getHeight():p2.getByteCount()));
-
 			return Bitmap.createScaledBitmap(photo, w, h, true);
 		} else {
 			return photo;
@@ -121,11 +117,9 @@ public class TimidityAEWidgetProvider extends AppWidgetProvider {
 			if ((Build.VERSION.SDK_INT > Build.VERSION_CODES.HONEYCOMB_MR1)) // TODO Seems safe
 				maxBitmap *= 4;
 		}
-		final int N = appWidgetIds.length;
-		// Perform this loop procedure for each App Widget that belongs to this provider
-		for (int i = 0; i < N; i++) {
-			int appWidgetId = appWidgetIds[i];
 
+		// Perform this loop procedure for each App Widget that belongs to this provider
+		for (int appWidgetId : appWidgetIds) {
 			// Create an Intent to launch ExampleActivity
 
 			//Get the layout for the App Widget and attach an on-click listener
@@ -135,7 +129,7 @@ public class TimidityAEWidgetProvider extends AppWidgetProvider {
 			views.setImageViewResource(R.id.notPause_widget, (paused) ? R.drawable.ic_media_play : R.drawable.ic_media_pause);
 			if (art)
 				if (Globals.currArt != null) {
-					views.setImageViewBitmap(R.id.art_widget, scaleDownBitmap(Globals.currArt, context));
+					views.setImageViewBitmap(R.id.art_widget, scaleDownBitmap(Globals.currArt));
 				} else
 					views.setImageViewResource(R.id.art_widget, R.drawable.timidity);
 			else
