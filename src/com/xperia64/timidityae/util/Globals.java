@@ -17,6 +17,7 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
+import android.support.annotation.RequiresApi;
 import android.text.InputFilter;
 import android.text.Spanned;
 import android.widget.TextView;
@@ -34,6 +35,7 @@ import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Random;
 
+@SuppressWarnings("WeakerAccess")
 public class Globals {
 	public static boolean libLoaded = false;
 	public static ArrayList<String> plist; // Because arguments don't like big things.
@@ -88,24 +90,18 @@ public class Globals {
 
 	public static boolean hasSupportedExtension(File f) {
 		String ext = getFileExtension(f);
-		if (ext != null && getSupportedExtensions().contains("*" + ext + "*")) {
-			return true;
-		}
-		return false;
+		return ext != null && getSupportedExtensions().contains("*" + ext + "*");
 	}
 
 	public static boolean hasSupportedExtension(String s) {
 		String ext = getFileExtension(s);
-		if (ext != null && getSupportedExtensions().contains("*" + ext + "*")) {
-			return true;
-		}
-		return false;
+		return ext != null && getSupportedExtensions().contains("*" + ext + "*");
 	}
 
 	// Requires TiMidity to be loaded to play these files:
-	public static final String TIMIDITY_FILES = "*.mid*.smf*.kar*.mod*.xm*.s3m*.it*.669*.amf*.dsm*.far*.gdm*.imf*.med*.mtm*.stm*.stx*.ult*.uni*";
-	public static final String MEDIA_FILES = "*.mp3*.m4a*.wav*.ogg*.flac*.mid*.smf*.kar*";
-	public static final String VIDEO_FILES = "*.mp4*.3gp*";
+	private static final String TIMIDITY_FILES = "*.mid*.smf*.kar*.mod*.xm*.s3m*.it*.669*.amf*.dsm*.far*.gdm*.imf*.med*.mtm*.stm*.stx*.ult*.uni*";
+	private static final String MEDIA_FILES = "*.mp3*.m4a*.wav*.ogg*.flac*.mid*.smf*.kar*";
+	private static final String VIDEO_FILES = "*.mp4*.3gp*";
 
 	public static String getSupportedExtensions() {
 		StringBuilder supportedExtensions = new StringBuilder(MEDIA_FILES);
@@ -119,7 +115,7 @@ public class Globals {
 	}
 
 	public static ArrayList<String> normalToUuid(ArrayList<String> list) {
-		ArrayList<String> uuid = new ArrayList<String>();
+		ArrayList<String> uuid = new ArrayList<>();
 		for (String xx : list) {
 			uuid.add(String.format("%s*%08x", xx, new Random().nextInt()));
 		}
@@ -127,7 +123,7 @@ public class Globals {
 	}
 
 	public static ArrayList<String> uuidToNormal(ArrayList<String> list) {
-		ArrayList<String> normal = new ArrayList<String>();
+		ArrayList<String> normal = new ArrayList<>();
 		for (String xx : list) {
 			normal.add(xx.substring(0, xx.lastIndexOf("*")));
 		}
@@ -137,12 +133,10 @@ public class Globals {
 	public static String playlistFiles = "*.tpl*";
 	public static String configFiles = "*.tcf*.tzf*";
 	public static String fontFiles = "*.sf2*.sfark*.sfark.exe*";
-	public static ArrayList<String> knownWritablePaths = new ArrayList<String>();
-	public static ArrayList<String> knownUnwritablePaths = new ArrayList<String>();
 	public static int defaultListColor = -1;
 
 
-	@SuppressLint("NewApi")
+	@RequiresApi(api = Build.VERSION_CODES.KITKAT)
 	public static int getBackgroundColor(TextView textView) {
 		Drawable drawable = textView.getBackground();
 		if (drawable instanceof ColorDrawable) {
@@ -157,16 +151,14 @@ public class Globals {
 				field = object.getClass().getDeclaredField("mUseColor");
 				field.setAccessible(true);
 				return field.getInt(object);
-			} catch (NoSuchFieldException e) {
-				e.printStackTrace();
-			} catch (IllegalAccessException e) {
+			} catch (NoSuchFieldException | IllegalAccessException e) {
 				e.printStackTrace();
 			}
 		}
 		return 0;
 	}
 
-	@SuppressLint({"NewApi", "SdCardPath"})
+	@SuppressLint("SdCardPath")
 	public static File getExternalCacheDir(Context c) {
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.FROYO) {
 			return c.getExternalCacheDir();
@@ -175,7 +167,7 @@ public class Globals {
 		}
 	}
 
-	@SuppressLint({"NewApi", "SdCardPath"})
+	@SuppressLint({"SdCardPath"})
 	public static String getLibDir(Context c) {
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
 			String s = c.getApplicationInfo().nativeLibraryDir;
@@ -226,9 +218,8 @@ public class Globals {
 
 		if (needLol != null) {
 			File f = new File(SettingsStorage.dataFolder + "/soundfonts/8Rock11e.sfArk");
-			if (f != null)
-				if (f.exists())
-					DocumentFileUtils.tryToDeleteFile(c, SettingsStorage.dataFolder + "/soundfonts/8Rock11e.sfArk");
+			if (f.exists())
+				DocumentFileUtils.tryToDeleteFile(c, SettingsStorage.dataFolder + "/soundfonts/8Rock11e.sfArk");
 			OutputStream out = null;
 			String probablyTheDirectory = needLol[0];
 			String probablyTheRoot = needLol[1];
@@ -272,9 +263,8 @@ public class Globals {
 			DocumentFileUtils.tryToDeleteFile(c, value);
 		} else {
 			File f = new File(SettingsStorage.dataFolder + "/soundfonts/8Rock11e.sfArk");
-			if (f != null)
-				if (f.exists())
-					f.delete();
+			if (f.exists())
+				f.delete();
 			OutputStream out = null;
 			try {
 				out = new FileOutputStream(SettingsStorage.dataFolder + "/soundfonts/8Rock11e.sfArk");
