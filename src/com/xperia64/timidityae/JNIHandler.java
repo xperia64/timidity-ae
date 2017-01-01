@@ -23,9 +23,13 @@ import com.xperia64.timidityae.util.WavWriter;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Locale;
 
 //import android.util.Log;
 
+
+// The native methods exist. Really.
+@SuppressWarnings("JniMissingFunction")
 public class JNIHandler {
 
 	// config folder, config file, mono, resampling algorithm, bits, preserve
@@ -59,21 +63,21 @@ public class JNIHandler {
 	public static int currTime = 0;
 	public static boolean paused = false;
 	public static boolean isMediaPlayerFormat = true; // true = mediaplayer, false = audiotrack
-	public static int channelMode; // 0 = mono (downmixed), 1 = mono (synthesized), 2 = stereo
-	public static boolean sixteenBit;
+	private static int channelMode; // 0 = mono (downmixed), 1 = mono (synthesized), 2 = stereo
+	private static boolean sixteenBit;
 	public static int rate;
 	public static int buffer;
 
 	// Timidity Stuff
 	public static int MAX_CHANNELS = 32;
 	public static int currsamp = 0;
-	public static ArrayList<Integer> programs = new ArrayList<Integer>();
-	public static ArrayList<Boolean> custInst = new ArrayList<Boolean>();
-	public static ArrayList<Integer> volumes = new ArrayList<Integer>();
-	public static ArrayList<Boolean> custVol = new ArrayList<Boolean>();
-	public static ArrayList<Boolean> drums = new ArrayList<Boolean>();
+	public static ArrayList<Integer> programs = new ArrayList<>();
+	public static ArrayList<Boolean> custInst = new ArrayList<>();
+	public static ArrayList<Integer> volumes = new ArrayList<>();
+	public static ArrayList<Boolean> custVol = new ArrayList<>();
+	public static ArrayList<Boolean> drums = new ArrayList<>();
 	public static String currentLyric = "";
-	public static int overwriteLyricAt = 0;
+	private static int overwriteLyricAt = 0;
 	public static int exceptional = 0;
 	public static int playbackPercentage;
 	public static int playbackTempo; // This number is not the tempo in BPM, but some number that can be used to calculate the real tempo
@@ -82,21 +86,21 @@ public class JNIHandler {
 	public static int maxvoice = 256;
 	public static int keyOffset = 0;
 	// public static boolean breakLoops = false;
-	public static boolean dataWritten = false;
+	static boolean dataWritten = false;
 
-	public static boolean shouldPlayNow = true;
+	static boolean shouldPlayNow = true;
 
 
-	public static boolean finishedCallbackCheck = true; // Is set
+	private static boolean finishedCallbackCheck = true; // Is set
 	public static boolean isPlaying = false;
-	public static boolean isBlocking = false; // false = not currently blocking, true = blocking. Makes sure timidity actually returned. 
+	static boolean isBlocking = false; // false = not currently blocking, true = blocking. Makes sure timidity actually returned.
 
 	// public static ArrayList<String> lyricLines;
 	// End Timidity Stuff
 
 	static boolean prepared = false;
 
-	public static WavWriter currentWavWriter = null;
+	static WavWriter currentWavWriter = null;
 
 	public static void pause() // or unpause.
 	{
@@ -138,8 +142,7 @@ public class JNIHandler {
 			mMediaPlayer.setOnCompletionListener(null);
 			try {
 				mMediaPlayer.stop();
-			} catch (IllegalStateException e) {
-			}
+			} catch (IllegalStateException ignored) {}
 			isPlaying = false;
 			finishedCallbackCheck = true;
 			isBlocking = false;
@@ -165,8 +168,7 @@ public class JNIHandler {
 		while (!timidityReady()) {
 			try {
 				Thread.sleep(interval);
-			} catch (InterruptedException e) {
-			}
+			} catch (InterruptedException ignored) {}
 		}
 	}
 
@@ -179,12 +181,11 @@ public class JNIHandler {
 			while (isPlaying || isBlocking || !finishedCallbackCheck) {
 				try {
 					Thread.sleep(interval);
-				} catch (InterruptedException e) {
-				}
+				} catch (InterruptedException ignored) {}
 			}
 		} else {
 			try {
-				t.join();
+				playThread.join();
 			} catch (InterruptedException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
@@ -198,6 +199,8 @@ public class JNIHandler {
 		currentWavWriter.setupOutputFile(filename, sixteenBit, (channelMode < 2), rate);
 	}
 
+	// Used by native (TiMidity++)
+	@SuppressWarnings("unused")
 	public static void buffit(byte[] data, int length) {
 		dataWritten = true;
 		if (shouldPlayNow) {
@@ -232,8 +235,7 @@ public class JNIHandler {
 				} else {
 					try {
 						mAudioTrack.write(mono, 0, mono.length);
-					} catch (IllegalStateException e) {
-					}
+					} catch (IllegalStateException ignored) {}
 				}
 			} else {
 				if (currentWavWriter != null && !currentWavWriter.finishedWriting) {
@@ -246,8 +248,7 @@ public class JNIHandler {
 				} else {
 					try {
 						mAudioTrack.write(data, 0, length);
-					} catch (IllegalStateException e) {
-					}
+					} catch (IllegalStateException ignored) {}
 				}
 			}
 		}
@@ -257,7 +258,7 @@ public class JNIHandler {
 	public static int init(String path, String file, int mono, int resamp, boolean sixteen, int b, int r, boolean preserveSilence, boolean reloading, boolean freeInsts) {
 		if (!prepared) {
 
-			System.out.println(String.format("Opening Timidity: Path: %s cfgFile: %s resample: %s mono: %s sixteenBit: %s buffer: %d rate: %d", path, file, Globals.sampls[resamp], ((mono == 1) ? "true" : "false"), (sixteen ? "true" : "false"), b, r));
+			System.out.println(String.format(Locale.US, "Opening Timidity: Path: %s cfgFile: %s resample: %s mono: %s sixteenBit: %s buffer: %d rate: %d", path, file, Globals.sampls[resamp], ((mono == 1) ? "true" : "false"), (sixteen ? "true" : "false"), b, r));
 			System.out.println("Max channels: " + MAX_CHANNELS);
 			for (int i = 0; i < MAX_CHANNELS; i++) {
 				volumes.add(75); // Assuming not XG
@@ -281,12 +282,12 @@ public class JNIHandler {
 		}
 	}
 
-	static Thread t;
+	private static Thread playThread;
 
 	public static int play(final String songTitle) {
 
 		if (new File(songTitle).exists()) {
-			if (isBlocking == false) {
+			if (!isBlocking) {
 				keyOffset = 0;
 				tb = 0;
 				currentLyric = "";
@@ -338,7 +339,7 @@ public class JNIHandler {
 					// Reset the audio track every time.
 					// The audiotrack should be in the same thread as the
 					// timidity stuff for black midi.
-					t = new Thread(new Runnable() {
+					playThread = new Thread(new Runnable() {
 						public void run() {
 							isBlocking = true;
 							mAudioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, rate,
@@ -360,8 +361,8 @@ public class JNIHandler {
 								currentWavWriter.finishOutput();
 						}
 					});
-					t.setPriority(Thread.MAX_PRIORITY);
-					t.start();
+					playThread.setPriority(Thread.MAX_PRIORITY);
+					playThread.start();
 
 				}
 				// }
@@ -374,6 +375,8 @@ public class JNIHandler {
 		return -1;
 	}
 
+	// Used by native (TiMidity++)
+	@SuppressWarnings("unused")
 	public static void controlCallback(int y) {
 		/*
 		 * String[] control = { "PM_REQ_MIDI",
@@ -412,17 +415,17 @@ public class JNIHandler {
 			if (mAudioTrack != null) {
 				try {
 					mAudioTrack.stop();
-				} catch (IllegalStateException e) {
-				}
+				} catch (IllegalStateException ignored) {}
+				mAudioTrack.release();
 			}
-			mAudioTrack.release();
-
 		} /*
 			 * else if (y == 10) { // TODO something here to tell that timidity
 			 * is ready }
 			 */
 	}
 
+	// Used by native (TiMidity++)
+	@SuppressWarnings("unused")
 	public static int bufferSize() {
 		// If a wav file is currently being written,
 		// tell timidity it is doing a great job at playing in realtime
@@ -432,7 +435,7 @@ public class JNIHandler {
 		}
 		try {
 			// Samples * Number of Channels * sample size
-			return (((int) (mAudioTrack.getPlaybackHeadPosition() *
+			return (((mAudioTrack.getPlaybackHeadPosition() *
 					mAudioTrack.getChannelCount() *
 					(2 - (mAudioTrack.getAudioFormat() & 1))))); // 16 bit is 2, 8 bit is 3. We should never have to worry about 4, which is floating.
 		} catch (IllegalStateException e) {
@@ -440,19 +443,27 @@ public class JNIHandler {
 		}
 	}
 
+	// Used by native (TiMidity++)
+	@SuppressWarnings("unused")
 	public static void finishCallback() {
 		finishedCallbackCheck = true;
 		isPlaying = false;
 	}
 
+	// Used by native (TiMidity++)
+	@SuppressWarnings("unused")
 	public static void flushTrack() {
 		mAudioTrack.flush();
 	}
 
+	// Used by native (TiMidity++)
+	@SuppressWarnings({"unused", "WeakerAccess"})
 	public static void initSeekBar(int seeker) {
 		maxTime = seeker;
 	}
 
+	// Used by native (TiMidity++)
+	@SuppressWarnings("unused")
 	public static void updateSeekBar(int seekIt, int voices) {
 		currTime = seekIt;
 		voice = voices;
@@ -462,6 +473,8 @@ public class JNIHandler {
 		return mAudioTrack.getSampleRate();
 	}
 
+	// Used by native (TiMidity++)
+	@SuppressWarnings("unused")
 	public static void updateLyrics(byte[] b) {
 		final StringBuilder stb = new StringBuilder(currentLyric);
 		final StringBuilder tmpBuild = new StringBuilder();
@@ -493,26 +506,35 @@ public class JNIHandler {
 		currentLyric = stb.toString();
 	}
 
+	// Used by native (TiMidity++)
+	@SuppressWarnings("unused")
 	public static void updateMaxChannels(int val) {
 		MAX_CHANNELS = val;
 	}
 
+	// Used by native (TiMidity++)
+	@SuppressWarnings("unused")
 	public static void updateProgramInfo(int ch, int prog) {
 		if (ch < MAX_CHANNELS)
 			programs.set(ch, prog);
 	}
 
+	// Used by native (TiMidity++)
+	@SuppressWarnings("unused")
 	public static void updateVolInfo(int ch, int vol) {
 		if (ch < MAX_CHANNELS)
 			volumes.set(ch, vol);
 	}
 
+	// Used by native (TiMidity++)
+	@SuppressWarnings("unused")
 	public static void updateDrumInfo(int ch, int isDrum) {
 		if (ch < MAX_CHANNELS)
 			drums.set(ch, (isDrum != 0));
 	}
 
-	// Called by native. Do not rename or modify declaration.
+	// Used by native (TiMidity++)
+	@SuppressWarnings("unused")
 	public static void updateTempo(int t, int tr) {
 		playbackTempo = t;
 		playbackPercentage = tr;
@@ -522,12 +544,14 @@ public class JNIHandler {
 		// System.out.println("T: "+t+ " TR: "+tr+" X: "+x);
 	}
 
-	// Called by native. Do not rename or modify declaration.
+	// Used by native (TiMidity++)
+	@SuppressWarnings("unused")
 	public static void updateMaxVoice(int vvv) {
 		maxvoice = vvv;
 	}
 
-	// Called by native. Do not rename or modify declaration.
+	// Used by native (TiMidity++)
+	@SuppressWarnings("unused")
 	public static void updateKey(int k) {
 		keyOffset = k;
 	}
