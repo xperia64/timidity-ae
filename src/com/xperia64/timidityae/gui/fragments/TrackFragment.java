@@ -40,12 +40,13 @@ import com.xperia64.timidityae.R;
 import com.xperia64.timidityae.util.SettingsStorage;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class TrackFragment extends Fragment {
 
-	private ArrayList<Integer> localInst = new ArrayList<Integer>();
-	private ArrayList<Integer> localVol = new ArrayList<Integer>();
+	private ArrayList<Integer> localInst = new ArrayList<>();
+	private ArrayList<Integer> localVol = new ArrayList<>();
 
 	private ArrayAdapter<String> trackListAdapter;
 	private boolean fromUser;
@@ -65,14 +66,14 @@ public class TrackFragment extends Fragment {
 	public void onViewCreated(View view, Bundle savedInstanceState) {
 		reset();
 
-		trackListAdapter = new ArrayAdapter<String>(getActivity(), R.layout.row);
+		trackListAdapter = new ArrayAdapter<>(getActivity(), R.layout.row);
 		for (int i = 0; i < JNIHandler.MAX_CHANNELS; i++) {
 			trackListAdapter.add(String.format(getActivity().getResources().getString(R.string.trk_form), (getActivity().getResources().getString(JNIHandler.drums.get(i) ? R.string.trk_drum : R.string.trk_inst2)), (i + 1), JNIHandler.drums.get(i) ? 0 : localInst.get(i) + 1, localVol.get(i)));
 		}
 		trackList.setAdapter(trackListAdapter);
 		trackList.setOnItemClickListener(new OnItemClickListener() {
 
-			@SuppressLint("InflateParams")
+			@SuppressLint({"InflateParams", "SetTextI18n"})
 			@Override
 			public void onItemClick(AdapterView<?> arg0, View arg1, final int arg2, long arg3) {
 				AlertDialog.Builder b = new AlertDialog.Builder(getActivity());
@@ -81,16 +82,14 @@ public class TrackFragment extends Fragment {
 				instSpin.setClickable(JNIHandler.custInst.get(arg2) && !JNIHandler.drums.get(arg2));
 				instSpin.setOnLongClickListener(null);
 				instSpin.setEnabled(JNIHandler.custInst.get(arg2) && !JNIHandler.drums.get(arg2));
-				List<String> arrayAdapter = new ArrayList<String>();
+				List<String> arrayAdapter = new ArrayList<>();
 				final int offset = (!JNIHandler.drums.get(arg2)) ? 0 : 34;
 				if (!JNIHandler.drums.get(arg2)) {
-					for (String inst : getActivity().getResources().getStringArray(R.array.midi_instruments))
-						arrayAdapter.add(inst);
+					Collections.addAll(arrayAdapter, getActivity().getResources().getStringArray(R.array.midi_instruments));
 				} else {
-					for (String inst : getActivity().getResources().getStringArray(R.array.midi_drums))
-						arrayAdapter.add(inst);
+					Collections.addAll(arrayAdapter, getActivity().getResources().getStringArray(R.array.midi_drums));
 				}
-				ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item, arrayAdapter);
+				ArrayAdapter<String> dataAdapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_spinner_item, arrayAdapter);
 				if (Build.VERSION.SDK_INT < Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
 					dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_item);
 				} else {
@@ -228,8 +227,8 @@ public class TrackFragment extends Fragment {
 	}
 
 	public void reset() {
-		localInst = new ArrayList<Integer>();
-		localVol = new ArrayList<Integer>();
+		localInst = new ArrayList<>();
+		localVol = new ArrayList<>();
 		if (ddd != null) {
 			if (ddd.isShowing()) {
 				ddd.dismiss();
@@ -253,13 +252,13 @@ public class TrackFragment extends Fragment {
 
 			for (int i = 0; i < JNIHandler.MAX_CHANNELS; i++) {
 				if (i < localInst.size()) {
-					if (localInst.get(i) != JNIHandler.programs.get(i)) {
+					if (!localInst.get(i).equals(JNIHandler.programs.get(i))) {
 						localInst.set(i, JNIHandler.programs.get(i));
 						needUpdate = true;
 					}
 				}
 				if (i < localVol.size()) {
-					if (localVol.get(i) != JNIHandler.volumes.get(i)) {
+					if (!localVol.get(i).equals(JNIHandler.volumes.get(i))) {
 						localVol.set(i, JNIHandler.volumes.get(i));
 						needUpdate = true;
 					}
