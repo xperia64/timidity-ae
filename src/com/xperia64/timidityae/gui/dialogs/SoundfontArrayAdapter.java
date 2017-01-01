@@ -12,6 +12,7 @@
 package com.xperia64.timidityae.gui.dialogs;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,17 +28,17 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SoundfontArrayAdapter extends ArrayAdapter<String> {
+class SoundfontArrayAdapter extends ArrayAdapter<String> {
 
-	public interface SoundfontArrayAdapterListener {
-		public void setSFEnabled(int position, boolean yes);
+	interface SoundfontArrayAdapterListener {
+		void setSFEnabled(int position, boolean yes);
 	}
 
-	SoundfontArrayAdapterListener mc;
+	private SoundfontArrayAdapterListener mc;
 	private LayoutInflater inflater;
-	private ArrayList<Boolean> itemChecked = new ArrayList<Boolean>();
+	private ArrayList<Boolean> itemChecked = new ArrayList<>();
 
-	public SoundfontArrayAdapter(SoundfontArrayAdapterListener c, Context context, List<String> sfList) {
+	SoundfontArrayAdapter(SoundfontArrayAdapterListener c, Context context, List<String> sfList) {
 		super(context, R.layout.row_check, R.id.checkText, sfList);
 		mc = c;
 		inflater = LayoutInflater.from(context);
@@ -46,8 +47,9 @@ public class SoundfontArrayAdapter extends ArrayAdapter<String> {
 		}
 	}
 
+	@NonNull
 	@Override
-	public View getView(final int position, View convertView, final ViewGroup parent) {
+	public View getView(final int position, View convertView, @NonNull final ViewGroup parent) {
 		View view = convertView;
 		final SoundfontHolder viewHolder;
 		if (view == null) {
@@ -79,7 +81,7 @@ public class SoundfontArrayAdapter extends ArrayAdapter<String> {
 		return view;
 	}
 
-	static class SoundfontHolder {
+	private static class SoundfontHolder {
 
 		TextView name;
 		ToggleButton b;
