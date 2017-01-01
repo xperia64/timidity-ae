@@ -37,6 +37,7 @@ import android.widget.Spinner;
 
 import com.xperia64.timidityae.JNIHandler;
 import com.xperia64.timidityae.R;
+import com.xperia64.timidityae.util.Constants;
 import com.xperia64.timidityae.util.SettingsStorage;
 
 import java.util.ArrayList;
@@ -204,8 +205,8 @@ public class TrackFragment extends Fragment {
 
 						JNIHandler.custInst.set(arg2, !inst.isChecked());
 						JNIHandler.custVol.set(arg2, !vol.isChecked());
-						JNIHandler.setChannelVolumeTimidity(arg2 | (JNIHandler.custVol.get(arg2) ? 0x800 : 0x8000), volSeek.getProgress());
-						JNIHandler.setChannelTimidity(arg2 | (JNIHandler.custInst.get(arg2) ? 0x800 : 0x8000), instSpin.getSelectedItemPosition());
+						JNIHandler.setChannelVolumeTimidity(arg2 | (JNIHandler.custVol.get(arg2) ? Constants.jni_tim_holdmask : Constants.jni_tim_unholdmask), volSeek.getProgress());
+						JNIHandler.setChannelTimidity(arg2 | (JNIHandler.custInst.get(arg2) ? Constants.jni_tim_holdmask : Constants.jni_tim_unholdmask), instSpin.getSelectedItemPosition());
 						if (!JNIHandler.paused && JNIHandler.isPlaying)
 							JNIHandler.seekTo(JNIHandler.currTime);
 						// bigCounter=12;

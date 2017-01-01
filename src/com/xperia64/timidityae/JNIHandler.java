@@ -16,7 +16,7 @@ import android.media.AudioManager;
 import android.media.AudioTrack;
 import android.media.MediaPlayer;
 
-import com.xperia64.timidityae.util.CommandStrings;
+import com.xperia64.timidityae.util.Constants;
 import com.xperia64.timidityae.util.Globals;
 import com.xperia64.timidityae.util.WavWriter;
 
@@ -106,7 +106,7 @@ public class JNIHandler {
 				if (isMediaPlayerFormat) {
 					mMediaPlayer.start();
 				} else {
-					controlTimidity(CommandStrings.jni_toggle_pause, 0);
+					controlTimidity(Constants.jni_tim_toggle_pause, 0);
 					if (!(currentWavWriter != null && !currentWavWriter.finishedWriting) && mAudioTrack != null) {
 						try {
 							mAudioTrack.play();
@@ -120,7 +120,7 @@ public class JNIHandler {
 				if (isMediaPlayerFormat) {
 					mMediaPlayer.pause();
 				} else {
-					controlTimidity(CommandStrings.jni_toggle_pause, 0);
+					controlTimidity(Constants.jni_tim_toggle_pause, 0);
 					if (!(currentWavWriter != null && !currentWavWriter.finishedWriting) && mAudioTrack != null) {
 						try {
 							mAudioTrack.pause();
@@ -144,7 +144,7 @@ public class JNIHandler {
 			finishedCallbackCheck = true;
 			isBlocking = false;
 		} else {
-			controlTimidity(CommandStrings.jni_stop, 0);
+			controlTimidity(Constants.jni_tim_stop, 0);
 		}
 	}
 
@@ -152,7 +152,7 @@ public class JNIHandler {
 		if (isMediaPlayerFormat) {
 			mMediaPlayer.seekTo(time);
 		} else {
-			controlTimidity(CommandStrings.jni_jump, time);
+			controlTimidity(Constants.jni_tim_jump, time);
 			waitUntilReady();
 		}
 	}

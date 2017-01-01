@@ -134,12 +134,12 @@ public class WavSaver implements TimidityActivity.SpecialAction {
 
 	public void saveWavPart2(final String finalval, final String needToRename) {
 		Intent new_intent = new Intent();
-		new_intent.setAction(CommandStrings.msrv_rec);
-		new_intent.putExtra(CommandStrings.msrv_cmd, playingExport ? CommandStrings.msrv_cmd_write_curr : CommandStrings.msrv_cmd_write_new);
+		new_intent.setAction(Constants.msrv_rec);
+		new_intent.putExtra(Constants.msrv_cmd, playingExport ? Constants.msrv_cmd_write_curr : Constants.msrv_cmd_write_new);
 		if (!playingExport) {
-			new_intent.putExtra(CommandStrings.msrv_infile, currSongName);
+			new_intent.putExtra(Constants.msrv_infile, currSongName);
 		}
-		new_intent.putExtra(CommandStrings.msrv_outfile, finalval);
+		new_intent.putExtra(Constants.msrv_outfile, finalval);
 		context.sendBroadcast(new_intent);
 		final ProgressDialog prog;
 		prog = new ProgressDialog(context);
@@ -177,8 +177,8 @@ public class WavSaver implements TimidityActivity.SpecialAction {
 									new File(finalval).delete();
 							} else {
 								Intent outgoingIntent = new Intent();
-								outgoingIntent.setAction(CommandStrings.ta_rec);
-								outgoingIntent.putExtra(CommandStrings.ta_cmd, CommandStrings.ta_cmd_refresh_filebrowser);
+								outgoingIntent.setAction(Constants.ta_rec);
+								outgoingIntent.putExtra(Constants.ta_cmd, Constants.ta_cmd_refresh_filebrowser);
 								context.sendBroadcast(outgoingIntent);
 							}
 						}
@@ -212,8 +212,8 @@ public class WavSaver implements TimidityActivity.SpecialAction {
 							prog.dismiss();
 							Toast.makeText(context, "Wrote " + tn, Toast.LENGTH_SHORT).show();
 							Intent outgoingIntent = new Intent();
-							outgoingIntent.setAction(CommandStrings.ta_rec);
-							outgoingIntent.putExtra(CommandStrings.ta_cmd, CommandStrings.ta_cmd_refresh_filebrowser);
+							outgoingIntent.setAction(Constants.ta_rec);
+							outgoingIntent.putExtra(Constants.ta_cmd, Constants.ta_cmd_refresh_filebrowser);
 							context.sendBroadcast(outgoingIntent);
 						}
 					});

@@ -147,9 +147,9 @@ public class ConfigSaver implements TimidityActivity.SpecialAction {
 
 	public void writeConfig(final String finalval, final String needToRename) {
 		Intent new_intent = new Intent();
-		new_intent.setAction(CommandStrings.msrv_rec);
-		new_intent.putExtra(CommandStrings.msrv_cmd, CommandStrings.msrv_cmd_save_cfg);
-		new_intent.putExtra(CommandStrings.msrv_outfile, finalval);
+		new_intent.setAction(Constants.msrv_rec);
+		new_intent.putExtra(Constants.msrv_cmd, Constants.msrv_cmd_save_cfg);
+		new_intent.putExtra(Constants.msrv_outfile, finalval);
 		context.sendBroadcast(new_intent);
 		final ProgressDialog prog;
 		prog = new ProgressDialog(context);
@@ -188,8 +188,8 @@ public class ConfigSaver implements TimidityActivity.SpecialAction {
 						Toast.makeText(context, "Wrote " + trueName, Toast.LENGTH_SHORT).show();
 						prog.dismiss();
 						Intent outgoingIntent = new Intent();
-						outgoingIntent.setAction(CommandStrings.ta_rec);
-						outgoingIntent.putExtra(CommandStrings.ta_cmd, CommandStrings.ta_cmd_refresh_filebrowser);
+						outgoingIntent.setAction(Constants.ta_rec);
+						outgoingIntent.putExtra(Constants.ta_cmd, Constants.ta_cmd_refresh_filebrowser);
 						context.sendBroadcast(outgoingIntent);
 					}
 				});

@@ -42,7 +42,7 @@ import android.widget.Toast;
 import com.xperia64.timidityae.JNIHandler;
 import com.xperia64.timidityae.R;
 import com.xperia64.timidityae.TimidityActivity;
-import com.xperia64.timidityae.util.CommandStrings;
+import com.xperia64.timidityae.util.Constants;
 import com.xperia64.timidityae.util.DocumentFileUtils;
 import com.xperia64.timidityae.util.Globals;
 import com.xperia64.timidityae.util.SettingsStorage;
@@ -216,8 +216,8 @@ public class PlayerFragment extends Fragment {
 		super.onAttach(activity);
 		if (Globals.shouldRestore) {
 			Intent new_intent = new Intent();
-			new_intent.setAction(CommandStrings.msrv_rec);
-			new_intent.putExtra(CommandStrings.msrv_cmd, CommandStrings.msrv_cmd_get_info);
+			new_intent.setAction(Constants.msrv_rec);
+			new_intent.putExtra(Constants.msrv_cmd, Constants.msrv_cmd_get_info);
 			getActivity().sendBroadcast(new_intent);
 		}
 	}
@@ -702,7 +702,7 @@ public class PlayerFragment extends Fragment {
 
 			@Override
 			public void onClick(View arg0) {
-				JNIHandler.controlTimidity(CommandStrings.jni_speedup, 1);
+				JNIHandler.controlTimidity(Constants.jni_tim_speedup, 1);
 				JNIHandler.waitUntilReady();
 				JNIHandler.tb++;
 			}
@@ -712,7 +712,7 @@ public class PlayerFragment extends Fragment {
 
 			@Override
 			public void onClick(View arg0) {
-				JNIHandler.controlTimidity(CommandStrings.jni_speeddown, 1);
+				JNIHandler.controlTimidity(Constants.jni_tim_speeddown, 1);
 				JNIHandler.waitUntilReady();
 				JNIHandler.tb--;
 			}
@@ -722,7 +722,7 @@ public class PlayerFragment extends Fragment {
 
 			@Override
 			public void onClick(View arg0) {
-				JNIHandler.controlTimidity(CommandStrings.jni_keyup, 1);
+				JNIHandler.controlTimidity(Constants.jni_tim_keyup, 1);
 				JNIHandler.waitUntilReady();
 			}
 
@@ -731,7 +731,7 @@ public class PlayerFragment extends Fragment {
 
 			@Override
 			public void onClick(View arg0) {
-				JNIHandler.controlTimidity(CommandStrings.jni_keydown, -1);
+				JNIHandler.controlTimidity(Constants.jni_tim_keydown, -1);
 				JNIHandler.waitUntilReady();
 			}
 
@@ -740,7 +740,7 @@ public class PlayerFragment extends Fragment {
 
 			@Override
 			public void onClick(View arg0) {
-				JNIHandler.controlTimidity(CommandStrings.jni_voiceincr, 5);
+				JNIHandler.controlTimidity(Constants.jni_tim_voiceincr, 5);
 				JNIHandler.waitUntilReady();
 			}
 
@@ -749,7 +749,7 @@ public class PlayerFragment extends Fragment {
 
 			@Override
 			public void onClick(View arg0) {
-				JNIHandler.controlTimidity(CommandStrings.jni_voicedecr, 5);
+				JNIHandler.controlTimidity(Constants.jni_tim_voicedecr, 5);
 				JNIHandler.waitUntilReady();
 			}
 

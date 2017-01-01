@@ -1,6 +1,7 @@
 package com.xperia64.timidityae.util;
 
-public class CommandStrings {
+@SuppressWarnings({"WeakerAccess", "unused"})
+public class Constants {
 
 	public static final String pkg_name = "com.xperia64.timidityae";
 	// MusicService Broadcast Arguments
@@ -97,41 +98,43 @@ public class CommandStrings {
 
 
 	// controlTimidity commands
-	public static final int jni_none = 0;
-	public static final int jni_quit = 1;
-	public static final int jni_next = 2;
-	public static final int jni_previous = 3;
-	public static final int jni_forward = 4;
-	public static final int jni_back = 5;
-	public static final int jni_jump = 6;
-	public static final int jni_toggle_pause = 7;
-	public static final int jni_restart = 8;
-	public static final int jni_pause = 9;
-	public static final int jni_continue = 10;
-	public static final int jni_really_previous = 11;
-	public static final int jni_change_volume = 12;
-	public static final int jni_load_file = 13;
-	public static final int jni_tune_end = 14;
-	public static final int jni_keyup = 15;
-	public static final int jni_keydown = 16;
-	public static final int jni_speedup = 17;
-	public static final int jni_speeddown = 18;
-	public static final int jni_voiceincr = 19;
-	public static final int jni_voicedecr = 20;
-	public static final int jni_toggle_drumchan = 21;
-	public static final int jni_reload = 22;
-	public static final int jni_toggle_sndspec = 23;
-	public static final int jni_change_rev_effb = 24;
-	public static final int jni_change_rev_time = 25;
-	public static final int jni_sync_restart = 26;
-	public static final int jni_toggle_ctl_speana = 27;
-	public static final int jni_change_rate = 28;
-	public static final int jni_output_changed = 29;
-	public static final int jni_stop = 30;
-	public static final int jni_toggle_mute = 31;
-	public static final int jni_solo_play = 32;
-	public static final int jni_mute_clear = 33;
-	// @formatter:off
+	public static final int jni_tim_none = 0;
+	public static final int jni_tim_quit = 1;
+	public static final int jni_tim_next = 2;
+	public static final int jni_tim_previous = 3;
+	public static final int jni_tim_forward = 4;
+	public static final int jni_tim_back = 5;
+	public static final int jni_tim_jump = 6;
+	public static final int jni_tim_toggle_pause = 7;
+	public static final int jni_tim_restart = 8;
+	public static final int jni_tim_pause = 9;
+	public static final int jni_tim_continue = 10;
+	public static final int jni_tim_really_previous = 11;
+	public static final int jni_tim_change_volume = 12;
+	public static final int jni_tim_load_file = 13;
+	public static final int jni_tim_tune_end = 14;
+	public static final int jni_tim_keyup = 15;
+	public static final int jni_tim_keydown = 16;
+	public static final int jni_tim_speedup = 17;
+	public static final int jni_tim_speeddown = 18;
+	public static final int jni_tim_voiceincr = 19;
+	public static final int jni_tim_voicedecr = 20;
+	public static final int jni_tim_toggle_drumchan = 21;
+	public static final int jni_tim_reload = 22;
+	public static final int jni_tim_toggle_sndspec = 23;
+	public static final int jni_tim_change_rev_effb = 24;
+	public static final int jni_tim_change_rev_time = 25;
+	public static final int jni_tim_sync_restart = 26;
+	public static final int jni_tim_toggle_ctl_speana = 27;
+	public static final int jni_tim_change_rate = 28;
+	public static final int jni_tim_output_changed = 29;
+	public static final int jni_tim_stop = 30;
+	public static final int jni_tim_toggle_mute = 31;
+	public static final int jni_tim_solo_play = 32;
+	public static final int jni_tim_mute_clear = 33;
+	public static final int jni_tim_holdmask = 0x800;
+	public static final int jni_tim_unholdmask = 0x8000;
+
 	/*
 	 * RESAMPLE_CSPLINE, 0
 		RESAMPLE_LAGRANGE, 1
@@ -180,7 +183,4 @@ public class CommandStrings {
 	#define RC_TOGGLE_MUTE	31
 	#define RC_SOLO_PLAY	32
 	#define RC_MUTE_CLEAR	33*/
-	// @formatter:on
-
-
 }

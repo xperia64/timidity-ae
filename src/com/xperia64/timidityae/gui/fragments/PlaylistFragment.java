@@ -39,7 +39,7 @@ import com.xperia64.timidityae.gui.StableArrayAdapter;
 import com.xperia64.timidityae.gui.StableArrayAdapter.PlistMenuCallback;
 import com.xperia64.timidityae.gui.dialogs.FileBrowserDialog;
 import com.xperia64.timidityae.gui.dialogs.FileBrowserDialog.FileBrowserDialogListener;
-import com.xperia64.timidityae.util.CommandStrings;
+import com.xperia64.timidityae.util.Constants;
 import com.xperia64.timidityae.util.DocumentFileUtils;
 import com.xperia64.timidityae.util.FileComparator;
 import com.xperia64.timidityae.util.Globals;
@@ -85,7 +85,7 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 
 	public static PlaylistFragment create(String fold) {
 		Bundle args = new Bundle();
-		args.putString(CommandStrings.currPlistDirectory, fold);
+		args.putString(Constants.currPlistDirectory, fold);
 		PlaylistFragment fragment = new PlaylistFragment();
 		fragment.setArguments(args);
 		return fragment;
@@ -95,7 +95,7 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		if (getArguments() != null)
-			playlistDir = getArguments().getString(CommandStrings.currPlistDirectory);
+			playlistDir = getArguments().getString(Constants.currPlistDirectory);
 		if (playlistDir == null)
 			playlistDir = File.separator; // TODO this should not be root.
 	}
@@ -144,8 +144,8 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 		}
 		if (Globals.shouldRestore && (Globals.plist == null || Globals.plist.size() == 0)) {
 			Intent new_intent = new Intent();
-			new_intent.setAction(CommandStrings.msrv_rec);
-			new_intent.putExtra(CommandStrings.msrv_cmd, CommandStrings.msrv_cmd_get_plist);
+			new_intent.setAction(Constants.msrv_rec);
+			new_intent.putExtra(Constants.msrv_cmd, Constants.msrv_cmd_get_plist);
 			getActivity().sendBroadcast(new_intent);
 		}
 	}

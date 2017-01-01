@@ -29,7 +29,7 @@ import android.widget.ListView;
 
 import com.xperia64.timidityae.R;
 import com.xperia64.timidityae.TimidityActivity;
-import com.xperia64.timidityae.util.CommandStrings;
+import com.xperia64.timidityae.util.Constants;
 import com.xperia64.timidityae.util.FileComparator;
 import com.xperia64.timidityae.util.Globals;
 import com.xperia64.timidityae.util.SettingsStorage;
@@ -54,7 +54,7 @@ public class FileBrowserFragment extends ListFragment {
 
 	public static FileBrowserFragment create(String fold) {
 		Bundle args = new Bundle();
-		args.putString(CommandStrings.currFoldKey, fold);
+		args.putString(Constants.currFoldKey, fold);
 		FileBrowserFragment fragment = new FileBrowserFragment();
 		fragment.setArguments(args);
 		return fragment;
@@ -64,7 +64,7 @@ public class FileBrowserFragment extends ListFragment {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		if (getArguments() != null)
-			currPath = getArguments().getString(CommandStrings.currFoldKey);
+			currPath = getArguments().getString(Constants.currFoldKey);
 		if (currPath == null)
 			currPath = Environment.getExternalStorageDirectory().getAbsolutePath();
 		else if (!new File(currPath).exists())
@@ -98,8 +98,8 @@ public class FileBrowserFragment extends ListFragment {
 		}
 		if (Globals.shouldRestore) {
 			Intent new_intent = new Intent();
-			new_intent.setAction(CommandStrings.msrv_rec);
-			new_intent.putExtra(CommandStrings.msrv_cmd, CommandStrings.msrv_cmd_get_fold);
+			new_intent.setAction(Constants.msrv_rec);
+			new_intent.putExtra(Constants.msrv_cmd, Constants.msrv_cmd_get_fold);
 			mActivity.sendBroadcast(new_intent);
 		}
 	}
@@ -259,6 +259,6 @@ public class FileBrowserFragment extends ListFragment {
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
-		outState.putString(CommandStrings.currFoldKey, currPath);
+		outState.putString(Constants.currFoldKey, currPath);
 	}
 }

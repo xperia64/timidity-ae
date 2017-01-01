@@ -55,7 +55,7 @@ import com.xperia64.timidityae.gui.dialogs.FileBrowserDialog;
 import com.xperia64.timidityae.gui.dialogs.FileBrowserDialog.FileBrowserDialogListener;
 import com.xperia64.timidityae.gui.dialogs.SoundfontDialog;
 import com.xperia64.timidityae.gui.dialogs.SoundfontDialog.SoundfontDialogListener;
-import com.xperia64.timidityae.util.CommandStrings;
+import com.xperia64.timidityae.util.Constants;
 import com.xperia64.timidityae.util.DocumentFileUtils;
 import com.xperia64.timidityae.util.Globals;
 import com.xperia64.timidityae.util.ObjectSerializer;
@@ -202,8 +202,8 @@ public class SettingsActivity extends AppCompatActivity implements FileBrowserDi
 
 		if (needRestart) {
 			Intent new_intent = new Intent();
-			new_intent.setAction(CommandStrings.msrv_rec);
-			new_intent.putExtra(CommandStrings.msrv_cmd, CommandStrings.msrv_cmd_reload_libs);
+			new_intent.setAction(Constants.msrv_rec);
+			new_intent.putExtra(Constants.msrv_cmd, Constants.msrv_cmd_reload_libs);
 			sendBroadcast(new_intent);
 		}
 		Intent returnIntent = new Intent();

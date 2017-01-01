@@ -27,7 +27,7 @@ import android.widget.RemoteViews;
 
 import com.xperia64.timidityae.R;
 import com.xperia64.timidityae.TimidityActivity;
-import com.xperia64.timidityae.util.CommandStrings;
+import com.xperia64.timidityae.util.Constants;
 import com.xperia64.timidityae.util.Globals;
 import com.xperia64.timidityae.util.SettingsStorage;
 
@@ -152,29 +152,29 @@ public class TimidityAEWidgetProvider extends AppWidgetProvider {
 
 			Intent new_intent = new Intent();
 			//new_intent.addFlags(Intent.FLAG_RECEIVER_FOREGROUND);
-			new_intent.setAction(CommandStrings.msrv_rec);
-			new_intent.putExtra(CommandStrings.msrv_cmd, CommandStrings.msrv_cmd_prev);
+			new_intent.setAction(Constants.msrv_rec);
+			new_intent.putExtra(Constants.msrv_cmd, Constants.msrv_cmd_prev);
 			PendingIntent pendingNotificationIntent = PendingIntent.getBroadcast(context, 6, new_intent, 0);
 			views.setOnClickPendingIntent(R.id.notPrev_widget, pendingNotificationIntent);
 			// Play/Pause
 			new_intent = new Intent();
 			//new_intent.addFlags(Intent.FLAG_RECEIVER_FOREGROUND);
-			new_intent.setAction(CommandStrings.msrv_rec);
-			new_intent.putExtra(CommandStrings.msrv_cmd, CommandStrings.msrv_cmd_play_or_pause);
+			new_intent.setAction(Constants.msrv_rec);
+			new_intent.putExtra(Constants.msrv_cmd, Constants.msrv_cmd_play_or_pause);
 			pendingNotificationIntent = PendingIntent.getBroadcast(context, 7, new_intent, 0);
 			views.setOnClickPendingIntent(R.id.notPause_widget, pendingNotificationIntent);
 			// Next
 			new_intent = new Intent();
 			//new_intent.addFlags(Intent.FLAG_RECEIVER_FOREGROUND);
-			new_intent.setAction(CommandStrings.msrv_rec);
-			new_intent.putExtra(CommandStrings.msrv_cmd, CommandStrings.msrv_cmd_next);
+			new_intent.setAction(Constants.msrv_rec);
+			new_intent.putExtra(Constants.msrv_cmd, Constants.msrv_cmd_next);
 			pendingNotificationIntent = PendingIntent.getBroadcast(context, 8, new_intent, 0);
 			views.setOnClickPendingIntent(R.id.notNext_widget, pendingNotificationIntent);
 			// Stop
 			new_intent = new Intent();
 			//new_intent.addFlags(Intent.FLAG_RECEIVER_FOREGROUND);
-			new_intent.setAction(CommandStrings.msrv_rec);
-			new_intent.putExtra(CommandStrings.msrv_cmd, CommandStrings.msrv_cmd_stop);
+			new_intent.setAction(Constants.msrv_rec);
+			new_intent.putExtra(Constants.msrv_cmd, Constants.msrv_cmd_stop);
 			pendingNotificationIntent = PendingIntent.getBroadcast(context, 9, new_intent, 0);
 			views.setOnClickPendingIntent(R.id.notStop_widget, pendingNotificationIntent);
 			// Tell the AppWidgetManager to perform an upd_widgetate on the current app widget
