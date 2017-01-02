@@ -100,7 +100,7 @@ public class Globals {
 
 	// Requires TiMidity to be loaded to play these files:
 	private static final String TIMIDITY_FILES = "*.mid*.smf*.kar*.mod*.xm*.s3m*.it*.669*.amf*.dsm*.far*.gdm*.imf*.med*.mtm*.stm*.stx*.ult*.uni*";
-	private static final String MEDIA_FILES = "*.mp3*.m4a*.wav*.ogg*.flac*.mid*.smf*.kar*";
+	private static final String MEDIA_FILES = "*.mp3*.m4a*.wav*.ogg*.flac*.mid*.smf*.kar*.opus*";
 	private static final String VIDEO_FILES = "*.mp4*.3gp*";
 
 	public static String getSupportedExtensions() {
@@ -190,6 +190,8 @@ public class Globals {
 		if(isMidi(songFileName))
 		{
 			return JNIHandler.MediaFormat.FMT_TIMIDITY;
+		}else if (isSox(songFileName)) {
+			return JNIHandler.MediaFormat.FMT_SOX;
 		}else{
 			return JNIHandler.MediaFormat.FMT_MEDIAPLAYER;
 		}
@@ -208,6 +210,12 @@ public class Globals {
 				&& (songFileName.toLowerCase(Locale.US).endsWith(".mid")
 				|| songFileName.toLowerCase(Locale.US).endsWith(".kar")
 				|| songFileName.toLowerCase(Locale.US).endsWith(".smf"))));
+	}
+
+	public static boolean isSox(String songFileName) {
+		return (songFileName.toLowerCase(Locale.US).endsWith(".m4a") || songFileName.toLowerCase(Locale.US).endsWith(".mp4") || songFileName.toLowerCase(Locale.US).endsWith(".wav")
+				|| songFileName.toLowerCase(Locale.US).endsWith(".ogg") || songFileName.toLowerCase(Locale.US).endsWith(".mp3") || songFileName.toLowerCase(Locale.US).endsWith(".flac")
+				|| songFileName.toLowerCase(Locale.US).endsWith(".opus")) && !SettingsStorage.nativeMedia;
 	}
 
 	public static int extract8Rock(Context c) {

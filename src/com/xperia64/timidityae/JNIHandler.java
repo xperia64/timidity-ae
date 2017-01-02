@@ -18,6 +18,7 @@ import android.media.MediaPlayer;
 
 import com.xperia64.timidityae.util.Constants;
 import com.xperia64.timidityae.util.Globals;
+import com.xperia64.timidityae.util.SettingsStorage;
 import com.xperia64.timidityae.util.WavWriter;
 
 import java.io.File;
@@ -55,6 +56,14 @@ public class JNIHandler {
 
 	public static native int decompressSFArk(String from, String to);
 
+	public static native int soxInit(int jreloading, int jrate);
+
+	public static native int soxPlay(String jfileName, String[][] jeffects);
+
+	public static native void soxSeek(int jtime);
+
+	public static native void soxStop();
+
 	// public static DataOutputStream outFile;
 	public static AudioTrack mAudioTrack;
 	public static MediaPlayer mMediaPlayer;
@@ -62,7 +71,7 @@ public class JNIHandler {
 	public static int currTime = 0;
 
 	public enum MediaFormat {
-		FMT_MEDIAPLAYER, FMT_TIMIDITY
+		FMT_MEDIAPLAYER, FMT_TIMIDITY, FMT_SOX
 	};
 
 	public static MediaFormat mediaBackendFormat = MediaFormat.FMT_MEDIAPLAYER;
@@ -114,60 +123,115 @@ public class JNIHandler {
 	{
 		if (state == STATE_PLAYING || state == STATE_PAUSED) {
 			if (state == PlaybackState.STATE_PAUSED) {
-				if (mediaBackendFormat == MediaFormat.FMT_MEDIAPLAYER) {
-					mMediaPlayer.start();
-					state = STATE_PLAYING;
-				} else {
-					controlTimidity(Constants.jni_tim_toggle_pause, 0);
-					if (!(currentWavWriter != null && !currentWavWriter.finishedWriting) && mAudioTrack != null) {
+				switch(mediaBackendFormat)
+				{
+					case FMT_MEDIAPLAYER:
+						mMediaPlayer.start();
+						state = STATE_PLAYING;
+						break;
+					case FMT_SOX:
 						try {
 							mAudioTrack.play();
 						} catch (Exception e) {
 							e.printStackTrace();
 						}
-					}
-					state = STATE_PLAYING; // FIXME: Should be STATE_RESUMING
+						state = STATE_PLAYING;
+						break;
+					case FMT_TIMIDITY:
+						controlTimidity(Constants.jni_tim_toggle_pause, 0);
+						if (!(currentWavWriter != null && !currentWavWriter.finishedWriting) && mAudioTrack != null) {
+							try {
+								mAudioTrack.play();
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
+						}
+						state = STATE_PLAYING; // FIXME: Should be STATE_RESUMINGMIDITY:
+						break;
 				}
+
+
 			} else {
 				state = STATE_PAUSED; // FIXME: Should be STATE_PAUSING
-				if (mediaBackendFormat == MediaFormat.FMT_MEDIAPLAYER) {
-					mMediaPlayer.pause();
-				} else {
-					controlTimidity(Constants.jni_tim_toggle_pause, 0);
-					if (!(currentWavWriter != null && !currentWavWriter.finishedWriting) && mAudioTrack != null) {
+				switch(mediaBackendFormat) {
+					case FMT_MEDIAPLAYER:
+						mMediaPlayer.pause();
+						break;
+					case FMT_SOX:
 						try {
 							mAudioTrack.pause();
 						} catch (Exception e) {
 							e.printStackTrace();
 						}
-					}
+						break;
+					case FMT_TIMIDITY:
+						controlTimidity(Constants.jni_tim_toggle_pause, 0);
+						if (!(currentWavWriter != null && !currentWavWriter.finishedWriting) && mAudioTrack != null) {
+							try {
+								mAudioTrack.pause();
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
+						}
+						break;
 				}
 			}
 		}
 	}
 
+	/*
+		Template:
+		switch(mediaBackendFormat)
+		{
+			case FMT_MEDIAPLAYER:
+
+				break;
+			case FMT_SOX:
+
+				break;
+			case FMT_TIMIDITY:
+
+				break;
+		}
+	 */
+
 	public static void stop() {
 		state = STATE_REQSTOP;
-		if (mediaBackendFormat == MediaFormat.FMT_MEDIAPLAYER) {
-			mMediaPlayer.setOnCompletionListener(null);
-			try {
-				mMediaPlayer.stop();
-			} catch (IllegalStateException ignored) {}
-			state = STATE_IDLE;
-		} else {
-			controlTimidity(Constants.jni_tim_stop, 0);
+		switch(mediaBackendFormat)
+		{
+			case FMT_MEDIAPLAYER:
+				mMediaPlayer.setOnCompletionListener(null);
+				try {
+					mMediaPlayer.stop();
+				} catch (IllegalStateException ignored) {}
+				state = STATE_IDLE;
+				break;
+			case FMT_SOX:
+				soxStop();
+				break;
+			case FMT_TIMIDITY:
+				controlTimidity(Constants.jni_tim_stop, 0);
+				break;
 		}
 	}
 
 	public static void seekTo(int time) {
 		PlaybackState oldstate = state;
-		if (mediaBackendFormat == MediaFormat.FMT_MEDIAPLAYER) {
-			mMediaPlayer.seekTo(time);
-		} else {
-			controlTimidity(Constants.jni_tim_jump, time);
-			state = STATE_SEEKING;
-			waitUntilReady();
-			state = oldstate;
+		switch(mediaBackendFormat)
+		{
+			case FMT_MEDIAPLAYER:
+				mMediaPlayer.seekTo(time);
+				break;
+			case FMT_SOX:
+				state = STATE_SEEKING;
+				soxSeek(time);
+				state = oldstate;
+				break;
+			case FMT_TIMIDITY:
+				state = STATE_SEEKING;
+				waitUntilReady();
+				state = oldstate;
+				break;
 		}
 	}
 
@@ -176,6 +240,10 @@ public class JNIHandler {
 	}
 
 	public static void waitUntilReady(int interval) {
+		if(mediaBackendFormat != MediaFormat.FMT_TIMIDITY)
+		{
+			return;
+		}
 		while (!timidityReady()) {
 			try {
 				Thread.sleep(interval);
@@ -276,6 +344,24 @@ public class JNIHandler {
 
 	}
 
+	// Used by native (SoX)
+	@SuppressWarnings("unused")
+	private static void buffsox(short[] data, int length)
+	{
+		try {
+			mAudioTrack.write(data, 0, length);
+		} catch (IllegalStateException ignored) {}
+
+		// Hack for pauses
+		while(state == STATE_PAUSED) {
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
 	public static int init(String path, String file, int mono, int resamp, boolean sixteen, int b, int r, boolean preserveSilence, boolean reloading, boolean freeInsts) {
 		if (state == STATE_UNINIT) {
 
@@ -295,7 +381,8 @@ public class JNIHandler {
 			if (mMediaPlayer == null)
 				mMediaPlayer = new MediaPlayer();
 
-			int code = prepareTimidity(path, path + file, (channelMode == 1) ? 1 : 0, resamp, sixteenBit ? 1 : 0, preserveSilence ? 1 : 0, reloading ? 1 : 0, freeInsts ? 1 : 0);
+			int code = prepareTimidity(path, path + file, (channelMode == 1) ? 1 : 0, resamp, sixteenBit ? 1 : 0, preserveSilence ? 1 : 0, reloading ? 1 : 0, freeInsts ? 1 : 0)
+					+ soxInit(reloading ? 1 : 0, rate);
 			state = STATE_IDLE; // TODO: Maybe keep as UNINIT if code != 0?
 			return code;
 		} else {
@@ -335,62 +422,81 @@ public class JNIHandler {
 
 				resetVars();
 
-				if (mediaBackendFormat == MediaFormat.FMT_MEDIAPLAYER) {
-					try {
-						mMediaPlayer.setOnCompletionListener(null);
-						mMediaPlayer.reset();
-						mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-						mMediaPlayer.setVolume(100, 100);
-						mMediaPlayer.setDataSource(songTitle);
-						mMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-							public void onPrepared(MediaPlayer arg0) {
-								initSeekBar(arg0.getDuration());
-							}
-						});
-						mMediaPlayer.prepare();
-						mMediaPlayer.start();
-
-						state = STATE_PLAYING;
-
-						mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-							@Override
-							public void onCompletion(MediaPlayer arg0) {
-								arg0.setOnCompletionListener(null);
-								state = STATE_IDLE;
-							}
-						});
-
-					} catch (Exception ignored) {} // TODO: Don't really care. Should I?
-				} else {
-					// Reset the audio track every time.
-					// The audiotrack should be in the same thread as the
-					// timidity stuff for black midi.
-					playThread = new Thread(new Runnable() {
-						public void run() {
-							mAudioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, rate,
-									(channelMode == 2) ? AudioFormat.CHANNEL_OUT_STEREO : AudioFormat.CHANNEL_OUT_MONO,
-									(sixteenBit) ? AudioFormat.ENCODING_PCM_16BIT : AudioFormat.ENCODING_PCM_8BIT,
-									buffer, AudioTrack.MODE_STREAM);
-
-							if (!(currentWavWriter != null && !currentWavWriter.finishedWriting)) {
-								try {
-									mAudioTrack.play();
-								} catch (Exception e) {
-									exceptional |= 1;
+				switch(mediaBackendFormat)
+				{
+					case FMT_MEDIAPLAYER:
+						try {
+							mMediaPlayer.setOnCompletionListener(null);
+							mMediaPlayer.reset();
+							mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+							mMediaPlayer.setVolume(100, 100);
+							mMediaPlayer.setDataSource(songTitle);
+							mMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+								public void onPrepared(MediaPlayer arg0) {
+									initSeekBar(arg0.getDuration());
 								}
+							});
+							mMediaPlayer.prepare();
+							mMediaPlayer.start();
+
+							state = STATE_PLAYING;
+
+							mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+								@Override
+								public void onCompletion(MediaPlayer arg0) {
+									arg0.setOnCompletionListener(null);
+									state = STATE_IDLE;
+								}
+							});
+
+						} catch (Exception ignored) {} // TODO: Don't really care. Should I?
+						break;
+					case FMT_SOX:
+						playThread = new Thread(new Runnable() {
+							public void run() {
+								mAudioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, rate,
+										AudioFormat.CHANNEL_OUT_STEREO,
+										AudioFormat.ENCODING_PCM_16BIT,
+										buffer, AudioTrack.MODE_STREAM);
+								mAudioTrack.play();
+								state = STATE_PLAYING;
+								soxPlay(songTitle, SettingsStorage.soxEffStr.isEmpty()?new String[][]{{"speed", "0.9"},{"delay","0","0.025"}} : new String[][]{SettingsStorage.soxEffStr.split(" ")});
+
 							}
-							state = STATE_PLAYING; // FIXME: should use the Timidity callback; Or maybe see if data is written
-							loadSongTimidity(songTitle);
-							if(state != STATE_IDLE)
-								state = STATE_STOPPING;
+						});
+						playThread.setPriority(Thread.MAX_PRIORITY);
+						playThread.start();
+						break;
+					case FMT_TIMIDITY:
+						// Reset the audio track every time.
+						// The audiotrack should be in the same thread as the
+						// timidity stuff for black midi.
+						playThread = new Thread(new Runnable() {
+							public void run() {
+								mAudioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, rate,
+										(channelMode == 2) ? AudioFormat.CHANNEL_OUT_STEREO : AudioFormat.CHANNEL_OUT_MONO,
+										(sixteenBit) ? AudioFormat.ENCODING_PCM_16BIT : AudioFormat.ENCODING_PCM_8BIT,
+										buffer, AudioTrack.MODE_STREAM);
 
-							if (currentWavWriter != null && !currentWavWriter.finishedWriting)
-								currentWavWriter.finishOutput();
-						}
-					});
-					playThread.setPriority(Thread.MAX_PRIORITY);
-					playThread.start();
+								if (!(currentWavWriter != null && !currentWavWriter.finishedWriting)) {
+									try {
+										mAudioTrack.play();
+									} catch (Exception e) {
+										exceptional |= 1;
+									}
+								}
+								state = STATE_PLAYING; // FIXME: should use the Timidity callback; Or maybe see if data is written
+								loadSongTimidity(songTitle);
+								if(state != STATE_IDLE)
+									state = STATE_STOPPING;
 
+								if (currentWavWriter != null && !currentWavWriter.finishedWriting)
+									currentWavWriter.finishOutput();
+							}
+						});
+						playThread.setPriority(Thread.MAX_PRIORITY);
+						playThread.start();
+						break;
 				}
 				return 0;
 			} else {
@@ -577,5 +683,22 @@ public class JNIHandler {
 		keyOffset = k;
 	}
 
-
+	// Used by native (SoX)
+	@SuppressWarnings("unused")
+	public static void soxOverDone()
+	{
+		if (mAudioTrack != null) {
+			try {
+				// Write an extra two seconds of silence to ensure we've flushed fully
+				if(state != STATE_REQSTOP) {
+					state = STATE_STOPPING;
+					buffsox(new short[(rate) * 2], ((rate) * 2));
+					mAudioTrack.flush();
+				}
+				mAudioTrack.stop();
+			} catch (IllegalStateException ignored) {}
+			mAudioTrack.release();
+		}
+		state = STATE_IDLE;
+	}
 }

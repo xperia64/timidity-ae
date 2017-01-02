@@ -70,8 +70,8 @@ import java.util.Arrays;
 import java.util.List;
 
 public class TimidityActivity extends AppCompatActivity implements FileBrowserFragment.ActionFileBackListener, PlaylistFragment.ActionPlaylistBackListener, FileBrowserDialog.FileBrowserDialogListener {
-	private MenuItem menuButton;
-	private MenuItem menuButton2;
+	private MenuItem menuButtonR;
+	private MenuItem menuButtonL;
 	private FileBrowserFragment fileFrag;
 	private PlayerFragment playFrag;
 	private PlaylistFragment plistFrag;
@@ -109,16 +109,16 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 				case Constants.ta_cmd_gui_play:
 					currSongName = intent.getStringExtra(Constants.ta_filename);
 					if (viewPager.getCurrentItem() == 1) {
-						menuButton.setIcon(R.drawable.ic_menu_agenda);
-						menuButton.setTitle(getResources().getString(R.string.view));
-						menuButton.setTitleCondensed(getResources().getString(R.string.viewcon));
-						menuButton.setVisible((JNIHandler.mediaBackendFormat != JNIHandler.MediaFormat.FMT_MEDIAPLAYER) && JNIHandler.isActive());
-						menuButton.setEnabled((JNIHandler.mediaBackendFormat != JNIHandler.MediaFormat.FMT_MEDIAPLAYER) && JNIHandler.isActive());
-						menuButton2.setIcon(R.drawable.ic_menu_info_details);
-						menuButton2.setTitle(getResources().getString(R.string.playback));
-						menuButton2.setTitleCondensed(getResources().getString(R.string.playbackcon));
-						menuButton2.setVisible((JNIHandler.mediaBackendFormat != JNIHandler.MediaFormat.FMT_MEDIAPLAYER) && JNIHandler.isActive());
-						menuButton2.setEnabled((JNIHandler.mediaBackendFormat != JNIHandler.MediaFormat.FMT_MEDIAPLAYER) && JNIHandler.isActive());
+						menuButtonR.setIcon(R.drawable.ic_menu_agenda);
+						menuButtonR.setTitle(getResources().getString(R.string.view));
+						menuButtonR.setTitleCondensed(getResources().getString(R.string.viewcon));
+						menuButtonR.setVisible((JNIHandler.mediaBackendFormat == JNIHandler.MediaFormat.FMT_TIMIDITY) && JNIHandler.isActive());
+						menuButtonR.setEnabled((JNIHandler.mediaBackendFormat == JNIHandler.MediaFormat.FMT_TIMIDITY) && JNIHandler.isActive());
+						menuButtonL.setIcon(R.drawable.ic_menu_info_details);
+						menuButtonL.setTitle(getResources().getString(R.string.playback));
+						menuButtonL.setTitleCondensed(getResources().getString(R.string.playbackcon));
+						menuButtonL.setVisible((JNIHandler.mediaBackendFormat != JNIHandler.MediaFormat.FMT_MEDIAPLAYER) && JNIHandler.isActive());
+						menuButtonL.setEnabled((JNIHandler.mediaBackendFormat != JNIHandler.MediaFormat.FMT_MEDIAPLAYER) && JNIHandler.isActive());
 					}
 					playFrag.play(intent.getIntExtra(Constants.ta_startt, 0), intent.getStringExtra(Constants.ta_songttl));
 					if (plistFrag != null) {
@@ -147,16 +147,16 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 				case Constants.ta_cmd_gui_play_full:
 					currSongName = intent.getStringExtra(Constants.ta_filename);
 					if (viewPager.getCurrentItem() == 1) {
-						menuButton.setIcon(R.drawable.ic_menu_agenda);
-						menuButton.setTitle(getResources().getString(R.string.view));
-						menuButton.setTitleCondensed(getResources().getString(R.string.viewcon));
-						menuButton.setVisible((JNIHandler.mediaBackendFormat != JNIHandler.MediaFormat.FMT_MEDIAPLAYER) && JNIHandler.isActive());
-						menuButton.setEnabled((JNIHandler.mediaBackendFormat != JNIHandler.MediaFormat.FMT_MEDIAPLAYER) && JNIHandler.isActive());
-						menuButton2.setIcon(R.drawable.ic_menu_info_details);
-						menuButton2.setTitle(getResources().getString(R.string.playback));
-						menuButton2.setTitleCondensed(getResources().getString(R.string.playbackcon));
-						menuButton2.setVisible((JNIHandler.mediaBackendFormat != JNIHandler.MediaFormat.FMT_MEDIAPLAYER) && JNIHandler.isActive());
-						menuButton2.setEnabled((JNIHandler.mediaBackendFormat != JNIHandler.MediaFormat.FMT_MEDIAPLAYER) && JNIHandler.isActive());
+						menuButtonR.setIcon(R.drawable.ic_menu_agenda);
+						menuButtonR.setTitle(getResources().getString(R.string.view));
+						menuButtonR.setTitleCondensed(getResources().getString(R.string.viewcon));
+						menuButtonR.setVisible((JNIHandler.mediaBackendFormat == JNIHandler.MediaFormat.FMT_TIMIDITY) && JNIHandler.isActive());
+						menuButtonR.setEnabled((JNIHandler.mediaBackendFormat == JNIHandler.MediaFormat.FMT_TIMIDITY) && JNIHandler.isActive());
+						menuButtonL.setIcon(R.drawable.ic_menu_info_details);
+						menuButtonL.setTitle(getResources().getString(R.string.playback));
+						menuButtonL.setTitleCondensed(getResources().getString(R.string.playbackcon));
+						menuButtonL.setVisible((JNIHandler.mediaBackendFormat != JNIHandler.MediaFormat.FMT_MEDIAPLAYER) && JNIHandler.isActive());
+						menuButtonL.setEnabled((JNIHandler.mediaBackendFormat != JNIHandler.MediaFormat.FMT_MEDIAPLAYER) && JNIHandler.isActive());
 					}
 					playFrag.play(intent.getIntExtra(Constants.ta_startt, 0), intent.getStringExtra(Constants.ta_songttl), intent.getIntExtra(Constants.ta_shufmode, 0), intent.getIntExtra(Constants.ta_loopmode, 1));
 					break;
@@ -177,16 +177,16 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 					if (!intent.getBooleanExtra(Constants.ta_pause, false) && Globals.hardStop) {
 						Globals.hardStop = false;
 						if (viewPager.getCurrentItem() == 1) {
-							menuButton.setIcon(R.drawable.ic_menu_agenda);
-							menuButton.setTitle(getResources().getString(R.string.view));
-							menuButton.setTitleCondensed(getResources().getString(R.string.viewcon));
-							menuButton.setVisible(false);
-							menuButton.setEnabled(false);
-							menuButton2.setIcon(R.drawable.ic_menu_info_details);
-							menuButton2.setTitle(getResources().getString(R.string.playback));
-							menuButton2.setTitleCondensed(getResources().getString(R.string.playbackcon));
-							menuButton2.setVisible(false);
-							menuButton2.setEnabled(false);
+							menuButtonR.setIcon(R.drawable.ic_menu_agenda);
+							menuButtonR.setTitle(getResources().getString(R.string.view));
+							menuButtonR.setTitleCondensed(getResources().getString(R.string.viewcon));
+							menuButtonR.setVisible(false);
+							menuButtonR.setEnabled(false);
+							menuButtonL.setIcon(R.drawable.ic_menu_info_details);
+							menuButtonL.setTitle(getResources().getString(R.string.playback));
+							menuButtonL.setTitleCondensed(getResources().getString(R.string.playbackcon));
+							menuButtonL.setVisible(false);
+							menuButtonL.setEnabled(false);
 						}
 						playFrag.setInterface(0);
 						TimidityActivity.this.runOnUiThread(new Runnable() {
@@ -397,6 +397,14 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 		} else {
 			Globals.libLoaded = true;
 		}
+
+		try {
+			System.loadLibrary("soxhelper");
+		} catch (UnsatisfiedLinkError e) {
+			Log.e("Bad:", "Cannot load soxhelper");
+			SettingsStorage.nativeMedia = true;
+		}
+
 		oldTheme = SettingsStorage.theme;
 		oldPlist = SettingsStorage.enableDragNDrop;
 		this.setTheme((SettingsStorage.theme == 1) ? android.support.v7.appcompat.R.style.Theme_AppCompat_Light_DarkActionBar : android.support.v7.appcompat.R.style.Theme_AppCompat);
@@ -475,19 +483,19 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 					case 0:
 						fromPlaylist = false;
 						if (getSupportActionBar() != null) {
-							if (menuButton != null) {
-								menuButton.setIcon(R.drawable.ic_menu_refresh);
-								menuButton.setVisible(true);
-								menuButton.setEnabled(true);
-								menuButton.setTitle(getResources().getString(R.string.refreshfld));
-								menuButton.setTitleCondensed(getResources().getString(R.string.refreshcon));
+							if (menuButtonR != null) {
+								menuButtonR.setIcon(R.drawable.ic_menu_refresh);
+								menuButtonR.setVisible(true);
+								menuButtonR.setEnabled(true);
+								menuButtonR.setTitle(getResources().getString(R.string.refreshfld));
+								menuButtonR.setTitleCondensed(getResources().getString(R.string.refreshcon));
 							}
-							if (menuButton2 != null) {
-								menuButton2.setIcon(R.drawable.ic_menu_home);
-								menuButton2.setTitle(getResources().getString(R.string.homefld));
-								menuButton2.setTitleCondensed(getResources().getString(R.string.homecon));
-								menuButton2.setVisible(true);
-								menuButton2.setEnabled(true);
+							if (menuButtonL != null) {
+								menuButtonL.setIcon(R.drawable.ic_menu_home);
+								menuButtonL.setTitle(getResources().getString(R.string.homefld));
+								menuButtonL.setTitleCondensed(getResources().getString(R.string.homecon));
+								menuButtonL.setVisible(true);
+								menuButtonL.setEnabled(true);
 							}
 							getSupportActionBar().setDisplayHomeAsUpEnabled(needFileBack);
 						}
@@ -497,19 +505,19 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 						break;
 					case 1:
 						if (getSupportActionBar() != null) {
-							if (menuButton != null) {
-								menuButton.setIcon(R.drawable.ic_menu_agenda);
-								menuButton.setTitle(getResources().getString(R.string.view));
-								menuButton.setTitleCondensed(getResources().getString(R.string.viewcon));
-								menuButton.setVisible((JNIHandler.mediaBackendFormat != JNIHandler.MediaFormat.FMT_MEDIAPLAYER) && JNIHandler.isActive());
-								menuButton.setEnabled((JNIHandler.mediaBackendFormat != JNIHandler.MediaFormat.FMT_MEDIAPLAYER) && JNIHandler.isActive());
+							if (menuButtonR != null) {
+								menuButtonR.setIcon(R.drawable.ic_menu_agenda);
+								menuButtonR.setTitle(getResources().getString(R.string.view));
+								menuButtonR.setTitleCondensed(getResources().getString(R.string.viewcon));
+								menuButtonR.setVisible((JNIHandler.mediaBackendFormat == JNIHandler.MediaFormat.FMT_TIMIDITY) && JNIHandler.isActive());
+								menuButtonR.setEnabled((JNIHandler.mediaBackendFormat == JNIHandler.MediaFormat.FMT_TIMIDITY) && JNIHandler.isActive());
 							}
-							if (menuButton2 != null) {
-								menuButton2.setIcon(R.drawable.ic_menu_info_details);
-								menuButton2.setTitle(getResources().getString(R.string.playback));
-								menuButton2.setTitleCondensed(getResources().getString(R.string.playbackcon));
-								menuButton2.setVisible((JNIHandler.mediaBackendFormat != JNIHandler.MediaFormat.FMT_MEDIAPLAYER) && JNIHandler.isActive());
-								menuButton2.setEnabled((JNIHandler.mediaBackendFormat != JNIHandler.MediaFormat.FMT_MEDIAPLAYER) && JNIHandler.isActive());
+							if (menuButtonL != null) {
+								menuButtonL.setIcon(R.drawable.ic_menu_info_details);
+								menuButtonL.setTitle(getResources().getString(R.string.playback));
+								menuButtonL.setTitleCondensed(getResources().getString(R.string.playbackcon));
+								menuButtonL.setVisible((JNIHandler.mediaBackendFormat != JNIHandler.MediaFormat.FMT_MEDIAPLAYER) && JNIHandler.isActive());
+								menuButtonL.setEnabled((JNIHandler.mediaBackendFormat != JNIHandler.MediaFormat.FMT_MEDIAPLAYER) && JNIHandler.isActive());
 							}
 							getSupportActionBar().setDisplayHomeAsUpEnabled(false);
 							getSupportActionBar().setHomeButtonEnabled(false);
@@ -518,24 +526,24 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 					case 2:
 						fromPlaylist = true;
 						if (getSupportActionBar() != null) {
-							if (menuButton != null) {
-								menuButton.setIcon(R.drawable.ic_menu_refresh);
-								menuButton.setTitle(getResources().getString(R.string.refreshpls));
-								menuButton.setTitleCondensed(getResources().getString(R.string.refreshcon));
-								menuButton.setVisible(true);
-								menuButton.setEnabled(true);
+							if (menuButtonR != null) {
+								menuButtonR.setIcon(R.drawable.ic_menu_refresh);
+								menuButtonR.setTitle(getResources().getString(R.string.refreshpls));
+								menuButtonR.setTitleCondensed(getResources().getString(R.string.refreshcon));
+								menuButtonR.setVisible(true);
+								menuButtonR.setEnabled(true);
 							}
-							if (menuButton2 != null) {
-								menuButton2.setIcon(R.drawable.ic_menu_add);
-								menuButton2.setTitle(getResources().getString(R.string.add));
-								menuButton2.setTitleCondensed(getResources().getString(R.string.addcon));
+							if (menuButtonL != null) {
+								menuButtonL.setIcon(R.drawable.ic_menu_add);
+								menuButtonL.setTitle(getResources().getString(R.string.add));
+								menuButtonL.setTitleCondensed(getResources().getString(R.string.addcon));
 								if (plistFrag != null) {
 									// Enable if:
 									// Not currently in a playlist OR
 									// the playlist is not in the current playlist.
 									// TODO: This could probably be simplified further
-									menuButton2.setVisible(!(plistFrag.plistName != null && plistFrag.isPlaylist) || !plistFrag.plistName.equals("CURRENT"));
-									menuButton2.setEnabled(!(plistFrag.plistName != null && plistFrag.isPlaylist) || !plistFrag.plistName.equals("CURRENT"));
+									menuButtonL.setVisible(!(plistFrag.plistName != null && plistFrag.isPlaylist) || !plistFrag.plistName.equals("CURRENT"));
+									menuButtonL.setEnabled(!(plistFrag.plistName != null && plistFrag.isPlaylist) || !plistFrag.plistName.equals("CURRENT"));
 								}
 							}
 							if (plistFrag != null)
@@ -813,25 +821,25 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 	public boolean onCreateOptionsMenu(Menu menu) {
 		MenuInflater inflater = getMenuInflater();
 		inflater.inflate(R.menu.main_menu, menu);
-		menuButton = menu.findItem(R.id.menuBtn1);
-		menuButton2 = menu.findItem(R.id.menuBtn2);
+		menuButtonR = menu.findItem(R.id.menuBtn1);
+		menuButtonL = menu.findItem(R.id.menuBtn2);
 		switch (viewPager.getCurrentItem()) {
 			case 0:
 				fromPlaylist = false;
 				if (getSupportActionBar() != null) {
-					if (menuButton != null) {
-						menuButton.setIcon(R.drawable.ic_menu_refresh);
-						menuButton.setVisible(true);
-						menuButton.setEnabled(true);
-						menuButton.setTitle(getResources().getString(R.string.refreshfld));
-						menuButton.setTitleCondensed(getResources().getString(R.string.refreshcon));
+					if (menuButtonR != null) {
+						menuButtonR.setIcon(R.drawable.ic_menu_refresh);
+						menuButtonR.setVisible(true);
+						menuButtonR.setEnabled(true);
+						menuButtonR.setTitle(getResources().getString(R.string.refreshfld));
+						menuButtonR.setTitleCondensed(getResources().getString(R.string.refreshcon));
 					}
-					if (menuButton2 != null) {
-						menuButton2.setIcon(R.drawable.ic_menu_home);
-						menuButton2.setTitle(getResources().getString(R.string.homefld));
-						menuButton2.setTitleCondensed(getResources().getString(R.string.homecon));
-						menuButton2.setVisible(true);
-						menuButton2.setEnabled(true);
+					if (menuButtonL != null) {
+						menuButtonL.setIcon(R.drawable.ic_menu_home);
+						menuButtonL.setTitle(getResources().getString(R.string.homefld));
+						menuButtonL.setTitleCondensed(getResources().getString(R.string.homecon));
+						menuButtonL.setVisible(true);
+						menuButtonL.setEnabled(true);
 					}
 					getSupportActionBar().setDisplayHomeAsUpEnabled(needFileBack);
 				}
@@ -841,19 +849,19 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 				break;
 			case 1:
 				if (getSupportActionBar() != null) {
-					if (menuButton != null) {
-						menuButton.setIcon(R.drawable.ic_menu_agenda);
-						menuButton.setTitle(getResources().getString(R.string.view));
-						menuButton.setTitleCondensed(getResources().getString(R.string.viewcon));
-						menuButton.setVisible((JNIHandler.mediaBackendFormat != JNIHandler.MediaFormat.FMT_MEDIAPLAYER) && JNIHandler.isActive());
-						menuButton.setEnabled((JNIHandler.mediaBackendFormat != JNIHandler.MediaFormat.FMT_MEDIAPLAYER) && JNIHandler.isActive());
+					if (menuButtonR != null) {
+						menuButtonR.setIcon(R.drawable.ic_menu_agenda);
+						menuButtonR.setTitle(getResources().getString(R.string.view));
+						menuButtonR.setTitleCondensed(getResources().getString(R.string.viewcon));
+						menuButtonR.setVisible((JNIHandler.mediaBackendFormat == JNIHandler.MediaFormat.FMT_TIMIDITY) && JNIHandler.isActive());
+						menuButtonR.setEnabled((JNIHandler.mediaBackendFormat == JNIHandler.MediaFormat.FMT_TIMIDITY) && JNIHandler.isActive());
 					}
-					if (menuButton2 != null) {
-						menuButton2.setIcon(R.drawable.ic_menu_info_details);
-						menuButton2.setTitle(getResources().getString(R.string.playback));
-						menuButton2.setTitleCondensed(getResources().getString(R.string.playbackcon));
-						menuButton2.setVisible((JNIHandler.mediaBackendFormat != JNIHandler.MediaFormat.FMT_MEDIAPLAYER) && JNIHandler.isActive());
-						menuButton2.setEnabled((JNIHandler.mediaBackendFormat != JNIHandler.MediaFormat.FMT_MEDIAPLAYER) && JNIHandler.isActive());
+					if (menuButtonL != null) {
+						menuButtonL.setIcon(R.drawable.ic_menu_info_details);
+						menuButtonL.setTitle(getResources().getString(R.string.playback));
+						menuButtonL.setTitleCondensed(getResources().getString(R.string.playbackcon));
+						menuButtonL.setVisible((JNIHandler.mediaBackendFormat != JNIHandler.MediaFormat.FMT_MEDIAPLAYER) && JNIHandler.isActive());
+						menuButtonL.setEnabled((JNIHandler.mediaBackendFormat != JNIHandler.MediaFormat.FMT_MEDIAPLAYER) && JNIHandler.isActive());
 					}
 					getSupportActionBar().setDisplayHomeAsUpEnabled(false);
 					getSupportActionBar().setHomeButtonEnabled(false);
@@ -862,24 +870,24 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 			case 2:
 				fromPlaylist = true;
 				if (getSupportActionBar() != null) {
-					if (menuButton != null) {
-						menuButton.setIcon(R.drawable.ic_menu_refresh);
-						menuButton.setTitle(getResources().getString(R.string.refreshpls));
-						menuButton.setTitleCondensed(getResources().getString(R.string.refreshcon));
-						menuButton.setVisible(true);
-						menuButton.setEnabled(true);
+					if (menuButtonR != null) {
+						menuButtonR.setIcon(R.drawable.ic_menu_refresh);
+						menuButtonR.setTitle(getResources().getString(R.string.refreshpls));
+						menuButtonR.setTitleCondensed(getResources().getString(R.string.refreshcon));
+						menuButtonR.setVisible(true);
+						menuButtonR.setEnabled(true);
 					}
-					if (menuButton2 != null) {
-						menuButton2.setIcon(R.drawable.ic_menu_add);
-						menuButton2.setTitle(getResources().getString(R.string.add));
-						menuButton2.setTitleCondensed(getResources().getString(R.string.addcon));
+					if (menuButtonL != null) {
+						menuButtonL.setIcon(R.drawable.ic_menu_add);
+						menuButtonL.setTitle(getResources().getString(R.string.add));
+						menuButtonL.setTitleCondensed(getResources().getString(R.string.addcon));
 						if (plistFrag != null) {
 							// Enable if:
 							// Not currently in a playlist OR
 							// the playlist is not in the current playlist.
 							// TODO: This could probably be simplified further
-							menuButton2.setVisible(!(plistFrag.plistName != null && plistFrag.isPlaylist) || !plistFrag.plistName.equals("CURRENT"));
-							menuButton2.setEnabled(!(plistFrag.plistName != null && plistFrag.isPlaylist) || !plistFrag.plistName.equals("CURRENT"));
+							menuButtonL.setVisible(!(plistFrag.plistName != null && plistFrag.isPlaylist) || !plistFrag.plistName.equals("CURRENT"));
+							menuButtonL.setEnabled(!(plistFrag.plistName != null && plistFrag.isPlaylist) || !plistFrag.plistName.equals("CURRENT"));
 						}
 					}
 					if (plistFrag != null)
@@ -1057,18 +1065,18 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 
 	@Override
 	public void needPlaylistBackCallback(boolean yes, boolean current) {
-		if (menuButton2 == null)
+		if (menuButtonL == null)
 			return;
 		needPlaylistBack = yes;
 		if (getSupportActionBar() != null) {
 			if (viewPager.getCurrentItem() == 2) {
 				if (needPlaylistBack) {
 					getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-					menuButton2.setVisible(!current);
-					menuButton2.setEnabled(!current);
+					menuButtonL.setVisible(!current);
+					menuButtonL.setEnabled(!current);
 				} else {
-					menuButton2.setVisible(true);
-					menuButton2.setEnabled(true);
+					menuButtonL.setVisible(true);
+					menuButtonL.setEnabled(true);
 					getSupportActionBar().setDisplayHomeAsUpEnabled(false);
 					getSupportActionBar().setHomeButtonEnabled(false);
 				}

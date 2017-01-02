@@ -76,6 +76,9 @@ public class SettingsStorage {
 	public static int reverb = 0;
 	public static int reverbLevel = -1;
 
+	public static boolean nativeMedia = false;
+	public static String soxEffStr = "";
+
 	public static void reloadSettings(Activity c, AssetManager assets) {
 
 		prefs = PreferenceManager.getDefaultSharedPreferences(c);
