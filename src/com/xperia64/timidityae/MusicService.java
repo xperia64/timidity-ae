@@ -78,7 +78,7 @@ public class MusicService extends Service {
 	public boolean fullStop = false;
 	public boolean foreground = false;
 	public boolean fixedShuffle = true;
-	boolean death = false;
+	boolean breakLoops = false;
 	boolean phonepause = false;
 	PowerManager.WakeLock wl;
 	boolean shouldDoWidget = true;
@@ -128,13 +128,13 @@ public class MusicService extends Service {
 		public void onCallStateChanged(int state, String incomingNumber) {
 			if (state == TelephonyManager.CALL_STATE_RINGING) {
 				// Incoming call: Pause music
-				if (JNIHandler.isPlaying && !JNIHandler.paused && !phonepause && !(JNIHandler.currentWavWriter != null && !JNIHandler.currentWavWriter.finishedWriting)) {
+				if (JNIHandler.state == JNIHandler.PlaybackState.STATE_PLAYING && !phonepause && !(JNIHandler.currentWavWriter != null && !JNIHandler.currentWavWriter.finishedWriting)) {
 					phonepause = true;
 					pause();
 				}
 			} else if (state == TelephonyManager.CALL_STATE_IDLE) {
 				// Not in call: Play music
-				if (JNIHandler.isPlaying && JNIHandler.paused && phonepause) {
+				if (JNIHandler.state == JNIHandler.PlaybackState.STATE_PAUSED && phonepause) {
 					phonepause = false;
 					pause();
 				}
@@ -175,7 +175,7 @@ public class MusicService extends Service {
 						case KeyEvent.KEYCODE_MEDIA_PLAY:
 						case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
 						case KeyEvent.KEYCODE_MEDIA_PAUSE:
-							if (JNIHandler.isPlaying) {
+							if (JNIHandler.isActive()) {
 								pause();
 							} else {
 								play();
@@ -197,7 +197,7 @@ public class MusicService extends Service {
 					}
 				}
 			} else if (Intent.ACTION_HEADSET_PLUG.equals(intent.getAction())) {
-				if (JNIHandler.isPlaying && !JNIHandler.paused && intent.getIntExtra("state", -1) == 0) {
+				if (JNIHandler.state == JNIHandler.PlaybackState.STATE_PLAYING && intent.getIntExtra("state", -1) == 0) {
 					pause();
 				}
 			} else {
@@ -208,7 +208,7 @@ public class MusicService extends Service {
 				Intent outgoingIntent = new Intent();
 				switch (cmd) {
 					case Constants.msrv_cmd_load_plist_play: // We have a new playlist. Load it and the immediate song to load.
-						death = true;
+						breakLoops = true;
 						ArrayList<String> tmpList = Globals.plist;
 						if (tmpList == null) {
 							break;
@@ -352,7 +352,7 @@ public class MusicService extends Service {
 						sendBroadcast(outgoingIntent);
 						break;
 					case Constants.msrv_cmd_play_or_pause:
-						if (JNIHandler.isPlaying) {
+						if (JNIHandler.isActive()) {
 							pause();
 						} else {
 							play();
@@ -363,7 +363,9 @@ public class MusicService extends Service {
 						shouldAdvance = false;
 						Globals.hardStop = true;
 						stop();
-						while (((JNIHandler.isPlaying || JNIHandler.isBlocking))) {
+						// TODO: Consider replacing with "waitForStop"
+						while (JNIHandler.state != JNIHandler.PlaybackState.STATE_IDLE) {
+							System.out.println("Waiting for writing to stop!");
 							try {
 								Thread.sleep(10);
 							} catch (InterruptedException e) {
@@ -373,6 +375,7 @@ public class MusicService extends Service {
 						final String input = intent.getStringExtra(Constants.msrv_infile);
 						String output = intent.getStringExtra(Constants.msrv_outfile);
 						if (input != null && output != null) {
+							System.out.println("Setting up output file "+output+" "+input);
 							JNIHandler.setupOutputFile(output);
 							JNIHandler.play(input);
 						}
@@ -380,9 +383,13 @@ public class MusicService extends Service {
 
 							@Override
 							public void run() {
-								while (!death && ((!JNIHandler.isPlaying))) {
-									if (!JNIHandler.isBlocking) {
-										death = true;
+								// Wait for TiMidity to start or until canceled or aborted.
+								while (!breakLoops && ((JNIHandler.state != JNIHandler.PlaybackState.STATE_PLAYING))) {
+									System.out.println("Waiting for starting");
+									if (JNIHandler.state == JNIHandler.PlaybackState.STATE_IDLE) {
+										// LOADING -> IDLE = Error
+										System.out.println("Bad state transition. Killing file write.");
+										breakLoops = true;
 									}
 									try {
 										Thread.sleep(10);
@@ -399,7 +406,10 @@ public class MusicService extends Service {
 									}
 									JNIHandler.shouldPlayNow = false;
 									JNIHandler.currTime = 0;
-									while (JNIHandler.isPlaying && !death && !JNIHandler.dataWritten) {
+
+									// Wait for data to be written
+									// TODO: When STATE_LOADING is more robust, wait for it to transition instead of this:
+									while (JNIHandler.state == JNIHandler.PlaybackState.STATE_PLAYING && !breakLoops && !JNIHandler.dataWritten) {
 										try {
 											Thread.sleep(25);
 										} catch (InterruptedException e) {
@@ -413,7 +423,7 @@ public class MusicService extends Service {
 									loadCfgIntent.putExtra(Constants.msrv_reset, true);
 									sendBroadcast(loadCfgIntent);
 								}
-								while (((JNIHandler.isPlaying))) {
+								while (JNIHandler.isActive()) {
 									try {
 										Thread.sleep(25);
 									} catch (InterruptedException ignored) {}
@@ -423,35 +433,37 @@ public class MusicService extends Service {
 								outgoingIntent.setAction(Constants.ta_rec);
 								outgoingIntent.putExtra(Constants.ta_cmd, Constants.ta_cmd_special_notification_finished);
 								sendBroadcast(outgoingIntent);
-								death = false;
+								breakLoops = false;
 							}
 						}).start();
 						// play();
 						break;
 					case Constants.msrv_cmd_write_curr: // We want to write an output file while playing.
 						shouldAdvance = false;
-						if (JNIHandler.paused) {
-							JNIHandler.pause();
+						if (JNIHandler.state == JNIHandler.PlaybackState.STATE_PAUSED) {
+							JNIHandler.pause(); // Unpause
 							JNIHandler.waitUntilReady(50);
 						}
 						JNIHandler.seekTo(0); // Why is this async. Seriously.
-						JNIHandler.waitUntilReady();
-						JNIHandler.pause();
+						JNIHandler.pause(); // Pause
 						JNIHandler.waitUntilReady();
 						String output2 = intent.getStringExtra(Constants.msrv_outfile);
-						if (JNIHandler.isPlaying && output2 != null) {
+						if (JNIHandler.state == JNIHandler.PlaybackState.STATE_PAUSED && output2 != null) {
 							JNIHandler.setupOutputFile(output2);
-							JNIHandler.pause();
+							JNIHandler.pause(); // Unpause
+						}else{
+							return;
 						}
 						new Thread(new Runnable() {
 							@Override
 							public void run() {
-								while (((!JNIHandler.isPlaying))) {
+								// TODO: Abstract into "waitForState"
+								while (JNIHandler.state != JNIHandler.PlaybackState.STATE_PLAYING) {
 									try {
 										Thread.sleep(10);
 									} catch (InterruptedException ignored) {}
 								}
-								while (((JNIHandler.isPlaying))) {
+								while (JNIHandler.state == JNIHandler.PlaybackState.STATE_PLAYING) {
 									try {
 										Thread.sleep(25);
 									} catch (InterruptedException ignored) {}
@@ -468,14 +480,14 @@ public class MusicService extends Service {
 						}).start();
 						break;
 					case Constants.msrv_cmd_save_cfg: // store midi settings
-						boolean wasPaused = JNIHandler.paused;
-						if (!JNIHandler.paused) {
-							JNIHandler.pause();
+						boolean wasPaused = JNIHandler.state == JNIHandler.PlaybackState.STATE_PAUSED;
+						if (JNIHandler.state != JNIHandler.PlaybackState.STATE_PAUSED) {
+							JNIHandler.pause(); // Pause
 							JNIHandler.waitUntilReady(50);
 						}
 						String output3 = intent.getStringExtra(Constants.msrv_outfile);
 						int[] numbers = new int[3];
-						numbers[0] = JNIHandler.tb;
+						numbers[0] = JNIHandler.tempoCount;
 						numbers[1] = JNIHandler.keyOffset;
 						numbers[2] = JNIHandler.maxvoice;
 						String[] serializedSettings = new String[5]; // I'm sorry. I'm sorry.
@@ -532,8 +544,8 @@ public class MusicService extends Service {
 						sendBroadcast(outgoingIntent15);
 						break;
 					case Constants.msrv_cmd_load_cfg: // load midi settings
-						if (JNIHandler.paused) {
-							JNIHandler.pause();
+						if (JNIHandler.state == JNIHandler.PlaybackState.STATE_PAUSED) {
+							JNIHandler.pause(); // Unpause
 							JNIHandler.waitUntilReady(50);
 						}
 						String input2 = intent.getStringExtra(Constants.msrv_infile);
@@ -587,7 +599,7 @@ public class MusicService extends Service {
 							}
 							JNIHandler.custVol.set(i, mscustVol.get(i));
 						}
-						int newtb = newnumbers[0] - JNIHandler.tb;
+						int newtb = newnumbers[0] - JNIHandler.tempoCount;
 						if (newtb > 0) {
 							JNIHandler.controlTimidity(Constants.jni_tim_speedup, newtb);
 							JNIHandler.waitUntilReady();
@@ -595,7 +607,7 @@ public class MusicService extends Service {
 							JNIHandler.controlTimidity(Constants.jni_tim_speeddown, -1 * newtb);
 							JNIHandler.waitUntilReady();
 						}
-						JNIHandler.tb = newnumbers[0];
+						JNIHandler.tempoCount = newnumbers[0];
 
 						int newko = newnumbers[1] - JNIHandler.keyOffset;
 						if (newko > 0) {
@@ -631,7 +643,7 @@ public class MusicService extends Service {
 						}
 						int logRet = JNIHandler.unloadLib();
 						Log.d("TIMIDITY", "Unloading: " + logRet);
-						JNIHandler.prepared = false;
+						JNIHandler.state = JNIHandler.PlaybackState.STATE_UNINIT;
 						JNIHandler.volumes = new ArrayList<>();
 						JNIHandler.programs = new ArrayList<>();
 						JNIHandler.drums = new ArrayList<>();
@@ -755,17 +767,15 @@ public class MusicService extends Service {
 	public void play() {
 		if (playList != null && currSongNumber >= 0) {
 			shouldAdvance = false;
-			death = true;
+			breakLoops = true;
 			fullStop = false;
+			JNIHandler.waitForStable();
 			stop();
-			death = false;
+			breakLoops = false;
 			Globals.shouldRestore = true;
 			JNIHandler.waitForStop();
-			/*
-			 * while (!death && ((JNIHandler.isPlaying || JNIHandler.isBlocking == true))) { try { Thread.sleep(10); } catch (InterruptedException e) { e.printStackTrace(); } }
-			 */
 
-			if (!death) {
+			if (!breakLoops) {
 				final int songIndex;
 				if (shuffleMode == 1) {
 					songIndex = realSongNumber = shuffledIndices.get(currSongNumber);
@@ -787,26 +797,23 @@ public class MusicService extends Service {
 				if (x != 0) {
 					toastErrorCode(x);
 
-					JNIHandler.isPlaying = false;
+					JNIHandler.state = JNIHandler.PlaybackState.STATE_IDLE;
 					JNIHandler.isMediaPlayerFormat = true;
 					shouldAdvance = false;
-					JNIHandler.paused = false;
 					stop();
 				} else {
 					updateNotification(currTitle, paused);
 					new Thread(new Runnable() {
 						public void run() {
 							// Wait for timidity to actually start playing
-							while (!death && ((!JNIHandler.isPlaying && shouldAdvance))) {
-								if (!JNIHandler.isBlocking)
-									death = true;
-
-								// System.out.println(String.format("alt check: %d death: %s isplaying: %d shouldAdvance: %s seekBarReady: %s",JNIHandler.alternativeCheck,death?"true":"false",Globals.isPlaying,shouldAdvance?"true":"false",JNIHandler.seekbarReady?"true":"false"));
+							while (!breakLoops && (JNIHandler.state == JNIHandler.PlaybackState.STATE_LOADING && shouldAdvance)) {
+								/*if (!JNIHandler.isBlocking)
+									breakLoops = true;*/
 								try {
 									Thread.sleep(10);
 								} catch (InterruptedException ignored) {}
 							}
-							if (!death) {
+							if (!breakLoops) {
 								final Intent guiIntent = new Intent();
 								guiIntent.setAction(Constants.ta_rec);
 								guiIntent.putExtra(Constants.ta_cmd, Constants.ta_cmd_gui_play);
@@ -827,7 +834,7 @@ public class MusicService extends Service {
 								}
 								JNIHandler.shouldPlayNow = false;
 								JNIHandler.currTime = 0;
-								while (JNIHandler.isPlaying && !death && shouldAdvance && !JNIHandler.dataWritten) {
+								while (JNIHandler.isActive() && !breakLoops && shouldAdvance && !JNIHandler.dataWritten) {
 									try {
 										Thread.sleep(25);
 									} catch (InterruptedException e) {
@@ -842,13 +849,7 @@ public class MusicService extends Service {
 								sendBroadcast(cfgLoadIntent);
 							}
 							JNIHandler.waitForStop();
-							/*while (!death && (((JNIHandler.isPlaying || JNIHandler.isBlocking) && shouldAdvance))) {
-								try {
-									Thread.sleep(25);
-								} catch (InterruptedException e) {
-								}
-							}*/
-							if (shouldAdvance && !death) {
+							if (shouldAdvance && !breakLoops) {
 								shouldAdvance = false;
 								if (playList.size() > 1 && (((songIndex + 1 < playList.size() && loopMode == 0)) || loopMode == 1)) {
 									final Intent nextIntent = new Intent();
@@ -878,7 +879,7 @@ public class MusicService extends Service {
 
 	public void pause() {
 		if (playList != null && currSongNumber >= 0) {
-			if (JNIHandler.isPlaying) {
+			if (JNIHandler.isActive()) {
 				paused = !paused;
 				JNIHandler.pause();
 				Intent newIntent = new Intent();
@@ -894,7 +895,7 @@ public class MusicService extends Service {
 	}
 
 	public void next() {
-		death = true;
+		breakLoops = true;
 		if (playList != null && currSongNumber >= 0) {
 
 			if (playList.size() > 1) {
@@ -920,7 +921,7 @@ public class MusicService extends Service {
 	}
 
 	public void previous() {
-		death = true;
+		breakLoops = true;
 		if (playList != null && currSongNumber >= 0) {
 			currSongNumber -= 1;
 			if (currSongNumber < 0) {
@@ -931,9 +932,9 @@ public class MusicService extends Service {
 	}
 
 	public void stop() {
-		if (JNIHandler.isPlaying) {
+		if (JNIHandler.isActive()) {
 
-			death = true;
+			breakLoops = true;
 			Intent stopIntent = new Intent();
 			stopIntent.setAction(Constants.ta_rec);
 			stopIntent.putExtra(Constants.ta_cmd, Constants.ta_cmd_pause_stop);

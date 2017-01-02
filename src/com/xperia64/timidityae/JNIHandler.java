@@ -25,8 +25,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Locale;
 
-//import android.util.Log;
-
+import static com.xperia64.timidityae.JNIHandler.PlaybackState.*;
 
 // The native methods exist. Really.
 @SuppressWarnings("JniMissingFunction")
@@ -61,7 +60,6 @@ public class JNIHandler {
 	public static MediaPlayer mMediaPlayer;
 	public static int maxTime = 0;
 	public static int currTime = 0;
-	public static boolean paused = false;
 	public static boolean isMediaPlayerFormat = true; // true = mediaplayer, false = audiotrack
 	private static int channelMode; // 0 = mono (downmixed), 1 = mono (synthesized), 2 = stereo
 	private static boolean sixteenBit;
@@ -81,34 +79,38 @@ public class JNIHandler {
 	public static int exceptional = 0;
 	public static int playbackPercentage;
 	public static int playbackTempo; // This number is not the tempo in BPM, but some number that can be used to calculate the real tempo
-	public static int tb = 0;
+	public static int tempoCount = 0; // How many times the tempo up/down buttons have been pressed
 	public static int voice;
 	public static int maxvoice = 256;
 	public static int keyOffset = 0;
-	// public static boolean breakLoops = false;
+
 	static boolean dataWritten = false;
 
 	static boolean shouldPlayNow = true;
 
+	public enum PlaybackState {
+		STATE_UNINIT, STATE_IDLE, STATE_LOADING, STATE_PLAYING, STATE_PAUSING,
+		STATE_PAUSED, STATE_RESUMING, STATE_SEEKING, STATE_REQSTOP, STATE_STOPPING
+	};
 
-	private static boolean finishedCallbackCheck = true; // Is set
-	public static boolean isPlaying = false;
-	static boolean isBlocking = false; // false = not currently blocking, true = blocking. Makes sure timidity actually returned.
+	public static PlaybackState state = STATE_UNINIT;
 
-	// public static ArrayList<String> lyricLines;
-	// End Timidity Stuff
+	public static boolean isActive()
+	{
+		// Playing, Pausing, Paused, Resuming, or Seeking.
+		return state == STATE_PLAYING || state == STATE_PAUSING || state == STATE_PAUSED || state == STATE_RESUMING || state == STATE_SEEKING;
+	}
 
-	static boolean prepared = false;
 
 	static WavWriter currentWavWriter = null;
 
 	public static void pause() // or unpause.
 	{
-		if (isPlaying) {
-			if (paused) {
-				paused = false;
+		if (state == STATE_PLAYING || state == STATE_PAUSED) {
+			if (state == PlaybackState.STATE_PAUSED) {
 				if (isMediaPlayerFormat) {
 					mMediaPlayer.start();
+					state = STATE_PLAYING;
 				} else {
 					controlTimidity(Constants.jni_tim_toggle_pause, 0);
 					if (!(currentWavWriter != null && !currentWavWriter.finishedWriting) && mAudioTrack != null) {
@@ -118,9 +120,10 @@ public class JNIHandler {
 							e.printStackTrace();
 						}
 					}
+					state = STATE_PLAYING; // FIXME: Should be STATE_RESUMING
 				}
 			} else {
-				paused = true;
+				state = STATE_PAUSED; // FIXME: Should be STATE_PAUSING
 				if (isMediaPlayerFormat) {
 					mMediaPlayer.pause();
 				} else {
@@ -138,25 +141,27 @@ public class JNIHandler {
 	}
 
 	public static void stop() {
+		state = STATE_REQSTOP;
 		if (isMediaPlayerFormat) {
 			mMediaPlayer.setOnCompletionListener(null);
 			try {
 				mMediaPlayer.stop();
 			} catch (IllegalStateException ignored) {}
-			isPlaying = false;
-			finishedCallbackCheck = true;
-			isBlocking = false;
+			state = STATE_IDLE;
 		} else {
 			controlTimidity(Constants.jni_tim_stop, 0);
 		}
 	}
 
 	public static void seekTo(int time) {
+		PlaybackState oldstate = state;
 		if (isMediaPlayerFormat) {
 			mMediaPlayer.seekTo(time);
 		} else {
 			controlTimidity(Constants.jni_tim_jump, time);
+			state = STATE_SEEKING;
 			waitUntilReady();
+			state = oldstate;
 		}
 	}
 
@@ -178,7 +183,7 @@ public class JNIHandler {
 
 	public static void waitForStop(int interval) {
 		if (isMediaPlayerFormat) {
-			while (isPlaying || isBlocking || !finishedCallbackCheck) {
+			while (state != STATE_IDLE) {
 				try {
 					Thread.sleep(interval);
 				} catch (InterruptedException ignored) {}
@@ -191,7 +196,17 @@ public class JNIHandler {
 				e1.printStackTrace();
 			}
 		}
-		/**/
+	}
+
+	public static void waitForStable() { waitForStable(10); }
+
+	private static void waitForStable(int interval) {
+		while(state != STATE_IDLE && state != STATE_PAUSED && state != STATE_PLAYING)
+		{
+			try {
+				Thread.sleep(interval);
+			} catch (InterruptedException ignored) {}
+		}
 	}
 
 	public static void setupOutputFile(String filename) {
@@ -256,7 +271,7 @@ public class JNIHandler {
 	}
 
 	public static int init(String path, String file, int mono, int resamp, boolean sixteen, int b, int r, boolean preserveSilence, boolean reloading, boolean freeInsts) {
-		if (!prepared) {
+		if (state == STATE_UNINIT) {
 
 			System.out.println(String.format(Locale.US, "Opening Timidity: Path: %s cfgFile: %s resample: %s mono: %s sixteenBit: %s buffer: %d rate: %d", path, file, Globals.sampls[resamp], ((mono == 1) ? "true" : "false"), (sixteen ? "true" : "false"), b, r));
 			System.out.println("Max channels: " + MAX_CHANNELS);
@@ -274,34 +289,39 @@ public class JNIHandler {
 			if (mMediaPlayer == null)
 				mMediaPlayer = new MediaPlayer();
 
-			prepared = true;
-			return prepareTimidity(path, path + file, (channelMode == 1) ? 1 : 0, resamp, sixteenBit ? 1 : 0, preserveSilence ? 1 : 0, reloading ? 1 : 0, freeInsts ? 1 : 0);
+			int code = prepareTimidity(path, path + file, (channelMode == 1) ? 1 : 0, resamp, sixteenBit ? 1 : 0, preserveSilence ? 1 : 0, reloading ? 1 : 0, freeInsts ? 1 : 0);
+			state = STATE_IDLE; // TODO: Maybe keep as UNINIT if code != 0?
+			return code;
 		} else {
 			// Log.w("Warning", "Attempt to prepare again cancelled.");
 			return -99;
 		}
 	}
 
+	private static void resetVars()
+	{
+		keyOffset = 0;
+		tempoCount = 0;
+		currentLyric = "";
+		overwriteLyricAt = 0;
+		dataWritten = false;
+		shouldPlayNow = true;
+		for (int i = 0; i < MAX_CHANNELS; i++) {
+			custInst.set(i, false);
+			custVol.set(i, false);
+		}
+	}
+
 	private static Thread playThread;
 
 	public static int play(final String songTitle) {
-
 		if (new File(songTitle).exists()) {
-			if (!isBlocking) {
-				keyOffset = 0;
-				tb = 0;
-				currentLyric = "";
-				overwriteLyricAt = 0;
-				isPlaying = true;
-				finishedCallbackCheck = false;
+			if (state == STATE_IDLE) {
+
+				resetVars();
+				state = STATE_LOADING;
 				isMediaPlayerFormat = false;
-				paused = false;
-				dataWritten = false;
-				shouldPlayNow = true;
-				for (int i = 0; i < MAX_CHANNELS; i++) {
-					custInst.set(i, false);
-					custVol.set(i, false);
-				}
+
 				if (!Globals.isMidi(songTitle)) {
 					isMediaPlayerFormat = true;
 					try {
@@ -317,31 +337,24 @@ public class JNIHandler {
 						});
 						mMediaPlayer.prepare();
 						mMediaPlayer.start();
-						isBlocking = true;
+
+						state = STATE_PLAYING;
 
 						mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
 							@Override
 							public void onCompletion(MediaPlayer arg0) {
 								arg0.setOnCompletionListener(null);
-
-								isPlaying = false;
-								finishedCallbackCheck = true;
-								isBlocking = false;
+								state = STATE_IDLE;
 							}
 						});
 
-					} catch (Exception e) {
-						e.printStackTrace();
-
-					}
-
+					} catch (Exception ignored) {} // TODO: Don't really care. Should I?
 				} else {
 					// Reset the audio track every time.
 					// The audiotrack should be in the same thread as the
 					// timidity stuff for black midi.
 					playThread = new Thread(new Runnable() {
 						public void run() {
-							isBlocking = true;
 							mAudioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, rate,
 									(channelMode == 2) ? AudioFormat.CHANNEL_OUT_STEREO : AudioFormat.CHANNEL_OUT_MONO,
 									(sixteenBit) ? AudioFormat.ENCODING_PCM_16BIT : AudioFormat.ENCODING_PCM_8BIT,
@@ -354,8 +367,10 @@ public class JNIHandler {
 									exceptional |= 1;
 								}
 							}
+							state = STATE_PLAYING; // FIXME: should use the Timidity callback; Or maybe see if data is written
 							loadSongTimidity(songTitle);
-							isBlocking = false;
+							if(state != STATE_IDLE)
+								state = STATE_STOPPING;
 
 							if (currentWavWriter != null && !currentWavWriter.finishedWriting)
 								currentWavWriter.finishOutput();
@@ -365,10 +380,8 @@ public class JNIHandler {
 					playThread.start();
 
 				}
-				// }
 				return 0;
 			} else {
-
 				return -9;
 			}
 		}
@@ -378,50 +391,46 @@ public class JNIHandler {
 	// Used by native (TiMidity++)
 	@SuppressWarnings("unused")
 	public static void controlCallback(int y) {
-		/*
-		 * String[] control = { "PM_REQ_MIDI",
-		 * 
-		 * "PM_REQ_INST_NAME",
-		 * 
-		 * "PM_REQ_DISCARD",
-		 * 
-		 * "PM_REQ_FLUSH",
-		 * 
-		 * "PM_REQ_GETQSIZ",
-		 * 
-		 * "PM_REQ_SETQSIZ",
-		 * 
-		 * "PM_REQ_GETFRAGSIZ",
-		 * 
-		 * "PM_REQ_RATE",
-		 * 
-		 * "PM_REQ_GETSAMPLES",
-		 * 
-		 * "PM_REQ_PLAY_START",
-		 * 
-		 * "PM_REQ_PLAY_END",
-		 * 
-		 * "PM_REQ_GETFILLABLE",
-		 * 
-		 * "PM_REQ_GETFILLED",
-		 * 
-		 * "PM_REQ_OUTPUT_FINISH",
-		 * 
-		 * "PM_REQ_DIVISIONS" };
-		 */
-		if (y == 10) {
+		final String[] control = { "PM_REQ_MIDI", //0
 
-			// Globals.isPlaying = 1; // Wait until all is unloaded.
+				"PM_REQ_INST_NAME", //1
+
+				"PM_REQ_DISCARD", //2
+
+				"PM_REQ_FLUSH", //3
+
+				"PM_REQ_GETQSIZ", //4
+
+				"PM_REQ_SETQSIZ", //5
+
+				"PM_REQ_GETFRAGSIZ", //6
+				"PM_REQ_RATE", //7
+
+				"PM_REQ_GETSAMPLES", //8
+
+				"PM_REQ_PLAY_START", //9
+
+				"PM_REQ_PLAY_END", //10
+
+				"PM_REQ_GETFILLABLE", //11
+
+				"PM_REQ_GETFILLED", //12
+
+				"PM_REQ_OUTPUT_FINISH", //13
+
+				"PM_REQ_DIVISIONS" /*14*/ };
+
+		System.out.println("TiMidity++ Command: "+y+ " "+ control[y]);
+
+		if (y == 10) {
 			if (mAudioTrack != null) {
 				try {
 					mAudioTrack.stop();
 				} catch (IllegalStateException ignored) {}
 				mAudioTrack.release();
 			}
-		} /*
-			 * else if (y == 10) { // TODO something here to tell that timidity
-			 * is ready }
-			 */
+			state = STATE_IDLE;
+		}
 	}
 
 	// Used by native (TiMidity++)
@@ -446,8 +455,8 @@ public class JNIHandler {
 	// Used by native (TiMidity++)
 	@SuppressWarnings("unused")
 	public static void finishCallback() {
-		finishedCallbackCheck = true;
-		isPlaying = false;
+		// TODO: Which is more correct: The finish callback or TiMidity++ code 10?
+		state = STATE_IDLE;
 	}
 
 	// Used by native (TiMidity++)
@@ -487,7 +496,7 @@ public class JNIHandler {
 				break;
 			tmpBuild.append((char) b[i]);
 		}
-		if (isComment) // commentsAlways get newlines
+		if (isComment) // comments always get newlines
 		{
 			stb.append(tmpBuild);
 			stb.append('\n');

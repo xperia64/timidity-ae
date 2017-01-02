@@ -34,7 +34,7 @@ public class ConfigSaver implements TimidityActivity.SpecialAction {
 
 	public void promptSaveCfg() {
 		localfinished = false;
-		if (Globals.isMidi(currSongName) && JNIHandler.isPlaying) {
+		if (Globals.isMidi(currSongName) && JNIHandler.isActive()) {
 			AlertDialog.Builder saveMidiConfigDialog = new AlertDialog.Builder(context);
 
 			saveMidiConfigDialog.setTitle("Save Cfg");

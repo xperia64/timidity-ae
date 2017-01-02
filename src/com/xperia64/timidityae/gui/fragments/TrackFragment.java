@@ -207,7 +207,7 @@ public class TrackFragment extends Fragment {
 						JNIHandler.custVol.set(arg2, !vol.isChecked());
 						JNIHandler.setChannelVolumeTimidity(arg2 | (JNIHandler.custVol.get(arg2) ? Constants.jni_tim_holdmask : Constants.jni_tim_unholdmask), volSeek.getProgress());
 						JNIHandler.setChannelTimidity(arg2 | (JNIHandler.custInst.get(arg2) ? Constants.jni_tim_holdmask : Constants.jni_tim_unholdmask), instSpin.getSelectedItemPosition());
-						if (!JNIHandler.paused && JNIHandler.isPlaying)
+						if (JNIHandler.state == JNIHandler.PlaybackState.STATE_PLAYING)
 							JNIHandler.seekTo(JNIHandler.currTime);
 						// bigCounter=12;
 						updateList();

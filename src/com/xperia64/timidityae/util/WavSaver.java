@@ -37,7 +37,7 @@ public class WavSaver implements TimidityActivity.SpecialAction {
 
 	public void dynExport() {
 		localfinished = false;
-		if (Globals.isMidi(currSongName) && (JNIHandler.isPlaying || !playingExport)) {
+		if (Globals.isMidi(currSongName) && (JNIHandler.isActive() || !playingExport)) {
 
 			AlertDialog.Builder alert = new AlertDialog.Builder(context);
 

@@ -125,7 +125,7 @@ public class PlayerFragment extends Fragment {
 	};
 
 	public void lyricUpdation() {
-		if (JNIHandler.isPlaying) {
+		if (JNIHandler.isActive()) {
 			if (!JNIHandler.isMediaPlayerFormat && fragMode == 2) {
 				lyrical.updateLyrics();
 			}
@@ -135,7 +135,7 @@ public class PlayerFragment extends Fragment {
 	}
 
 	public void seekUpdation() {
-		if (JNIHandler.isPlaying && isAdded()) {
+		if (JNIHandler.isActive() && isAdded()) {
 			if (!JNIHandler.isMediaPlayerFormat) {
 				if (JNIHandler.mAudioTrack != null) {
 					if ((JNIHandler.exceptional & 1) != 0) {
@@ -339,7 +339,7 @@ public class PlayerFragment extends Fragment {
 		playButton.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View arg0) {
-				if (JNIHandler.isPlaying) {
+				if (JNIHandler.isActive()) {
 					mActivity.pause();
 				} else {
 					arg0.setEnabled(false);
@@ -616,7 +616,7 @@ public class PlayerFragment extends Fragment {
 		FragmentManager fm = getFragmentManager();
 		FragmentTransaction ft = fm.beginTransaction();
 
-		if ((!JNIHandler.isMediaPlayerFormat) && JNIHandler.isPlaying) {
+		if ((!JNIHandler.isMediaPlayerFormat) && JNIHandler.isActive()) {
 			if (++fragMode > 2)
 				fragMode = 0;
 		} else {
@@ -645,7 +645,7 @@ public class PlayerFragment extends Fragment {
 		FragmentManager fm = getFragmentManager();
 		FragmentTransaction ft = fm.beginTransaction();
 		fragMode = which;
-		if ((!JNIHandler.isMediaPlayerFormat) && JNIHandler.isPlaying) {
+		if ((!JNIHandler.isMediaPlayerFormat) && JNIHandler.isActive()) {
 			if (fragMode > 2)
 				fragMode = 0;
 		} else {
@@ -704,7 +704,7 @@ public class PlayerFragment extends Fragment {
 			public void onClick(View arg0) {
 				JNIHandler.controlTimidity(Constants.jni_tim_speedup, 1);
 				JNIHandler.waitUntilReady();
-				JNIHandler.tb++;
+				JNIHandler.tempoCount++;
 			}
 
 		});
@@ -714,7 +714,7 @@ public class PlayerFragment extends Fragment {
 			public void onClick(View arg0) {
 				JNIHandler.controlTimidity(Constants.jni_tim_speeddown, 1);
 				JNIHandler.waitUntilReady();
-				JNIHandler.tb--;
+				JNIHandler.tempoCount--;
 			}
 
 		});
