@@ -9,6 +9,7 @@ libs/*/*.so
 *.exe
 *.swp
 *.iml
+Thumbs.db
 local.properties
 gradlew
 gradlew.bat
