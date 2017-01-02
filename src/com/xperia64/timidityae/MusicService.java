@@ -634,7 +634,7 @@ public class MusicService extends Service {
 						}
 						break;
 					case Constants.msrv_cmd_reload_libs: // Reload native libs
-						if (!JNIHandler.isMediaPlayerFormat) {
+						if (JNIHandler.mediaBackendFormat == JNIHandler.MediaFormat.FMT_TIMIDITY) {
 							fullStop = true;
 							Globals.hardStop = true;
 							shouldAdvance = false;
@@ -798,7 +798,7 @@ public class MusicService extends Service {
 					toastErrorCode(x);
 
 					JNIHandler.state = JNIHandler.PlaybackState.STATE_IDLE;
-					JNIHandler.isMediaPlayerFormat = true;
+					JNIHandler.mediaBackendFormat = JNIHandler.MediaFormat.FMT_MEDIAPLAYER;
 					shouldAdvance = false;
 					stop();
 				} else {

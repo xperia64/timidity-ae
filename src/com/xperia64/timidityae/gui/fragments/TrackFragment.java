@@ -245,7 +245,7 @@ public class TrackFragment extends Fragment {
 	}
 
 	public void updateList() {
-		if (!JNIHandler.isMediaPlayerFormat) {
+		if (JNIHandler.mediaBackendFormat == JNIHandler.MediaFormat.FMT_TIMIDITY) {
 			// if(++bigCounter>4)
 			// {
 			// bigCounter=0;

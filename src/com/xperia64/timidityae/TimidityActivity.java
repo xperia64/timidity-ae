@@ -112,13 +112,13 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 						menuButton.setIcon(R.drawable.ic_menu_agenda);
 						menuButton.setTitle(getResources().getString(R.string.view));
 						menuButton.setTitleCondensed(getResources().getString(R.string.viewcon));
-						menuButton.setVisible((!JNIHandler.isMediaPlayerFormat) && JNIHandler.isActive());
-						menuButton.setEnabled((!JNIHandler.isMediaPlayerFormat) && JNIHandler.isActive());
+						menuButton.setVisible((JNIHandler.mediaBackendFormat != JNIHandler.MediaFormat.FMT_MEDIAPLAYER) && JNIHandler.isActive());
+						menuButton.setEnabled((JNIHandler.mediaBackendFormat != JNIHandler.MediaFormat.FMT_MEDIAPLAYER) && JNIHandler.isActive());
 						menuButton2.setIcon(R.drawable.ic_menu_info_details);
 						menuButton2.setTitle(getResources().getString(R.string.playback));
 						menuButton2.setTitleCondensed(getResources().getString(R.string.playbackcon));
-						menuButton2.setVisible((!JNIHandler.isMediaPlayerFormat) && JNIHandler.isActive());
-						menuButton2.setEnabled((!JNIHandler.isMediaPlayerFormat) && JNIHandler.isActive());
+						menuButton2.setVisible((JNIHandler.mediaBackendFormat != JNIHandler.MediaFormat.FMT_MEDIAPLAYER) && JNIHandler.isActive());
+						menuButton2.setEnabled((JNIHandler.mediaBackendFormat != JNIHandler.MediaFormat.FMT_MEDIAPLAYER) && JNIHandler.isActive());
 					}
 					playFrag.play(intent.getIntExtra(Constants.ta_startt, 0), intent.getStringExtra(Constants.ta_songttl));
 					if (plistFrag != null) {
@@ -150,13 +150,13 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 						menuButton.setIcon(R.drawable.ic_menu_agenda);
 						menuButton.setTitle(getResources().getString(R.string.view));
 						menuButton.setTitleCondensed(getResources().getString(R.string.viewcon));
-						menuButton.setVisible((!JNIHandler.isMediaPlayerFormat) && JNIHandler.isActive());
-						menuButton.setEnabled((!JNIHandler.isMediaPlayerFormat) && JNIHandler.isActive());
+						menuButton.setVisible((JNIHandler.mediaBackendFormat != JNIHandler.MediaFormat.FMT_MEDIAPLAYER) && JNIHandler.isActive());
+						menuButton.setEnabled((JNIHandler.mediaBackendFormat != JNIHandler.MediaFormat.FMT_MEDIAPLAYER) && JNIHandler.isActive());
 						menuButton2.setIcon(R.drawable.ic_menu_info_details);
 						menuButton2.setTitle(getResources().getString(R.string.playback));
 						menuButton2.setTitleCondensed(getResources().getString(R.string.playbackcon));
-						menuButton2.setVisible((!JNIHandler.isMediaPlayerFormat) && JNIHandler.isActive());
-						menuButton2.setEnabled((!JNIHandler.isMediaPlayerFormat) && JNIHandler.isActive());
+						menuButton2.setVisible((JNIHandler.mediaBackendFormat != JNIHandler.MediaFormat.FMT_MEDIAPLAYER) && JNIHandler.isActive());
+						menuButton2.setEnabled((JNIHandler.mediaBackendFormat != JNIHandler.MediaFormat.FMT_MEDIAPLAYER) && JNIHandler.isActive());
 					}
 					playFrag.play(intent.getIntExtra(Constants.ta_startt, 0), intent.getStringExtra(Constants.ta_songttl), intent.getIntExtra(Constants.ta_shufmode, 0), intent.getIntExtra(Constants.ta_loopmode, 1));
 					break;
@@ -501,15 +501,15 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 								menuButton.setIcon(R.drawable.ic_menu_agenda);
 								menuButton.setTitle(getResources().getString(R.string.view));
 								menuButton.setTitleCondensed(getResources().getString(R.string.viewcon));
-								menuButton.setVisible((!JNIHandler.isMediaPlayerFormat) && JNIHandler.isActive());
-								menuButton.setEnabled((!JNIHandler.isMediaPlayerFormat) && JNIHandler.isActive());
+								menuButton.setVisible((JNIHandler.mediaBackendFormat != JNIHandler.MediaFormat.FMT_MEDIAPLAYER) && JNIHandler.isActive());
+								menuButton.setEnabled((JNIHandler.mediaBackendFormat != JNIHandler.MediaFormat.FMT_MEDIAPLAYER) && JNIHandler.isActive());
 							}
 							if (menuButton2 != null) {
 								menuButton2.setIcon(R.drawable.ic_menu_info_details);
 								menuButton2.setTitle(getResources().getString(R.string.playback));
 								menuButton2.setTitleCondensed(getResources().getString(R.string.playbackcon));
-								menuButton2.setVisible((!JNIHandler.isMediaPlayerFormat) && JNIHandler.isActive());
-								menuButton2.setEnabled((!JNIHandler.isMediaPlayerFormat) && JNIHandler.isActive());
+								menuButton2.setVisible((JNIHandler.mediaBackendFormat != JNIHandler.MediaFormat.FMT_MEDIAPLAYER) && JNIHandler.isActive());
+								menuButton2.setEnabled((JNIHandler.mediaBackendFormat != JNIHandler.MediaFormat.FMT_MEDIAPLAYER) && JNIHandler.isActive());
 							}
 							getSupportActionBar().setDisplayHomeAsUpEnabled(false);
 							getSupportActionBar().setHomeButtonEnabled(false);
@@ -845,15 +845,15 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 						menuButton.setIcon(R.drawable.ic_menu_agenda);
 						menuButton.setTitle(getResources().getString(R.string.view));
 						menuButton.setTitleCondensed(getResources().getString(R.string.viewcon));
-						menuButton.setVisible((!JNIHandler.isMediaPlayerFormat) && JNIHandler.isActive());
-						menuButton.setEnabled((!JNIHandler.isMediaPlayerFormat) && JNIHandler.isActive());
+						menuButton.setVisible((JNIHandler.mediaBackendFormat != JNIHandler.MediaFormat.FMT_MEDIAPLAYER) && JNIHandler.isActive());
+						menuButton.setEnabled((JNIHandler.mediaBackendFormat != JNIHandler.MediaFormat.FMT_MEDIAPLAYER) && JNIHandler.isActive());
 					}
 					if (menuButton2 != null) {
 						menuButton2.setIcon(R.drawable.ic_menu_info_details);
 						menuButton2.setTitle(getResources().getString(R.string.playback));
 						menuButton2.setTitleCondensed(getResources().getString(R.string.playbackcon));
-						menuButton2.setVisible((!JNIHandler.isMediaPlayerFormat) && JNIHandler.isActive());
-						menuButton2.setEnabled((!JNIHandler.isMediaPlayerFormat) && JNIHandler.isActive());
+						menuButton2.setVisible((JNIHandler.mediaBackendFormat != JNIHandler.MediaFormat.FMT_MEDIAPLAYER) && JNIHandler.isActive());
+						menuButton2.setEnabled((JNIHandler.mediaBackendFormat != JNIHandler.MediaFormat.FMT_MEDIAPLAYER) && JNIHandler.isActive());
 					}
 					getSupportActionBar().setDisplayHomeAsUpEnabled(false);
 					getSupportActionBar().setHomeButtonEnabled(false);
@@ -906,7 +906,7 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 					}
 					break;
 				case 1:
-					if (playFrag != null && !JNIHandler.isMediaPlayerFormat) {
+					if (playFrag != null && (JNIHandler.mediaBackendFormat == JNIHandler.MediaFormat.FMT_TIMIDITY)) {
 						playFrag.incrementInterface();
 					}
 					break;
@@ -926,7 +926,7 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 					break;
 				case 1:
 					if (playFrag != null) {
-						if ((!JNIHandler.isMediaPlayerFormat) && JNIHandler.isActive()) {
+						if ((JNIHandler.mediaBackendFormat == JNIHandler.MediaFormat.FMT_TIMIDITY) && JNIHandler.isActive()) {
 							playFrag.showMidiDialog();
 						}
 					}

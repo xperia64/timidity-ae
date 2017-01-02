@@ -60,7 +60,13 @@ public class JNIHandler {
 	public static MediaPlayer mMediaPlayer;
 	public static int maxTime = 0;
 	public static int currTime = 0;
-	public static boolean isMediaPlayerFormat = true; // true = mediaplayer, false = audiotrack
+
+	public enum MediaFormat {
+		FMT_MEDIAPLAYER, FMT_TIMIDITY
+	};
+
+	public static MediaFormat mediaBackendFormat = MediaFormat.FMT_MEDIAPLAYER;
+
 	private static int channelMode; // 0 = mono (downmixed), 1 = mono (synthesized), 2 = stereo
 	private static boolean sixteenBit;
 	public static int rate;
@@ -108,7 +114,7 @@ public class JNIHandler {
 	{
 		if (state == STATE_PLAYING || state == STATE_PAUSED) {
 			if (state == PlaybackState.STATE_PAUSED) {
-				if (isMediaPlayerFormat) {
+				if (mediaBackendFormat == MediaFormat.FMT_MEDIAPLAYER) {
 					mMediaPlayer.start();
 					state = STATE_PLAYING;
 				} else {
@@ -124,7 +130,7 @@ public class JNIHandler {
 				}
 			} else {
 				state = STATE_PAUSED; // FIXME: Should be STATE_PAUSING
-				if (isMediaPlayerFormat) {
+				if (mediaBackendFormat == MediaFormat.FMT_MEDIAPLAYER) {
 					mMediaPlayer.pause();
 				} else {
 					controlTimidity(Constants.jni_tim_toggle_pause, 0);
@@ -142,7 +148,7 @@ public class JNIHandler {
 
 	public static void stop() {
 		state = STATE_REQSTOP;
-		if (isMediaPlayerFormat) {
+		if (mediaBackendFormat == MediaFormat.FMT_MEDIAPLAYER) {
 			mMediaPlayer.setOnCompletionListener(null);
 			try {
 				mMediaPlayer.stop();
@@ -155,7 +161,7 @@ public class JNIHandler {
 
 	public static void seekTo(int time) {
 		PlaybackState oldstate = state;
-		if (isMediaPlayerFormat) {
+		if (mediaBackendFormat == MediaFormat.FMT_MEDIAPLAYER) {
 			mMediaPlayer.seekTo(time);
 		} else {
 			controlTimidity(Constants.jni_tim_jump, time);
@@ -182,7 +188,7 @@ public class JNIHandler {
 	}
 
 	public static void waitForStop(int interval) {
-		if (isMediaPlayerFormat) {
+		if (mediaBackendFormat == MediaFormat.FMT_MEDIAPLAYER) {
 			while (state != STATE_IDLE) {
 				try {
 					Thread.sleep(interval);
@@ -320,10 +326,10 @@ public class JNIHandler {
 
 				resetVars();
 				state = STATE_LOADING;
-				isMediaPlayerFormat = false;
+				mediaBackendFormat = MediaFormat.FMT_TIMIDITY;
 
 				if (!Globals.isMidi(songTitle)) {
-					isMediaPlayerFormat = true;
+					mediaBackendFormat = MediaFormat.FMT_MEDIAPLAYER;
 					try {
 						mMediaPlayer.setOnCompletionListener(null);
 						mMediaPlayer.reset();
