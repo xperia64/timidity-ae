@@ -185,6 +185,16 @@ public class Globals {
 	public static boolean phoneState = true;
 	public static int highlightMe = -1;
 
+	public static JNIHandler.MediaFormat determineFormat(String songFileName)
+	{
+		if(isMidi(songFileName))
+		{
+			return JNIHandler.MediaFormat.FMT_TIMIDITY;
+		}else{
+			return JNIHandler.MediaFormat.FMT_MEDIAPLAYER;
+		}
+	}
+
 	public static boolean isMidi(String songFileName) {
 		return !(songFileName.toLowerCase(Locale.US).endsWith(".mp3")
 				|| songFileName.toLowerCase(Locale.US).endsWith(".m4a")

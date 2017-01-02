@@ -306,15 +306,21 @@ public class JNIHandler {
 
 	private static void resetVars()
 	{
-		keyOffset = 0;
-		tempoCount = 0;
-		currentLyric = "";
-		overwriteLyricAt = 0;
-		dataWritten = false;
-		shouldPlayNow = true;
-		for (int i = 0; i < MAX_CHANNELS; i++) {
-			custInst.set(i, false);
-			custVol.set(i, false);
+		// So far nothing to reset for non-TiMidity++ backends
+		if(mediaBackendFormat == MediaFormat.FMT_TIMIDITY) {
+			keyOffset = 0;
+			tempoCount = 0;
+			currentLyric = "";
+			overwriteLyricAt = 0;
+			dataWritten = false;
+			shouldPlayNow = true;
+			for (int i = 0; i < MAX_CHANNELS; i++) {
+				volumes.set(i, 75); // Assuming not XG
+				programs.set(i, 0);
+				drums.set(i, i == 9);
+				custInst.set(i, false);
+				custVol.set(i, false);
+			}
 		}
 	}
 
@@ -324,12 +330,12 @@ public class JNIHandler {
 		if (new File(songTitle).exists()) {
 			if (state == STATE_IDLE) {
 
-				resetVars();
 				state = STATE_LOADING;
-				mediaBackendFormat = MediaFormat.FMT_TIMIDITY;
+				mediaBackendFormat = Globals.determineFormat(songTitle);
 
-				if (!Globals.isMidi(songTitle)) {
-					mediaBackendFormat = MediaFormat.FMT_MEDIAPLAYER;
+				resetVars();
+
+				if (mediaBackendFormat == MediaFormat.FMT_MEDIAPLAYER) {
 					try {
 						mMediaPlayer.setOnCompletionListener(null);
 						mMediaPlayer.reset();
