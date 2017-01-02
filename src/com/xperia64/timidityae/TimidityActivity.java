@@ -904,7 +904,7 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		if (item.getItemId() == R.id.menuBtn1) {
+		if (item.getItemId() == R.id.menuBtn1) { // menuButtonR
 			switch (viewPager.getCurrentItem()) {
 				case 0:
 					if (fileFrag != null) {
@@ -926,7 +926,7 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 					}
 					break;
 			}
-		} else if (item.getItemId() == R.id.menuBtn2) {
+		} else if (item.getItemId() == R.id.menuBtn2) { // menuButtonL
 			switch (viewPager.getCurrentItem()) {
 				case 0:
 					if (fileFrag != null)
@@ -934,8 +934,14 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 					break;
 				case 1:
 					if (playFrag != null) {
-						if ((JNIHandler.mediaBackendFormat == JNIHandler.MediaFormat.FMT_TIMIDITY) && JNIHandler.isActive()) {
-							playFrag.showMidiDialog();
+						if(JNIHandler.isActive())
+						{
+							if(JNIHandler.mediaBackendFormat == JNIHandler.MediaFormat.FMT_TIMIDITY)
+							{
+								playFrag.showMidiDialog();
+							}else if(JNIHandler.mediaBackendFormat == JNIHandler.MediaFormat.FMT_SOX) {
+								playFrag.showSoxDialog();
+							}
 						}
 					}
 					break;

@@ -32,6 +32,7 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
@@ -973,4 +974,22 @@ public class PlayerFragment extends Fragment {
 		}
 	}
 
+	public void showSoxDialog() {
+		AlertDialog.Builder soxInfoDialogBuilder = new AlertDialog.Builder(getActivity());
+		View soxDialogView = getActivity().getLayoutInflater().inflate(R.layout.sox_options, null);
+		final EditText soxEff = (EditText) soxDialogView.findViewById(R.id.soxDlgText);
+		soxEff.setText(SettingsStorage.soxEffStr);
+		soxInfoDialogBuilder.setView(soxDialogView);
+		soxInfoDialogBuilder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				SettingsStorage.soxEffStr = soxEff.getText().toString();
+			}
+		});
+		soxInfoDialogBuilder.setTitle("SoX Effects");
+		midiInfoDialog = soxInfoDialogBuilder.create();
+		midiInfoDialog.show();
+
+	}
 }

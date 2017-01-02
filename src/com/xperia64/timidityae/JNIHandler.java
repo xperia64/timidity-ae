@@ -460,7 +460,17 @@ public class JNIHandler {
 										buffer, AudioTrack.MODE_STREAM);
 								mAudioTrack.play();
 								state = STATE_PLAYING;
-								soxPlay(songTitle, SettingsStorage.soxEffStr.isEmpty()?new String[][]{{"speed", "0.9"},{"delay","0","0.025"}} : new String[][]{SettingsStorage.soxEffStr.split(" ")});
+								String[][] soxEffects = {};
+								if(!SettingsStorage.soxEffStr.isEmpty())
+								{
+									String[] firstLayer = SettingsStorage.soxEffStr.split(";");
+									soxEffects = new String[firstLayer.length][];
+									for(int i = 0; i<firstLayer.length; i++)
+									{
+										soxEffects[i] = firstLayer[i].split(" ");
+									}
+								}
+								soxPlay(songTitle, soxEffects);
 
 							}
 						});
