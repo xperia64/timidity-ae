@@ -15,8 +15,11 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.RequiresApi;
 import android.support.v4.app.ListFragment;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,6 +35,8 @@ import com.xperia64.timidityae.R;
 import com.xperia64.timidityae.TimidityActivity;
 import com.xperia64.timidityae.gui.DynamicListView;
 import com.xperia64.timidityae.gui.DynamicListView.DraggerCallback;
+import com.xperia64.timidityae.gui.SearchableAdapter;
+import com.xperia64.timidityae.gui.SearchableArrayAdapter;
 import com.xperia64.timidityae.gui.StableArrayAdapter;
 import com.xperia64.timidityae.gui.StableArrayAdapter.PlistMenuCallback;
 import com.xperia64.timidityae.gui.dialogs.FileBrowserDialog;
@@ -71,6 +76,12 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 
 	private boolean refreshAfterWrite = true;
 
+	private int scrollPosition = -1;
+
+	private EditText searchTxt;
+	private String oldSearchTxt;
+	private SearchableAdapter ada;
+
 	boolean shouldUseDragNDrop() {
 		return (SettingsStorage.enableDragNDrop && (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH));
 	}
@@ -101,10 +112,34 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View v;
 		if (shouldUseDragNDrop()) {
-			v = inflater.inflate(R.layout.list_reorder, container, false);
+			v = inflater.inflate(R.layout.plist_reorder, container, false);
 		} else {
-			v = inflater.inflate(R.layout.list, container, false);
+			v = inflater.inflate(R.layout.plist, container, false);
 		}
+		searchTxt = (EditText) v.findViewById(R.id.searchText);
+		searchTxt.setVisibility(View.GONE);
+		searchTxt.addTextChangedListener(new TextWatcher() {
+			@Override
+			public void onTextChanged(CharSequence cs, int arg1, int arg2, int arg3) {
+				// When user changed the Text
+				if(ada!=null) {
+					if(oldSearchTxt.equals(cs.toString()))
+					{
+						// Sometimes this will fire the previous filter and the new filter at the same time.
+						// This branch is to prevent that.
+						//System.out.println("Warning: Not filtering the same string");
+					}else {
+						ada.getFilter().filter(cs);
+						oldSearchTxt = cs.toString();
+					}
+				}
+			}
+			@Override
+			public void beforeTextChanged(CharSequence arg0, int arg1, int arg2, int arg3) {}
+
+			@Override
+			public void afterTextChanged(Editable arg0) {}
+		});
 
 		return v;
 	}
@@ -113,6 +148,8 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 	public void onViewCreated(View view, Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 		if (shouldUseDragNDrop()) {
+			// We alread check for this in the above statement
+			//noinspection NewApi
 			((DynamicListView) getListView()).setDraggerCallback(this);
 		}
 		if (!gotPlaylists) {
@@ -148,13 +185,32 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 	}
 
 	public void getPlaylists(final String which) {
+		if(which == null || which.equals("CURRENT"))
+		{
+			searchTxt.setVisibility(View.GONE);
+			searchTxt.getText().clear();
+		}else{
+			searchTxt.setVisibility(View.VISIBLE);
+		}
 		if (shouldUseDragNDrop()) {
+			// We alread check for this in the above statement
+			//noinspection NewApi
 			getPlaylists14(which);
 		} else {
 			getPlaylists13(which);
 		}
+		if(scrollPosition>=0)
+		{
+			if(scrollPosition>=getListView().getCount())
+			{
+				scrollPosition = getListView().getCount()-1;
+			}
+			getListView().setSelection(scrollPosition);
+			scrollPosition = -1;
+		}
 	}
 
+	@RequiresApi(api = Build.VERSION_CODES.ICE_CREAM_SANDWICH)
 	public void getPlaylists14(final String which) {
 		StableArrayAdapter fileList = null;
 		if (which == null) // Root playlist dir.
@@ -183,7 +239,7 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 						}
 					}
 				}
-				fileList = new StableArrayAdapter(getActivity(), R.layout.row_menu, fname, this, false);
+				ada = fileList = new StableArrayAdapter(getActivity(), R.layout.row_menu, fname, this, false);
 			}
 			((DynamicListView) getListView()).setDragEnabled(false);
 		} else { // An actual playlist
@@ -211,7 +267,7 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 			}
 			path = Globals.normalToUuid(path);
 			((DynamicListView) getListView()).setDragEnabled(!which.equals("CURRENT"));
-			fileList = new StableArrayAdapter(getActivity(), R.layout.row_menu, path, this, which.equals("CURRENT"));
+			ada = fileList = new StableArrayAdapter(getActivity(), R.layout.row_menu, path, this, which.equals("CURRENT"));
 		}
 
 
@@ -222,6 +278,8 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 
 		// @formatter:on
 		setListAdapter(fileList);
+		ada.getFilter().filter(searchTxt.getText());
+		oldSearchTxt = searchTxt.getText().toString();
 	}
 
 	public void getPlaylists13(final String which) {
@@ -276,32 +334,12 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 				}
 			}
 		}
-		ArrayAdapter<String> fileList;
-		if (which != null && which.equals("CURRENT")) {
-			fileList = new ArrayAdapter<String>(getActivity(), R.layout.row, fname) {
 
-				@NonNull
-				@Override
-				public View getView(int position, View convertView, @NonNull ViewGroup parent) {
-					final View renderer = super.getView(position, convertView, parent);
-					if (Globals.defaultListColor == -1) {
-						Globals.defaultListColor = Globals.getBackgroundColor(((TextView) renderer));
-					}
-					if (position == Globals.highlightMe) {
-						// TODO Choose a nicer color in settings?
-						renderer.setBackgroundColor(0xFF00CC00);
-					} else {
-						renderer.setBackgroundColor(Globals.defaultListColor);
-					}
-					renderer.postInvalidate();
-					return renderer;
-				}
-
-			};
-		} else {
-			fileList = new ArrayAdapter<>(getActivity(), R.layout.row, fname);
-		}
+		SearchableArrayAdapter fileList = new SearchableArrayAdapter(getActivity(), R.layout.row, fname, which!=null && which.equals("CURRENT"));
+		ada = fileList;
 		setListAdapter(fileList);
+		ada.getFilter().filter(searchTxt.getText());
+		oldSearchTxt = searchTxt.getText().toString();
 	}
 
 	public ArrayList<String> parsePlist(String path) {
@@ -327,6 +365,10 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 	@Override
 	public void onListItemClick(ListView l, View v, int position, long id) {
 		if (isPlaylist) {
+			if(!searchTxt.getText().toString().isEmpty())
+			{
+				position = ada.currentToReal(position);
+			}
 			ArrayList<String> paths = (shouldUseDragNDrop() ? Globals.uuidToNormal(path) : path);
 			((TimidityActivity) getActivity()).selectedSong(paths, position, true, true, copyPlist);
 		} else {
@@ -346,7 +388,6 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 				break;
 			case 1:
 				File f = new File(path);
-
 				if (f.exists() && f.isDirectory()) {
 					File[] files = f.listFiles();
 					Arrays.sort(files, new FileComparator());
@@ -379,6 +420,7 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 
 	public void add() {
 		if (isPlaylist) {
+			scrollPosition = getListView().getCount();
 			vola = parsePlist(tmpName = plistName);
 			AlertDialog.Builder builderSingle = new AlertDialog.Builder(getActivity());
 			loki = vola.size();
@@ -726,6 +768,7 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 			}
 			builderSingle.show();
 		} else if (!plistName.equals("CURRENT")) {
+			scrollPosition = pos;
 			AlertDialog.Builder builderSingle = new AlertDialog.Builder(getActivity());
 
 			builderSingle.setIcon(R.drawable.ic_launcher);
@@ -750,6 +793,10 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 				public void onClick(DialogInterface dialog, int which) {
 					vola = parsePlist(tmpName = plistName);
 					loki = pos;
+					if(!searchTxt.getText().toString().isEmpty())
+					{
+						loki = ada.currentToReal(loki);
+					}
 					switch (which) {
 						case 0:
 							setItem(null, -1);
