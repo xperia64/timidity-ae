@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+				  android:layout_width="match_parent"
+				  android:layout_height="match_parent">
+	<PreferenceCategory android:title="@string/sett_ds">
+		<ListPreference
+			android:defaultValue="1"
+			android:entries="@array/theme_items"
+			android:entryValues="@array/background_theme_items"
+			android:key="fbTheme"
+			android:summary="@string/sett_theme_sum"
+			android:title="@string/sett_theme"/>
+
+		<CheckBoxPreference
+			android:defaultValue="false"
+			android:key="hiddenSwitch"
+			android:summary="@string/sett_shf_sum"
+			android:title="@string/sett_shf"/>
+		<CheckBoxPreference
+			android:defaultValue="true"
+			android:key="videoSwitch"
+			android:summary="@string/sett_shv_sum"
+			android:title="@string/sett_shv"/>
+		<CheckBoxPreference
+			android:defaultValue="true"
+			android:key="fpSwitch"
+			android:summary="@string/sett_fancy_plist_sum"
+			android:title="@string/sett_fancy_plist"/>
+
+		<PreferenceScreen
+			android:key="defFold"
+			android:summary="@string/sett_brows4fb_sum"
+			android:title="@string/sett_brows4fb">
+		</PreferenceScreen>
+
+		<EditTextPreference
+			android:defaultValue="/sdcard/"
+			android:key="defaultPath"
+			android:summary="@string/sett_fbpath"
+			android:title="@string/sett_fbpath"/>
+	</PreferenceCategory>
+</PreferenceScreen>

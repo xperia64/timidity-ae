@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+				  android:layout_width="match_parent"
+				  android:layout_height="match_parent">
+	<PreferenceCategory android:title="@string/sett_plus">
+		<CheckBoxPreference
+			android:defaultValue="false"
+			android:key="manualConfig"
+			android:summary="@string/sett_mancfg_sum"
+			android:title="@string/sett_mancfg"/>
+
+		<Preference
+			android:key="sfConfig"
+			android:summary="@string/soundfont2"
+			android:title="@string/soundfont"/>
+
+		<CheckBoxPreference
+			android:defaultValue="true"
+			android:key="tplusSilKey"
+			android:summary="@string/sett_sil_sum"
+			android:title="@string/sett_sil"/>
+		<CheckBoxPreference
+			android:defaultValue="true"
+			android:key="tplusUnload"
+			android:summary="@string/sett_unload_sum"
+			android:title="@string/sett_unload"/>
+
+		<ListPreference
+			android:defaultValue="0"
+			android:entries="@array/resamp_items"
+			android:entryValues="@array/background_resamp_items"
+			android:key="tplusResamp"
+			android:summary="@string/sett_res_sum"
+			android:title="@string/sett_res"/>
+		<ListPreference
+			android:defaultValue="2"
+			android:entries="@array/select_channel_items"
+			android:entryValues="@array/background_channel_items"
+			android:key="sdlChanValue"
+			android:summary="@string/sett_chan_sum"
+			android:title="@string/sett_chan"/>
+		<ListPreference
+			android:key="tplusRate"
+			android:summary="@string/sett_rate_sum"
+			android:title="@string/sett_rate"/>
+
+		<EditTextPreference
+			android:defaultValue="192000"
+			android:inputType="number"
+			android:key="tplusBuff"
+			android:summary="@string/sett_buff_sum"
+			android:title="@string/sett_buff"/>
+	</PreferenceCategory>
+	<PreferenceCategory android:title="@string/sett_dat">
+
+		<Preference
+			android:key="reSF"
+			android:summary="@string/sett_resf_sum"
+			android:title="@string/sett_resf"/>
+		
+		<Preference
+			android:key="defData"
+			android:summary="@string/sett_ddir_sum"
+			android:title="@string/sett_ddir"/>
+
+		<EditTextPreference
+			android:defaultValue="/sdcard/TimidityAE/"
+			android:key="dataDir"
+			android:summary="@string/sett_mandir_sum"
+			android:title="@string/sett_mandir"/>
+
+	</PreferenceCategory>
+</PreferenceScreen>

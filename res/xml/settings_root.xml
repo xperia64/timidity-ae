@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+				  android:layout_width="match_parent"
+				  android:layout_height="match_parent">
+
+	<PreferenceCategory android:title="@string/sett_title">
+		<Preference
+			android:key="dsKey"
+			android:summary="@string/sett_ds_sum"
+			android:title="@string/sett_ds"/>
+		<Preference
+			android:key="tplusKey"
+			android:summary="@string/sett_plus_sum"
+			android:title="@string/sett_plus"/>
+		<Preference
+			android:key="soxKey"
+			android:summary="SoX Settings"
+			android:title="SoX"/>
+	</PreferenceCategory>
+
+	<PreferenceCategory android:title="@string/sett_other">
+		<CheckBoxPreference
+			android:defaultValue="false"
+			android:key="reShuffle"
+			android:summary="@string/sett_reshuff_sum"
+			android:title="@string/sett_reshuff"/>
+		<CheckBoxPreference
+			android:defaultValue="false"
+			android:key="nativeMidiSwitch"
+			android:summary="@string/sett_nm_sum"
+			android:title="@string/sett_nm"/>
+		<CheckBoxPreference
+			android:defaultValue="false"
+			android:key="keepPartialWav"
+			android:summary="@string/sett_kpw_sum"
+			android:title="@string/sett_kpw"/>
+		<CheckBoxPreference
+			android:defaultValue="false"
+			android:key="useDefBack"
+			android:summary="@string/sett_defback_sum"
+			android:title="@string/sett_defback"/>
+		<CheckBoxPreference
+			android:defaultValue="true"
+			android:key="compressCfg"
+			android:summary="@string/sett_compcfg_sum"
+			android:title="@string/sett_compcfg"/>
+	</PreferenceCategory>
+
+</PreferenceScreen>
