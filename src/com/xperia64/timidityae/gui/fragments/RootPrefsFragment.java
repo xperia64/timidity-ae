@@ -1,7 +1,14 @@
+/*******************************************************************************
+ * Copyright (C) 2017 xperia64 <xperiancedapps@gmail.com>
+ * <p>
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the GNU Public License v2.0
+ * which accompanies this distribution, and is available at
+ * http://www.gnu.org/licenses/gpl.html
+ ******************************************************************************/
 package com.xperia64.timidityae.gui.fragments;
 
 import android.os.Bundle;
-import android.preference.CheckBoxPreference;
 import android.preference.Preference;
 import android.support.v4.app.FragmentTransaction;
 
@@ -12,10 +19,6 @@ import com.xperia64.timidityae.util.ObjectSerializer;
 
 import java.io.IOException;
 import java.util.ArrayList;
-
-/**
- * Created by xperia64 on 1/2/17.
- */
 
 public class RootPrefsFragment extends PreferenceFragment {
 	SettingsActivity s;
@@ -81,7 +84,7 @@ public class RootPrefsFragment extends PreferenceFragment {
 
 		try {
 			s.tmpSounds = (ArrayList<String>) ObjectSerializer.deserialize(s.prefs.getString("tplusSoundfonts", ObjectSerializer.serialize(new ArrayList<String>())));
-			System.out.println("We have tmpSounds of size: "+s.tmpSounds.size());
+			System.out.println("We have tmpSounds of size: " + s.tmpSounds.size());
 			for (int i = 0; i < s.tmpSounds.size(); i++) {
 				if (s.tmpSounds.get(i) == null)
 					s.tmpSounds.remove(i);
@@ -93,8 +96,7 @@ public class RootPrefsFragment extends PreferenceFragment {
 		if (s.tmpSounds == null)
 			s.tmpSounds = new ArrayList<>();
 
-		if(s.loadDispSettings)
-		{
+		if (s.loadDispSettings) {
 			s.loadDispSettings = false;
 			FragmentTransaction mFragmentTransaction = s.mFragmentManager.beginTransaction();
 			mFragmentTransaction.replace(android.R.id.content, new DisplayPrefsFragment());

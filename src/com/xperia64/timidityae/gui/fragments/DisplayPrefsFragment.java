@@ -1,3 +1,11 @@
+/*******************************************************************************
+ * Copyright (C) 2017 xperia64 <xperiancedapps@gmail.com>
+ * <p>
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the GNU Public License v2.0
+ * which accompanies this distribution, and is available at
+ * http://www.gnu.org/licenses/gpl.html
+ ******************************************************************************/
 package com.xperia64.timidityae.gui.fragments;
 
 import android.content.Intent;
@@ -5,7 +13,6 @@ import android.content.UriPermission;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.preference.CheckBoxPreference;
 import android.preference.EditTextPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
@@ -20,10 +27,6 @@ import com.xperia64.timidityae.util.SettingsStorage;
 
 import java.io.IOException;
 import java.util.List;
-
-/**
- * Created by xperia64 on 1/2/17.
- */
 
 public class DisplayPrefsFragment extends PreferenceFragment {
 	SettingsActivity s;
