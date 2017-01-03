@@ -92,7 +92,7 @@ FILE * lsx_tmpfile(void)
   }
 #endif
 #ifdef __ANDROID_API__
-	path = "/data/data/com.xperia64.sox/cache";	
+	path = "/data/data/com.xperia64.timidityae/cache";
 #endif
   if (path && path[0]) {
     /* Emulate tmpfile (delete on close); tmp dir is given tmp_path: */

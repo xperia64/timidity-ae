@@ -460,11 +460,11 @@ public class JNIHandler {
 								String[][] soxEffects = {};
 								if(!SettingsStorage.soxEffStr.isEmpty())
 								{
-									String[] firstLayer = SettingsStorage.soxEffStr.split(";");
+									String[] firstLayer = SettingsStorage.soxEffStr.trim().replaceAll("^;+","").replaceAll(";+$","").split(";");
 									soxEffects = new String[firstLayer.length][];
 									for(int i = 0; i<firstLayer.length; i++)
 									{
-										soxEffects[i] = firstLayer[i].split(" ");
+										soxEffects[i] = firstLayer[i].trim().split(" ");
 									}
 								}
 								soxPlay(songTitle, soxEffects);

@@ -973,7 +973,7 @@ public class PlayerFragment extends Fragment {
 
 	public void showSoxDialog() {
 		AlertDialog.Builder soxInfoDialogBuilder = new AlertDialog.Builder(getActivity());
-		View soxDialogView = getActivity().getLayoutInflater().inflate(R.layout.sox_options, null);
+		View soxDialogView = getActivity().getLayoutInflater().inflate(R.layout.sox_options_basic, null);
 		final EditText soxEff = (EditText) soxDialogView.findViewById(R.id.soxDlgText);
 		soxEff.setText(SettingsStorage.soxEffStr);
 		soxInfoDialogBuilder.setView(soxDialogView);

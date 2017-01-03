@@ -14,7 +14,6 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
-import android.support.annotation.RequiresApi;
 import android.text.InputFilter;
 import android.text.Spanned;
 import android.widget.TextView;
@@ -30,7 +29,6 @@ import java.io.OutputStream;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Locale;
-import java.util.Random;
 
 @SuppressWarnings("WeakerAccess")
 public class Globals {
@@ -113,8 +111,9 @@ public class Globals {
 
 	public static ArrayList<String> normalToUuid(ArrayList<String> list) {
 		ArrayList<String> uuid = new ArrayList<>();
+		int count = 0;
 		for (String xx : list) {
-			uuid.add(String.format("%s*%08x", xx, new Random().nextInt()));
+			uuid.add(String.format("%s*%08x", xx, count++));
 		}
 		return uuid;
 	}
@@ -133,7 +132,6 @@ public class Globals {
 	public static int defaultListColor = -1;
 
 
-	@RequiresApi(api = Build.VERSION_CODES.KITKAT)
 	public static int getBackgroundColor(TextView textView) {
 		Drawable drawable = textView.getBackground();
 		if (drawable instanceof ColorDrawable) {
@@ -141,6 +139,8 @@ public class Globals {
 			if (Build.VERSION.SDK_INT >= 11) {
 				return colorDrawable.getColor();
 			}
+
+			//noinspection TryWithIdenticalCatches
 			try {
 				Field field = colorDrawable.getClass().getDeclaredField("mState");
 				field.setAccessible(true);
@@ -148,7 +148,9 @@ public class Globals {
 				field = object.getClass().getDeclaredField("mUseColor");
 				field.setAccessible(true);
 				return field.getInt(object);
-			} catch (NoSuchFieldException | IllegalAccessException e) {
+			} catch (NoSuchFieldException e) {
+				e.printStackTrace();
+			} catch (IllegalAccessException e) {
 				e.printStackTrace();
 			}
 		}
