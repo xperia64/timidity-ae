@@ -91,7 +91,8 @@ public class SettingsStorage {
 
 		prefs = PreferenceManager.getDefaultSharedPreferences(c);
 		firstRun = prefs.getBoolean(Constants.sett_first_run, true);
-		theme = Integer.parseInt(prefs.getString(Constants.sett_theme, "1"));
+		// The light theme is broken below ICS it seems.
+		theme = (Build.VERSION.SDK_INT < Build.VERSION_CODES.ICE_CREAM_SANDWICH)?0:Integer.parseInt(prefs.getString(Constants.sett_theme, "1"));
 		showHiddenFiles = prefs.getBoolean(Constants.sett_show_hidden_files, false);
 		homeFolder = prefs.getString(Constants.sett_home_folder, Environment.getExternalStorageDirectory().getAbsolutePath());
 		dataFolder = prefs.getString(Constants.sett_data_folder, Environment.getExternalStorageDirectory() + "/TimidityAE/");
@@ -253,7 +254,7 @@ public class SettingsStorage {
 				// Should probably check if 8rock11e exists no matter what
 				eee.putBoolean("manConfig", false);
 
-				AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
+				AsyncTask<Void, Void, Integer> task = new AsyncTask<Void, Void, Integer>() {
 
 					ProgressDialog pd;
 
@@ -268,18 +269,19 @@ public class SettingsStorage {
 					}
 
 					@Override
-					protected Void doInBackground(Void... arg0) {
-
-						if (Globals.extract8Rock(a) != 777) {
-							Toast.makeText(a, "Could not extract default soundfont", Toast.LENGTH_SHORT).show();
-						}
-						return null;
+					protected Integer doInBackground(Void... arg0) {
+						return Globals.extract8Rock(a);
 					}
 
 					@Override
-					protected void onPostExecute(Void result) {
-						if (pd != null)
+					protected void onPostExecute(Integer result) {
+						if (pd != null) {
 							pd.dismiss();
+							if (result != 777) {
+								Toast.makeText(a, a.getResources().getString(R.string.sett_resf_err), Toast.LENGTH_SHORT).show();
+								return;
+							}
+						}
 						ArrayList<String> tmpConfig = new ArrayList<String>();
 						tmpConfig.add(rootStorage.getAbsolutePath() + "/soundfonts/8Rock11e.sf2");
 						try {
