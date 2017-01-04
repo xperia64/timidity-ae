@@ -259,7 +259,7 @@ static size_t sox_m4aread(sox_format_t * ft, sox_sample_t * buf, size_t len)
 		p->m4a_leftover_count = 0;
 		p->m4a_buffer = buf;
 		p->m4a_buffer_size = len;
-		p->my_current_sample = (p->seek_offset)/(1024);
+		p->my_current_sample = (p->seek_offset)/(1024*p->m4a_channels);
 	}else if(p->m4a_leftover_count > 0) {
 		if(len < p->m4a_leftover_count) {
 			size_t req_bytes = len * sizeof(sox_sample_t);
