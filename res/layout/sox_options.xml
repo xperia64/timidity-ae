@@ -46,7 +46,8 @@
 				android:gravity="center"
 				android:ems="10"
 				android:id="@+id/speedValue"
-				android:text="1"/>
+				android:text="1"
+				android:maxLines="1"/>
 		</LinearLayout>
 
 		<CheckBox
@@ -78,7 +79,8 @@
 				android:gravity="center"
 				android:ems="10"
 				android:id="@+id/tempoValue"
-				android:text="1"/>
+				android:text="1"
+				android:maxLines="1"/>
 		</LinearLayout>
 
 		<CheckBox
@@ -110,7 +112,8 @@
 				android:gravity="center"
 				android:ems="10"
 				android:id="@+id/pitchValue"
-				android:text="0"/>
+				android:text="0"
+				android:maxLines="1"/>
 		</LinearLayout>
 
 		<CheckBox
@@ -135,7 +138,8 @@
 				android:gravity="center"
 				android:ems="10"
 				android:id="@+id/delayValueL"
-				android:text="0"/>
+				android:text="0"
+				android:maxLines="1"/>
 			<EditText
 				android:layout_width="0dp"
 				android:layout_height="wrap_content"
@@ -145,7 +149,8 @@
 				android:gravity="center"
 				android:ems="10"
 				android:id="@+id/delayValueR"
-				android:text="0"/>
+				android:text="0"
+				android:maxLines="1"/>
 		</LinearLayout>
 
 		<TextView
@@ -176,6 +181,7 @@
 			android:gravity="center"
 			android:ems="10"
 			android:id="@+id/custSoxCmd"
-			android:text=""/>
+			android:text=""
+			android:maxLines="1"/>
 	</LinearLayout>
 </ScrollView>

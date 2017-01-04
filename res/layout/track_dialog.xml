@@ -68,7 +68,8 @@
 			android:ems="10"
 			android:gravity="center_vertical|center_horizontal"
 			android:inputType="number"
-			android:text="127"/>
+			android:text="127"
+			android:maxLines="1"/>
 
 		<SeekBar
 			android:id="@+id/volSeek"
