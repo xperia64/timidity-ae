@@ -460,7 +460,7 @@ public class JNIHandler {
 								String[][] soxEffects = {};
 								if(!SettingsStorage.soxEffStr.isEmpty())
 								{
-									String[] firstLayer = SettingsStorage.soxEffStr.trim().replaceAll("^;+","").replaceAll(";+$","").split(";");
+									String[] firstLayer = SettingsStorage.soxEffStr.trim().replaceAll("[;]+",";").replaceAll("^;+","").replaceAll(";+$","").split(";");
 									soxEffects = new String[firstLayer.length][];
 									for(int i = 0; i<firstLayer.length; i++)
 									{

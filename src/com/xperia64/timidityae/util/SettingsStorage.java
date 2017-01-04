@@ -71,6 +71,22 @@ public class SettingsStorage {
 	public static boolean isTV;
 	public static boolean enableDragNDrop = true;
 
+	public static boolean soxEnableSpeed = false;
+	public static double soxSpeedVal = -1;
+
+	public static boolean soxEnableTempo = false;
+	public static double soxTempoVal = -1;
+
+	public static boolean soxEnablePitch = false;
+	public static int soxPitchVal = 0;
+
+	public static boolean soxEnableDelay = false;
+	public static double soxDelayL = 0;
+	public static double soxDelayR = 0;
+
+	public static String soxManCmd;
+
+	public static String soxEffStr = "";
 
 	// Delay: d = disabled, l = Left, r = Right, b = Both 
 	public static int delay = 0;
@@ -85,7 +101,8 @@ public class SettingsStorage {
 	public static int reverbLevel = -1;
 
 	public static boolean nativeMedia = false;
-	public static String soxEffStr = "";
+
+
 
 	public static void reloadSettings(Activity c, AssetManager assets) {
 

@@ -9,6 +9,7 @@
 		android:padding="5dp"
 		android:id="@+id/searchText"
 		android:hint="Search for Song"
+		android:inputType="text"
 		android:maxLines="1"/>
 	<com.xperia64.timidityae.gui.DynamicListView
 		android:id="@android:id/list"

@@ -40,6 +40,7 @@ import android.widget.Toast;
 import com.xperia64.timidityae.JNIHandler;
 import com.xperia64.timidityae.R;
 import com.xperia64.timidityae.TimidityActivity;
+import com.xperia64.timidityae.gui.dialogs.SoxEffectsDialog;
 import com.xperia64.timidityae.util.Constants;
 import com.xperia64.timidityae.util.DocumentFileUtils;
 import com.xperia64.timidityae.util.Globals;
@@ -972,7 +973,7 @@ public class PlayerFragment extends Fragment {
 	}
 
 	public void showSoxDialog() {
-		AlertDialog.Builder soxInfoDialogBuilder = new AlertDialog.Builder(getActivity());
+		/*AlertDialog.Builder soxInfoDialogBuilder = new AlertDialog.Builder(getActivity());
 		View soxDialogView = getActivity().getLayoutInflater().inflate(R.layout.sox_options_basic, null);
 		final EditText soxEff = (EditText) soxDialogView.findViewById(R.id.soxDlgText);
 		soxEff.setText(SettingsStorage.soxEffStr);
@@ -986,7 +987,8 @@ public class PlayerFragment extends Fragment {
 		});
 		soxInfoDialogBuilder.setTitle("SoX Effects");
 		midiInfoDialog = soxInfoDialogBuilder.create();
-		midiInfoDialog.show();
+		midiInfoDialog.show();*/
+		new SoxEffectsDialog().create(getActivity(), getActivity().getLayoutInflater());
 
 	}
 }

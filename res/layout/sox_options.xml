@@ -35,8 +35,8 @@
 				android:layout_height="match_parent"
 				android:layout_weight="4"
 				android:id="@+id/speedSeek"
-				android:max="39"
-				android:progress="20"/>
+				android:max="29"
+				android:progress="11"/>
 			<EditText
 				android:layout_width="0dp"
 				android:layout_height="wrap_content"
@@ -46,7 +46,7 @@
 				android:gravity="center"
 				android:ems="10"
 				android:id="@+id/speedValue"
-				android:text="1"
+				android:text="1.0"
 				android:maxLines="1"/>
 		</LinearLayout>
 
@@ -68,8 +68,8 @@
 				android:layout_height="match_parent"
 				android:layout_weight="4"
 				android:id="@+id/tempoSeek"
-				android:max="19"
-				android:progress="10"/>
+				android:max="18"
+				android:progress="9"/>
 			<EditText
 				android:layout_width="0dp"
 				android:layout_height="wrap_content"
@@ -79,7 +79,7 @@
 				android:gravity="center"
 				android:ems="10"
 				android:id="@+id/tempoValue"
-				android:text="1"
+				android:text="1.0"
 				android:maxLines="1"/>
 		</LinearLayout>
 
@@ -101,8 +101,8 @@
 				android:layout_height="match_parent"
 				android:layout_weight="4"
 				android:id="@+id/pitchSeek"
-				android:max="1001"
-				android:progress="501"/>
+				android:max="10"
+				android:progress="5"/>
 			<EditText
 				android:layout_width="0dp"
 				android:layout_height="wrap_content"
@@ -166,7 +166,7 @@
 			android:layout_height="wrap_content"
 			android:gravity="center_horizontal"
 			android:textIsSelectable="true"
-			android:text="(none)"/>
+			android:text="(empty)"/>
 		<TextView
 			android:id="@+id/custSoxCmdTitle"
 			android:layout_width="match_parent"
@@ -181,7 +181,7 @@
 			android:gravity="center"
 			android:ems="10"
 			android:id="@+id/custSoxCmd"
-			android:text=""
+			android:inputType="text"
 			android:maxLines="1"/>
 	</LinearLayout>
 </ScrollView>
