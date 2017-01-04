@@ -31,6 +31,7 @@
         <activity
             android:name="com.xperia64.timidityae.TimidityActivity"
             android:configChanges="uiMode|keyboard|keyboardHidden|orientation|screenSize"
+            android:windowSoftInputMode="adjustPan|stateAlwaysHidden"
             android:label="@string/app_name"
             android:launchMode="singleTask" >
             <intent-filter>
@@ -830,6 +831,7 @@
         <activity
             android:name="com.xperia64.timidityae.SettingsActivity"
             android:configChanges="uiMode|keyboard|keyboardHidden|orientation|screenSize"
+            android:windowSoftInputMode="adjustPan|stateAlwaysHidden"
             android:label="@string/app_name" >
         </activity>
         <activity

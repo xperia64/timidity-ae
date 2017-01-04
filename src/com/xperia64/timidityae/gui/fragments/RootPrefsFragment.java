@@ -15,6 +15,7 @@ import android.support.v4.app.FragmentTransaction;
 import com.github.machinarius.preferencefragment.PreferenceFragment;
 import com.xperia64.timidityae.R;
 import com.xperia64.timidityae.SettingsActivity;
+import com.xperia64.timidityae.gui.dialogs.SoxEffectsDialog;
 import com.xperia64.timidityae.util.ObjectSerializer;
 
 import java.io.IOException;
@@ -75,9 +76,10 @@ public class RootPrefsFragment extends PreferenceFragment {
 			@Override
 			public boolean onPreferenceClick(Preference preference) {
 
-				FragmentTransaction mFragmentTransaction = s.mFragmentManager.beginTransaction();
+				/*FragmentTransaction mFragmentTransaction = s.mFragmentManager.beginTransaction();
 				mFragmentTransaction.replace(android.R.id.content, new SoxPrefsFragment());
-				mFragmentTransaction.addToBackStack(SettingsActivity.ROOT_PREFS).commit();
+				mFragmentTransaction.addToBackStack(SettingsActivity.ROOT_PREFS).commit();*/
+				new SoxEffectsDialog().create(getActivity(), getActivity().getLayoutInflater());
 				return true;
 			}
 		});

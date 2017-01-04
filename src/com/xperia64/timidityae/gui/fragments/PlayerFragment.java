@@ -989,6 +989,5 @@ public class PlayerFragment extends Fragment {
 		midiInfoDialog = soxInfoDialogBuilder.create();
 		midiInfoDialog.show();*/
 		new SoxEffectsDialog().create(getActivity(), getActivity().getLayoutInflater());
-
 	}
 }

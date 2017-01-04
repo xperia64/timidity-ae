@@ -100,6 +100,18 @@ public class Constants {
 	public static final String sett_fancy_plist = "fpSwitch";
 	public static final String sett_soundfonts = "tplusSoundfonts";
 
+	public static final String sett_sox_speed = "soxSpeed";
+	public static final String sett_sox_speed_val = "soxSpeedVal";
+	public static final String sett_sox_tempo = "soxTempo";
+	public static final String sett_sox_tempo_val = "soxTempoVal";
+	public static final String sett_sox_pitch = "soxPitch";
+	public static final String sett_sox_pitch_val = "soxPitchVal";
+	public static final String sett_sox_delay = "soxDelay";
+	public static final String sett_sox_delay_valL = "soxDelayValL";
+	public static final String sett_sox_delay_valR = "soxDelayValR";
+	public static final String sett_sox_mancmd = "soxManCmd";
+	public static final String sett_sox_fullcmd = "soxFullCmd";
+
 	// Fragment Keys
 	public static final String currFoldKey = "CURRENT_FOLDER";
 	public static final String currPlistDirectory = "CURRENT_PLIST_DIR";

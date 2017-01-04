@@ -10,10 +10,16 @@ package com.xperia64.timidityae.gui.dialogs;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
@@ -23,8 +29,11 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.xperia64.timidityae.R;
+import com.xperia64.timidityae.SettingsActivity;
+import com.xperia64.timidityae.util.Constants;
 import com.xperia64.timidityae.util.SettingsStorage;
 
+import java.util.Locale;
 import java.util.Set;
 
 public class SoxEffectsDialog {
@@ -61,7 +70,7 @@ public class SoxEffectsDialog {
 
 		context = c;
 		AlertDialog.Builder b = new AlertDialog.Builder(context);
-		ScrollView mLayout = (ScrollView) f.inflate(R.layout.sox_options, null);
+		final ScrollView mLayout = (ScrollView) f.inflate(R.layout.sox_options, null);
 
 		double d;
 		int i, offset;
@@ -84,6 +93,18 @@ public class SoxEffectsDialog {
 
 		equivCmd = (TextView) mLayout.findViewById(R.id.equivSoxCmd);
 		manCmd = (EditText) mLayout.findViewById(R.id.custSoxCmd);
+
+		TextView.OnEditorActionListener focusClearer = new TextView.OnEditorActionListener() {
+			@Override
+			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+				if (actionId == EditorInfo.IME_ACTION_DONE) {
+					mLayout.requestFocus();
+					InputMethodManager imm = (InputMethodManager)context.getSystemService(Context.INPUT_METHOD_SERVICE);
+					imm.hideSoftInputFromWindow(mLayout.getWindowToken(), 0);
+				}
+				return false;
+			}
+		};
 
 		speedChk.setChecked(SettingsStorage.soxEnableSpeed);
 
@@ -112,7 +133,7 @@ public class SoxEffectsDialog {
 				offset = ((int) d) + 9;
 			}
 			speedSeek.setProgress(offset);
-			speedVal.setText(Double.toString(d));
+			speedVal.setText(String.format(Locale.US, "%.4f",d));
 		}
 
 		speedSeek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -121,7 +142,7 @@ public class SoxEffectsDialog {
 				if(fromUser && !speedFromSetter)
 				{
 					speedFromSetter = true;
-					speedVal.setText(Double.toString(speedVals[progress]));
+					speedVal.setText(String.format(Locale.US, "%.4f",speedVals[progress]));
 					refreshCommandTxt();
 				}else{
 					speedFromSetter = false;
@@ -136,6 +157,8 @@ public class SoxEffectsDialog {
 		});
 
 		speedVal.setEnabled(SettingsStorage.soxEnableSpeed);
+
+		speedVal.setOnEditorActionListener(focusClearer);
 
 		speedVal.addTextChangedListener(new TextWatcher() {
 			@Override
@@ -201,7 +224,7 @@ public class SoxEffectsDialog {
 				offset = ((int) d) + 10;
 			}
 			tempoSeek.setProgress(offset);
-			tempoVal.setText(Double.toString(d));
+			tempoVal.setText(String.format(Locale.US, "%.4f",d));
 		}
 
 		tempoSeek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -210,7 +233,7 @@ public class SoxEffectsDialog {
 				if(fromUser && !tempoFromSetter)
 				{
 					tempoFromSetter = true;
-					tempoVal.setText(Double.toString(tempoVals[progress]));
+					tempoVal.setText(String.format(Locale.US, "%.4f",tempoVals[progress]));
 					refreshCommandTxt();
 				}else{
 					tempoFromSetter = false;
@@ -225,6 +248,8 @@ public class SoxEffectsDialog {
 		});
 
 		tempoVal.setEnabled(SettingsStorage.soxEnableTempo);
+
+		tempoVal.setOnEditorActionListener(focusClearer);
 
 		tempoVal.addTextChangedListener(new TextWatcher() {
 			@Override
@@ -315,6 +340,8 @@ public class SoxEffectsDialog {
 
 		pitchVal.setEnabled(SettingsStorage.soxEnablePitch);
 
+		pitchVal.setOnEditorActionListener(focusClearer);
+
 		pitchVal.setText(Integer.toString(SettingsStorage.soxPitchVal));
 
 		pitchVal.addTextChangedListener(new TextWatcher() {
@@ -385,26 +412,54 @@ public class SoxEffectsDialog {
 
 		delayValL.setEnabled(SettingsStorage.soxEnableDelay);
 
-		delayValL.setText(Double.toString(SettingsStorage.soxDelayL));
+		delayValL.setOnEditorActionListener(focusClearer);
+
+		delayValL.setText(String.format(Locale.US, "%.4f",SettingsStorage.soxDelayL));
 
 		delayValL.addTextChangedListener(delayWatcher);
 
 		delayValR.setEnabled(SettingsStorage.soxEnableDelay);
 
-		delayValR.setText(Double.toString(SettingsStorage.soxDelayR));
+		delayValR.setOnEditorActionListener(focusClearer);
+
+		delayValR.setText(String.format(Locale.US, "%.4f",SettingsStorage.soxDelayR));
 
 		delayValR.addTextChangedListener(delayWatcher);
+
+		manCmd.setOnEditorActionListener(focusClearer);
 
 		if(SettingsStorage.soxManCmd!=null)
 		{
 			manCmd.setText(SettingsStorage.soxManCmd);
 		}
 
+		manCmd.addTextChangedListener(delayWatcher);
+
 		b.setPositiveButton(c.getResources().getString(R.string.done), new DialogInterface.OnClickListener() {
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
-				SettingsStorage.soxManCmd = manCmd.getText().toString();
-				SettingsStorage.soxEffStr = equivCmd.getText().toString() + manCmd.getText().toString();
+
+			}
+		});
+
+		b.setNeutralButton("Save CFG", new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+				SharedPreferences.Editor e = prefs.edit();
+				e.putBoolean(Constants.sett_sox_speed, SettingsStorage.soxEnableSpeed);
+				e.putFloat(Constants.sett_sox_speed_val, (float) SettingsStorage.soxSpeedVal);
+				e.putBoolean(Constants.sett_sox_tempo, SettingsStorage.soxEnableTempo);
+				e.putFloat(Constants.sett_sox_tempo_val, (float) SettingsStorage.soxTempoVal);
+				e.putBoolean(Constants.sett_sox_pitch, SettingsStorage.soxEnablePitch);
+				e.putInt(Constants.sett_sox_pitch_val, SettingsStorage.soxPitchVal);
+				e.putBoolean(Constants.sett_sox_delay, SettingsStorage.soxEnableDelay);
+				e.putFloat(Constants.sett_sox_delay_valL, (float) SettingsStorage.soxDelayL);
+				e.putFloat(Constants.sett_sox_delay_valR, (float) SettingsStorage.soxDelayR);
+				e.putString(Constants.sett_sox_mancmd, SettingsStorage.soxManCmd);
+
+				e.putString(Constants.sett_sox_fullcmd, SettingsStorage.soxEffStr);
+				e.commit();
 			}
 		});
 
@@ -495,5 +550,14 @@ public class SoxEffectsDialog {
 		}
 		equivCmd.setText(cmd.toString());
 		equivCmd.postInvalidate();
+
+		SettingsStorage.soxManCmd = manCmd.getText().toString();
+		String processed = equivCmd.getText().toString();
+		if(processed.equals("(empty)"))
+		{
+			SettingsStorage.soxEffStr =  manCmd.getText().toString();
+		}else{
+			SettingsStorage.soxEffStr =  processed+manCmd.getText().toString();
+		}
 	}
 }

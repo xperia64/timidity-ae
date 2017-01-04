@@ -130,6 +130,20 @@ public class SettingsStorage {
 		enableDragNDrop = prefs.getBoolean(Constants.sett_fancy_plist, true);
 		nativeMidi = onlyNative || prefs.getBoolean(Constants.sett_native_midi, false);
 
+		soxEnableSpeed = prefs.getBoolean(Constants.sett_sox_speed, false);
+		soxSpeedVal = prefs.getFloat(Constants.sett_sox_speed_val, -1);
+		soxEnableTempo = prefs.getBoolean(Constants.sett_sox_pitch, false);
+		soxTempoVal = prefs.getFloat(Constants.sett_sox_tempo_val, -1);
+		soxEnablePitch = prefs.getBoolean(Constants.sett_sox_pitch, false);
+		soxPitchVal = prefs.getInt(Constants.sett_sox_pitch_val, 0);
+		soxEnableDelay = prefs.getBoolean(Constants.sett_sox_delay, false);
+		soxDelayL = prefs.getFloat(Constants.sett_sox_delay_valL, 0);
+		soxDelayR = prefs.getFloat(Constants.sett_sox_delay_valR, 0);
+		soxManCmd = prefs.getString(Constants.sett_sox_mancmd, "");
+
+		soxEffStr = prefs.getString(Constants.sett_sox_fullcmd, "");
+
+
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
 			UiModeManager uiModeManager = (UiModeManager) c.getSystemService(Context.UI_MODE_SERVICE);
 			isTV = (uiModeManager.getCurrentModeType() == Configuration.UI_MODE_TYPE_TELEVISION);
