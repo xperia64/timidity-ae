@@ -16,6 +16,7 @@ size_t buffer_size;
 char* buffer;
 
 int jumps = -1;
+float timescale = 1;
 int irate;
 int ichan;
 int stopSox = 0; 
@@ -35,11 +36,11 @@ static int update_status(sox_bool all_done, void * client_data)
 	if(jumps>=0)
 	{
 		uint64_t jump = irate*jumps*2; // Input sample rate / where to jump to
-		currPos = rate*jumps*2;
+		currPos = rate*jumps*timescale*2;
 		sox_seek(in, jump, SOX_SEEK_SET);
 		jumps = -1;
 	}
-	int read_time = currPos/(rate*2);
+	int read_time = currPos/(rate*timescale*2);
 	(*playEnv)->CallStaticVoidMethod(playEnv, pushClazz, updateSeekId, read_time, -1);
 	return (stopSox ? SOX_EOF : SOX_SUCCESS);
 }
@@ -88,7 +89,6 @@ Java_com_xperia64_timidityae_JNIHandler_soxPlay(JNIEnv * env, jobject this, jstr
 	stopSox = 0;
 	currPos = 0;
 	fail_flag = 0;
-
 	char * sargs[2]; // Static arguments for internal use
 	jboolean isCopy;
 
@@ -197,6 +197,8 @@ cleanup:
 		sox_add_effect(chain, e, &in->signal, &out->signal);
 		free(e);
 	}
+
+	timescale *= ((float)in->signal.length/in->signal.rate)/((float)ilength/irate);
 
 	e = sox_create_effect(sox_find_effect("output"));
 	sargs[0] = (char *) out;
