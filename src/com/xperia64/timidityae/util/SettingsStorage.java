@@ -100,7 +100,7 @@ public class SettingsStorage {
 	public static int reverb = 0;
 	public static int reverbLevel = -1;
 
-	public static boolean nativeMedia = false;
+	public static boolean nativeMedia = true;
 
 
 
@@ -129,6 +129,8 @@ public class SettingsStorage {
 		preserveSilence = prefs.getBoolean(Constants.sett_preserve_silence, true);
 		enableDragNDrop = prefs.getBoolean(Constants.sett_fancy_plist, true);
 		nativeMidi = onlyNative || prefs.getBoolean(Constants.sett_native_midi, false);
+
+		nativeMedia = prefs.getBoolean(Constants.sett_native_media, true);
 
 		soxEnableSpeed = prefs.getBoolean(Constants.sett_sox_speed, false);
 		soxSpeedVal = prefs.getFloat(Constants.sett_sox_speed_val, -1);

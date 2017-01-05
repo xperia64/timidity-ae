@@ -14,8 +14,8 @@
 			android:title="@string/sett_plus"/>
 		<Preference
 			android:key="soxKey"
-			android:summary="SoX Settings"
-			android:title="SoX"/>
+			android:summary="Change SoX Effects"
+			android:title="SoX Settings"/>
 	</PreferenceCategory>
 
 	<PreferenceCategory android:title="@string/sett_other">
@@ -29,6 +29,11 @@
 			android:key="nativeMidiSwitch"
 			android:summary="@string/sett_nm_sum"
 			android:title="@string/sett_nm"/>
+		<CheckBoxPreference
+			android:defaultValue="true"
+			android:key="nativeMediaSwitch"
+			android:summary="Use native android player over SoX"
+			android:title="Native Media Player"/>
 		<CheckBoxPreference
 			android:defaultValue="false"
 			android:key="keepPartialWav"
