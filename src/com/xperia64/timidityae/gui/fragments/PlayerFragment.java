@@ -89,7 +89,7 @@ public class PlayerFragment extends Fragment {
 	private int fragMode = 0; // 0 = AlbumArt, 1 = midi controls, 2 = Kareoke
 	private boolean ffrw = false;
 	private boolean enabledControls = false;
-	private boolean canEnablePlay = true;
+	public boolean canEnablePlay = true;
 	private boolean shouldUpdateSeekBar = false;
 	//
 	public AlertDialog midiInfoDialog;

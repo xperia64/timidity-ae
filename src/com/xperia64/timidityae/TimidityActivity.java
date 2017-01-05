@@ -45,6 +45,7 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.xperia64.timidityae.gui.dialogs.FileBrowserDialog;
+import com.xperia64.timidityae.gui.dialogs.SoxEffectsDialog;
 import com.xperia64.timidityae.gui.fragments.FileBrowserFragment;
 import com.xperia64.timidityae.gui.fragments.PlayerFragment;
 import com.xperia64.timidityae.gui.fragments.PlaylistFragment;
@@ -203,6 +204,10 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 							}
 						});
 					}
+					if(intent.getBooleanExtra(Constants.ta_en_play,false))
+					{
+						playFrag.canEnablePlay = true;
+					}
 					playFrag.pauseStop(intent.getBooleanExtra(Constants.ta_pause, false), intent.getBooleanExtra(Constants.ta_pausea, false));
 					break;
 				case Constants.ta_cmd_update_art: // notify art
@@ -226,6 +231,9 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 						queuedPlist = null;
 						queuedPosition = -1;
 					}
+					break;
+				case Constants.ta_cmd_sox_dialog:
+					new SoxEffectsDialog().create(TimidityActivity.this, getLayoutInflater());
 					break;
 			}
 		}

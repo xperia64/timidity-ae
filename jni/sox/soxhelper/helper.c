@@ -26,6 +26,8 @@ sox_format_t *out;
 JNIEnv *playEnv; // The (*env) from the soxPlay method should be safe to use in all other callbacks
 				// as the callbacks can only occur while playing
 
+int fail_flag = 0;
+
 uint64_t currPos = 0;
 
 static int update_status(sox_bool all_done, void * client_data)
@@ -42,6 +44,10 @@ static int update_status(sox_bool all_done, void * client_data)
 	return (stopSox ? SOX_EOF : SOX_SUCCESS);
 }
 
+void droid_fail()
+{
+	fail_flag = 1;
+}
 
 int nativePush(const int16_t *buf, int nframes)
 {
@@ -81,8 +87,9 @@ Java_com_xperia64_timidityae_JNIHandler_soxPlay(JNIEnv * env, jobject this, jstr
 	playEnv = env;	
 	stopSox = 0;
 	currPos = 0;
+	fail_flag = 0;
 
-	char * sargs[3]; // Static arguments for internal use
+	char * sargs[2]; // Static arguments for internal use
 	jboolean isCopy;
 
 	char *  filename = (char*)(*env)->GetStringUTFChars(env, jfilename, &isCopy);
@@ -147,12 +154,25 @@ Java_com_xperia64_timidityae_JNIHandler_soxPlay(JNIEnv * env, jobject this, jstr
 					if(i>0)
 					{	
 						args[i-1] = rawString;
-					}else {
+					}else{
+						if(!sox_find_effect(rawString))
+						{
+							(*env)->ReleaseStringUTFChars(env, stringy, rawString);
+							if(argcnt>0)
+								free(args);
+							(*env)->ReleaseStringUTFChars(env, jfilename, filename);
+							return -o;
+						}
 						e = sox_create_effect(sox_find_effect(effName = rawString));
 					}
 				}
 				sox_effect_options(e, argcnt, args);
+				if(fail_flag)
+				{
+					goto cleanup;
+				}
 				sox_add_effect(chain, e, &in->signal, &in->signal);
+cleanup:
 				free(e);
 				jstring stringy2 = (jstring) ((*env)->GetObjectArrayElement(env, effectArray, 0));
 				(*env)->ReleaseStringUTFChars(env, stringy2, effName);
@@ -162,6 +182,10 @@ Java_com_xperia64_timidityae_JNIHandler_soxPlay(JNIEnv * env, jobject this, jstr
 				}
 				if(argcnt>0)
 					free(args);
+				if(fail_flag)
+				{
+					return -o;
+				}
 			}
 
 		}
@@ -187,7 +211,7 @@ Java_com_xperia64_timidityae_JNIHandler_soxPlay(JNIEnv * env, jobject this, jstr
 
 	(*env)->ReleaseStringUTFChars(env, jfilename, filename);
 
-	return 0;
+	return 1;
 }
 
 	JNIEXPORT void JNICALL

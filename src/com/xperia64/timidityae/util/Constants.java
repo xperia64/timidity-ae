@@ -64,6 +64,8 @@ public class Constants {
 	public static final String ta_pause = ta + "_Pause";
 	public static final String ta_pausea = ta + "_PauseArg";
 	public static final String ta_highlight = ta + "_Highlight";
+	public static final String ta_en_play = ta+"_EnablePlay";
+
 	// TimidityActivity Broadcast Commands
 	public static final int ta_cmd_error = -5;
 	public static final int ta_cmd_gui_play = 0;
@@ -76,6 +78,7 @@ public class Constants {
 	// public static final int ta_cmd_unused_7 = 7;
 	public static final int ta_cmd_special_notification_finished = 8;
 	public static final int ta_cmd_service_started = 9;
+	public static final int ta_cmd_sox_dialog = 10;
 
 	// Settings names
 	public static final String sett_first_run = "tplusFirstRun";
@@ -156,6 +159,7 @@ public class Constants {
 	public static final int jni_tim_mute_clear = 33;
 	public static final int jni_tim_holdmask = 0x800;
 	public static final int jni_tim_unholdmask = 0x8000;
+
 
 	/*
 	 * RESAMPLE_CSPLINE, 0

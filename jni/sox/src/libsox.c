@@ -203,7 +203,15 @@ void name(char const * fmt, ...) { \
   va_end(ap); \
 }
 
+#ifdef __ANDROID__
+extern void droid_fail();
+void LSX_API lsx_fail_impl(
+    LSX_PARAM_IN_PRINTF char const *fmt,
+    ...)
+	{droid_fail();}
+#else
 SOX_MESSAGE_FUNCTION(lsx_fail_impl  , 1)
+#endif
 SOX_MESSAGE_FUNCTION(lsx_warn_impl  , 2)
 SOX_MESSAGE_FUNCTION(lsx_report_impl, 3)
 SOX_MESSAGE_FUNCTION(lsx_debug_impl , 4)

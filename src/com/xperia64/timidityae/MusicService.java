@@ -846,6 +846,31 @@ public class MusicService extends Service {
 								sendBroadcast(cfgLoadIntent);
 							}
 							JNIHandler.waitForStop();
+							if(JNIHandler.state == JNIHandler.PlaybackState.STATE_ERROR)
+							{
+								shouldAdvance = false;
+								handler.post(new Runnable() {
+									@Override
+									public void run() {
+										Toast.makeText(MusicService.this, "Error loading file: "+JNIHandler.errorReason, Toast.LENGTH_SHORT).show();
+									}
+								});
+								if(JNIHandler.mediaBackendFormat == JNIHandler.MediaFormat.FMT_SOX)
+								{
+									final Intent openSoxDialog = new Intent();
+									openSoxDialog.setAction(Constants.ta_rec);
+									openSoxDialog.putExtra(Constants.ta_cmd, Constants.ta_cmd_sox_dialog);
+									sendBroadcast(openSoxDialog);
+									Globals.hardStop = true;
+								}
+								JNIHandler.state = JNIHandler.PlaybackState.STATE_IDLE;
+								final Intent stopIntent = new Intent();
+								stopIntent.setAction(Constants.ta_rec);
+								stopIntent.putExtra(Constants.ta_cmd, Constants.ta_cmd_pause_stop);
+								stopIntent.putExtra(Constants.ta_pause, false);
+								stopIntent.putExtra(Constants.ta_en_play, true);
+								sendBroadcast(stopIntent);
+							}
 							if (shouldAdvance && !breakLoops) {
 								shouldAdvance = false;
 								if (playList.size() > 1 && (((songIndex + 1 < playList.size() && loopMode == 0)) || loopMode == 1)) {

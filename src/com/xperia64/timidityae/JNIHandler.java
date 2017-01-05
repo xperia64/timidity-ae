@@ -29,6 +29,8 @@ import static com.xperia64.timidityae.JNIHandler.PlaybackState.*;
 @SuppressWarnings("JniMissingFunction")
 public class JNIHandler {
 
+
+
 	// config folder, config file, mono, resampling algorithm, bits, preserve
 	// silence
 	public static native int loadLib(String libPath);
@@ -100,9 +102,12 @@ public class JNIHandler {
 
 	static boolean shouldPlayNow = true;
 
+	public static String errorReason;
+
 	public enum PlaybackState {
 		STATE_UNINIT, STATE_IDLE, STATE_LOADING, STATE_PLAYING, STATE_PAUSING,
-		STATE_PAUSED, STATE_RESUMING, STATE_SEEKING, STATE_REQSTOP, STATE_STOPPING
+		STATE_PAUSED, STATE_RESUMING, STATE_SEEKING, STATE_REQSTOP, STATE_STOPPING,
+		STATE_ERROR
 	};
 
 	public static PlaybackState state = STATE_UNINIT;
@@ -390,7 +395,8 @@ public class JNIHandler {
 
 	private static void resetVars()
 	{
-		// So far nothing to reset for non-TiMidity++ backends
+		errorReason = "";
+
 		if(mediaBackendFormat == MediaFormat.FMT_TIMIDITY) {
 			keyOffset = 0;
 			tempoCount = 0;
@@ -467,8 +473,14 @@ public class JNIHandler {
 										soxEffects[i] = firstLayer[i].trim().split(" ");
 									}
 								}
-								soxPlay(songTitle, soxEffects);
-
+								int soxRes = soxPlay(songTitle, soxEffects);
+								if(soxRes<1)
+								{
+									// We have an error.
+									errorReason = String.format(Locale.US, "Bad sox effect %1$s (%2$d)", soxEffects[-soxRes][0], -soxRes);
+									state = STATE_ERROR;
+									mAudioTrack.release();
+								}
 							}
 						});
 						playThread.setPriority(Thread.MAX_PRIORITY);

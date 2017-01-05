@@ -134,7 +134,7 @@ public class SettingsStorage {
 
 		soxEnableSpeed = prefs.getBoolean(Constants.sett_sox_speed, false);
 		soxSpeedVal = prefs.getFloat(Constants.sett_sox_speed_val, -1);
-		soxEnableTempo = prefs.getBoolean(Constants.sett_sox_pitch, false);
+		soxEnableTempo = prefs.getBoolean(Constants.sett_sox_tempo, false);
 		soxTempoVal = prefs.getFloat(Constants.sett_sox_tempo_val, -1);
 		soxEnablePitch = prefs.getBoolean(Constants.sett_sox_pitch, false);
 		soxPitchVal = prefs.getInt(Constants.sett_sox_pitch_val, 0);
