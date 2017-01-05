@@ -83,7 +83,7 @@ Java_com_xperia64_timidityae_JNIHandler_soxInit(JNIEnv * env, jobject this, jint
 }
 
 	JNIEXPORT int JNICALL
-Java_com_xperia64_timidityae_JNIHandler_soxPlay(JNIEnv * env, jobject this, jstring jfilename, jobjectArray jeffects)
+Java_com_xperia64_timidityae_JNIHandler_soxPlay(JNIEnv * env, jobject this, jstring jfilename, jobjectArray jeffects, jignoreSafety)
 {
 	playEnv = env;	
 	stopSox = 0;
@@ -167,7 +167,7 @@ Java_com_xperia64_timidityae_JNIHandler_soxPlay(JNIEnv * env, jobject this, jstr
 					}
 				}
 				sox_effect_options(e, argcnt, args);
-				if(fail_flag)
+				if(fail_flag && !jignoreSafety)
 				{
 					goto cleanup;
 				}
@@ -182,7 +182,7 @@ cleanup:
 				}
 				if(argcnt>0)
 					free(args);
-				if(fail_flag)
+				if(fail_flag && !jignoreSafety)
 				{
 					return -o;
 				}

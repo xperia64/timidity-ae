@@ -88,6 +88,8 @@ public class SettingsStorage {
 
 	public static String soxEffStr = "";
 
+	public static boolean unsafeSoxSwitch = false;
+
 	// Delay: d = disabled, l = Left, r = Right, b = Both 
 	public static int delay = 0;
 	public static int delayLevel = -1;
@@ -145,6 +147,7 @@ public class SettingsStorage {
 
 		soxEffStr = prefs.getString(Constants.sett_sox_fullcmd, "");
 
+		unsafeSoxSwitch = prefs.getBoolean(Constants.sett_sox_unsafe, false);
 
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
 			UiModeManager uiModeManager = (UiModeManager) c.getSystemService(Context.UI_MODE_SERVICE);

@@ -9,6 +9,7 @@
 package com.xperia64.timidityae.gui.fragments;
 
 import android.os.Bundle;
+import android.preference.CheckBoxPreference;
 import android.preference.Preference;
 import android.support.v4.app.FragmentTransaction;
 
@@ -30,6 +31,8 @@ public class RootPrefsFragment extends PreferenceFragment {
 
 	//private CheckBoxPreference reShuffle; // Reshuffle playlist after stopping
 	//private CheckBoxPreference nativeMidi; // Use MediaPlayer for MIDI playback
+	//private CheckBoxPreference nativeMedia;
+	//private CheckBoxPreference unsafeSox;
 	//private CheckBoxPreference keepWav; // Keep broken wav files
 	//private CheckBoxPreference useDefBack; // Use default back button behavior instead of swapping screens
 	//private CheckBoxPreference compressCfg; // Compress config files
@@ -46,6 +49,8 @@ public class RootPrefsFragment extends PreferenceFragment {
 
 		//reShuffle = (CheckBoxPreference) findPreference("reShuffle");
 		//nativeMidi = (CheckBoxPreference) findPreference("nativeMidiSwitch");
+		//nativeMedia = (CheckBoxPreference) findPreference("nativeMediaSwitch");
+		//unsafeSox = (CheckBoxPreference) findPreference("unsafeSoxSwitch");
 		//keepWav = (CheckBoxPreference) findPreference("keepPartialWav");
 		//useDefBack = (CheckBoxPreference) findPreference("useDefBack");
 		//compressCfg = (CheckBoxPreference) findPreference("compressCfg");

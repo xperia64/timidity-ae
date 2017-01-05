@@ -57,7 +57,7 @@ public class JNIHandler {
 
 	public static native int soxInit(int jreloading, int jrate);
 
-	public static native int soxPlay(String jfileName, String[][] jeffects);
+	public static native int soxPlay(String jfileName, String[][] jeffects, int jignoreSafety);
 
 	public static native void soxSeek(int jtime);
 
@@ -473,7 +473,7 @@ public class JNIHandler {
 										soxEffects[i] = firstLayer[i].trim().split(" ");
 									}
 								}
-								int soxRes = soxPlay(songTitle, soxEffects);
+								int soxRes = soxPlay(songTitle, soxEffects, SettingsStorage.unsafeSoxSwitch?1:0);
 								if(soxRes<1)
 								{
 									// We have an error.

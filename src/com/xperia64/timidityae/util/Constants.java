@@ -116,6 +116,8 @@ public class Constants {
 	public static final String sett_sox_delay_valR = "soxDelayValR";
 	public static final String sett_sox_mancmd = "soxManCmd";
 	public static final String sett_sox_fullcmd = "soxFullCmd";
+	public static final String sett_sox_unsafe = "unsafeSoxSwitch";
+
 
 	// Fragment Keys
 	public static final String currFoldKey = "CURRENT_FOLDER";

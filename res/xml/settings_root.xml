@@ -36,6 +36,11 @@
 			android:title="Native Media Player"/>
 		<CheckBoxPreference
 			android:defaultValue="false"
+			android:key="unsafeSoxSwitch"
+			android:summary="Allow unstable SoX effects/parameters"
+			android:title="Unsafe SoX effects"/>
+		<CheckBoxPreference
+			android:defaultValue="false"
 			android:key="keepPartialWav"
 			android:summary="@string/sett_kpw_sum"
 			android:title="@string/sett_kpw"/>
