@@ -14,7 +14,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.ListFragment;
 import android.text.Editable;
@@ -28,7 +27,6 @@ import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.xperia64.timidityae.R;
@@ -131,6 +129,16 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 					}else {
 						ada.getFilter().filter(cs);
 						oldSearchTxt = cs.toString();
+					}
+					if(getListView() instanceof DynamicListView && plistName != null) {
+						if (cs.toString().isEmpty()) {
+							// If the ListView is a DynamicListView, we are already on high enough of an API
+							//noinspection NewApi
+							((DynamicListView)getListView()).setDragState(plistName.equals("CURRENT")? DynamicListView.DragState.DRAG_DISABLED: DynamicListView.DragState.DRAG_ENABLED);
+						} else {
+							//noinspection NewApi
+							((DynamicListView)getListView()).setDragState(plistName.equals("CURRENT")? DynamicListView.DragState.DRAG_DISABLED: DynamicListView.DragState.DRAG_WARNING);
+						}
 					}
 				}
 			}
@@ -241,7 +249,7 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 				}
 				ada = fileList = new StableArrayAdapter(getActivity(), R.layout.row_menu, fname, this, false);
 			}
-			((DynamicListView) getListView()).setDragEnabled(false);
+			((DynamicListView) getListView()).setDragState(DynamicListView.DragState.DRAG_DISABLED);
 		} else { // An actual playlist
 			mCallback.needPlaylistBackCallback(true, which.equals("CURRENT"));
 			isPlaylist = true;
@@ -266,7 +274,7 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 				}
 			}
 			path = Globals.normalToUuid(path);
-			((DynamicListView) getListView()).setDragEnabled(!which.equals("CURRENT"));
+			((DynamicListView) getListView()).setDragState(which.equals("CURRENT")? DynamicListView.DragState.DRAG_DISABLED: DynamicListView.DragState.DRAG_ENABLED);
 			ada = fileList = new StableArrayAdapter(getActivity(), R.layout.row_menu, path, this, which.equals("CURRENT"));
 		}
 

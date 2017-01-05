@@ -40,8 +40,12 @@ import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
+
+import static com.xperia64.timidityae.gui.DynamicListView.DragState.DRAG_ENABLED;
+import static com.xperia64.timidityae.gui.DynamicListView.DragState.DRAG_WARNING;
 
 /**
  * The dynamic listview is an extension of listview that supports cell dragging
@@ -97,7 +101,11 @@ public class DynamicListView extends ListView {
 	private boolean mIsWaitingForScrollFinish = false;
 	private int mScrollState = OnScrollListener.SCROLL_STATE_IDLE;
 
-	private boolean dragIsEnabled = true;
+	public enum DragState {
+		DRAG_ENABLED, DRAG_DISABLED, DRAG_WARNING
+	}
+
+	private DragState dragState = DRAG_ENABLED;
 	private DraggerCallback arrayListCallback;
 
 	public DynamicListView(Context context) {
@@ -141,7 +149,7 @@ public class DynamicListView extends ListView {
 	private AdapterView.OnItemLongClickListener mOnItemLongClickListener =
 			new AdapterView.OnItemLongClickListener() {
 				public boolean onItemLongClick(AdapterView<?> arg0, View arg1, int pos, long id) {
-					if (dragIsEnabled) {
+					if (dragState == DRAG_ENABLED) {
 						mTotalOffset = 0;
 
 						int position = pointToPosition(mDownX, mDownY);
@@ -157,14 +165,18 @@ public class DynamicListView extends ListView {
 						updateNeighborViewsForID(mMobileItemId);
 
 						return true;
+					}else if(dragState == DRAG_WARNING)
+					{
+						Toast.makeText(getContext(), "Clear search text before reordering", Toast.LENGTH_SHORT).show();
+						return false;
 					}
 					return false;
 				}
 			};
 
 
-	public void setDragEnabled(Boolean enable) {
-		dragIsEnabled = enable;
+	public void setDragState(DragState state) {
+		dragState = state;
 	}
 
 	/**
