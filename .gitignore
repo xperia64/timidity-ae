@@ -9,6 +9,7 @@ libs/*/*.so
 *.exe
 *.swp
 *.iml
+*.apk
 Thumbs.db
 local.properties
 gradlew

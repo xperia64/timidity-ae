@@ -13,7 +13,7 @@ LOCAL_SRC_FILES := analys.c bsynz.c chanwr.c dcbias.c \
                    lpfilt.c median.c mload.c onset.c pitsyn.c placea.c placev.c preemp.c \
                    prepro.c random.c rcchk.c synths.c tbdm.c voicin.c vparms.c
 
-LOCAL_CFLAGS           := -Wall -g
+LOCAL_CFLAGS           := -Wall
 #LOCAL_LDLIBS := -ldl -llog
 
 include $(BUILD_STATIC_LIBRARY)

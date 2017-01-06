@@ -247,8 +247,8 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 						}
 					}
 				}
-				ada = fileList = new StableArrayAdapter(getActivity(), R.layout.row_menu, fname, this, false);
 			}
+			ada = fileList = new StableArrayAdapter(getActivity(), R.layout.row_menu, fname, this, false);
 			((DynamicListView) getListView()).setDragState(DynamicListView.DragState.DRAG_DISABLED);
 		} else { // An actual playlist
 			mCallback.needPlaylistBackCallback(true, which.equals("CURRENT"));
@@ -278,15 +278,9 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 			ada = fileList = new StableArrayAdapter(getActivity(), R.layout.row_menu, path, this, which.equals("CURRENT"));
 		}
 
-
-		// @formatter:off
-		// fileList.notifyDataSetChanged();
-		// getListView().setFastScrollEnabled(true);
-		// getListView().setChoiceMode(ListView.CHOICE_MODE_SINGLE);
-
-		// @formatter:on
 		setListAdapter(fileList);
-		ada.getFilter().filter(searchTxt.getText());
+		if(ada != null)
+			ada.getFilter().filter(searchTxt.getText());
 		oldSearchTxt = searchTxt.getText().toString();
 	}
 
@@ -373,7 +367,7 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 	@Override
 	public void onListItemClick(ListView l, View v, int position, long id) {
 		if (isPlaylist) {
-			if(!searchTxt.getText().toString().isEmpty())
+			if(!searchTxt.getText().toString().isEmpty() && ada != null)
 			{
 				position = ada.currentToReal(position);
 			}
@@ -803,7 +797,7 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 				public void onClick(DialogInterface dialog, int which) {
 					vola = parsePlist(tmpName = plistName);
 					loki = pos;
-					if(!searchTxt.getText().toString().isEmpty())
+					if(!searchTxt.getText().toString().isEmpty() && ada != null)
 					{
 						loki = ada.currentToReal(loki);
 					}
