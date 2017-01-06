@@ -10,7 +10,7 @@
 		android:layout_height="50dp"
 		android:padding="5dp"
 		android:id="@+id/searchText"
-		android:hint="Search for Song"
+		android:hint="@string/plist_search"
 		android:imeOptions="actionDone"
 		android:inputType="text"
 		android:maxLines="1"/>

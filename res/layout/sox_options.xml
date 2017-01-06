@@ -18,7 +18,7 @@
 		android:paddingStart="5dp">
 
 		<CheckBox
-			android:text="Speed Change (factor)"
+			android:text="@string/sop_sp"
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
 			android:textAppearance="?android:attr/textAppearanceMedium"
@@ -52,7 +52,7 @@
 		</LinearLayout>
 
 		<CheckBox
-			android:text="Tempo Change (factor)"
+			android:text="@string/sop_tp"
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
 			android:textAppearance="?android:attr/textAppearanceMedium"
@@ -86,7 +86,7 @@
 		</LinearLayout>
 
 		<CheckBox
-			android:text="Pitch Change (cents)"
+			android:text="@string/sop_pc"
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
 			android:textAppearance="?android:attr/textAppearanceMedium"
@@ -120,7 +120,7 @@
 		</LinearLayout>
 
 		<CheckBox
-			android:text="Channel Delay (L, R in seconds)"
+			android:text="@string/sop_cd"
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
 			android:textAppearance="?android:attr/textAppearanceMedium"
@@ -163,7 +163,7 @@
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
 			android:gravity="center_horizontal"
-			android:text="Equivalent SoX Command:"
+			android:text="@string/sop_equiv_title"
 			android:textAppearance="?android:attr/textAppearanceMedium"/>
 		<TextView
 			android:id="@+id/equivSoxCmd"
@@ -177,7 +177,7 @@
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
 			android:gravity="center_horizontal"
-			android:text="Additional SoX Effects:"
+			android:text="@string/sop_add_title"
 			android:textAppearance="?android:attr/textAppearanceMedium"/>
 		<EditText
 			android:layout_width="match_parent"

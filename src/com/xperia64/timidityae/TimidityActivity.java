@@ -38,10 +38,14 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
 import android.support.v7.app.AppCompatActivity;
+import android.text.SpannableString;
+import android.text.method.LinkMovementMethod;
+import android.text.util.Linkify;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.xperia64.timidityae.gui.dialogs.FileBrowserDialog;
@@ -978,14 +982,39 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 			mainact.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
 			startActivityForResult(mainact, 1);
 		} else if (item.getItemId() == R.id.ahelp) {
-			new AlertDialog.Builder(this).setTitle(getResources().getString(R.string.helpt)).setMessage(getResources().getString(R.string.helper)).setNegativeButton("OK", new OnClickListener() {
-
+			new AlertDialog.Builder(this).setTitle(R.string.helpt).setMessage(R.string.help_root).setNegativeButton("Cancel", new OnClickListener() {
+				@Override
+				public void onClick(DialogInterface dialog, int which){}
+			}).setPositiveButton("MIDI/General", new OnClickListener() {
 				@Override
 				public void onClick(DialogInterface dialog, int which) {
+					new AlertDialog.Builder(TimidityActivity.this).setTitle(R.string.helpt).setMessage(R.string.thelper).setNegativeButton("OK", new OnClickListener() {
 
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+
+						}
+
+					}).show();
 				}
+			}).setNeutralButton("SoX", new OnClickListener() {
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					final SpannableString s = new SpannableString(getResources().getString(R.string.shelper));
+					Linkify.addLinks(s, Linkify.ALL);
 
+					AlertDialog d = new AlertDialog.Builder(TimidityActivity.this).setTitle(R.string.helps).setMessage(s).setNegativeButton("OK", new OnClickListener() {
+
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+
+						}
+
+					}).show();
+					((TextView)d.findViewById(android.R.id.message)).setMovementMethod(LinkMovementMethod.getInstance());
+				}
 			}).show();
+
 		}
 		return super.onOptionsItemSelected(item);
 	}

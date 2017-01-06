@@ -148,7 +148,8 @@
 	<string name="yes">Yes</string>
 	<string name="no">No</string>
 	<string name="helpt">Timidity AE Help</string>
-    <string name="helper">Frequently Asked Questions\n\n
+	<string name="helps">SoX Help</string>
+    <string name="thelper">Frequently Asked Questions\n\n
 	    
 	    Q: How do I export to a WAV file?\n
 	    A: Long press your file in the file browser or press the export button in the TiMidity++ Controls dialog box.\n\n
@@ -158,7 +159,7 @@
 	    If you experience skipping only when your device is asleep, your device may be underclocking in an attempt to save power. Timidity AE tries to prevent this, but some devices don\'t respond. If you are rooted, try increasing the minimum CPU speed.\n\n
 	    
 	    Q: Why wont my MOD file play?\n
-	    A: Because the core of Timidity AE was changed to TiMidity++, TiMidity++ handles the playback of MOD files instead of modplug. As such, MOD compatibility has changed. We apologize for any inconvenience this may have caused and hope you enjoy the other new features.\n\n
+	    A: Certain MOD files are not compatible with TiMidity++.\n\n
 	    
 	    Q: How do I add/change soundfonts?\n
 	    A: Enter \"TiMidity++ Settings\" from the settings menu, click choose soundfonts, and add, remove, enable, or disable your soundfonts from there.\n\n
@@ -180,6 +181,43 @@
 	    
 	    Q: How do I shuffle playlists?\n
 	    A: Press the upper right button of the player to toggle shuffle mode.</string>
+	<string name="shelper">Frequently Asked Questions\n\n
+
+		Q: What is SoX?\n
+		A: SoX is an audio file playback and effect library for non-MIDI files. It supports effects such tempo change, reverb, and basic synthesizing.\n\n
+
+	    Q: How do I enable SoX?\n
+	    A: Go to settings and uncheck \"Native Media Player\". SoX will then be used for supported files.\n\n
+
+		Q: How do I configure SoX?\n
+		A: Either select \"SoX Settings\" in Settings or press the (i) button while playing a supported song.\n\n
+
+		Q: Where can I find more information on SoX?\n
+		A: https://linux.die.net/man/1/sox is an excellent resource.\n\n
+
+		Q: My effect chain isn\'t working.\n
+		A: Timidity AE requires that SoX effects are separated by semicolons.\n\n
+
+		Q: What does the \"Unsafe SoX Effects\" option do.\n
+		A: Certain effects have limits to their parameters. This ignores those limits.\n\n
+
+		Q: Timidity AE is crashing when playing a song with SoX.\n
+		A: SoX has basic safety checks. However, certain combinations of effects may be too intense for your device or otherwise incompatible. Try disabling effects in Settings until SoX works again.
+	</string>
+	<string name="sett_sox">SoX Settings</string>
+	<string name="sett_sox_sum">Change SoX Effects</string>
+	<string name="sett_sox_unsafe_sum">Allow unstable SoX effects/parameters</string>
+	<string name="sett_sox_unsafe">Unsafe SoX effects</string>
+	<string name="sett_sox_use_sum">Use native android player over SoX</string>
+	<string name="sett_sox_use">Native Media Player</string>
+	<string name="sop_sp">Speed Change (factor)</string>
+	<string name="sop_tp">Tempo Change (factor)</string>
+	<string name="sop_pc">Pitch Change (cents)</string>
+	<string name="sop_cd">Channel Delay (L, R in seconds)</string>
+	<string name="sop_equiv_title">Equivalent SoX Command:</string>
+	<string name="sop_add_title">Additional SoX Effects:</string>
+	<string name="plist_search">Search for Song</string>
+	<string name="help_root">Select the topic you need help with:</string>
 
 	<!-- Arrays -->
 	<string-array name="theme_items">
