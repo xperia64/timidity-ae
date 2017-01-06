@@ -563,7 +563,7 @@ public class PlayerFragment extends Fragment {
 					shuffleButton.setImageResource(shufRes);
 				}
 			});
-			if ((JNIHandler.mediaBackendFormat == JNIHandler.MediaFormat.FMT_MEDIAPLAYER) && fragMode != 0) {
+			if ((JNIHandler.mediaBackendFormat != JNIHandler.MediaFormat.FMT_TIMIDITY) && fragMode != 0) {
 				FragmentManager fm = getFragmentManager();
 				FragmentTransaction ft = fm.beginTransaction();
 				fragMode = 0;
@@ -601,7 +601,7 @@ public class PlayerFragment extends Fragment {
 				}
 			});
 		}
-		if ((JNIHandler.mediaBackendFormat == JNIHandler.MediaFormat.FMT_MEDIAPLAYER) && fragMode != 0) {
+		if ((JNIHandler.mediaBackendFormat != JNIHandler.MediaFormat.FMT_TIMIDITY) && fragMode != 0) {
 			FragmentManager fm = getFragmentManager();
 			FragmentTransaction ft = fm.beginTransaction();
 			fragMode = 0;

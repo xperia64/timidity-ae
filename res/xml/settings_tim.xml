@@ -50,6 +50,13 @@
 			android:key="tplusBuff"
 			android:summary="@string/sett_buff_sum"
 			android:title="@string/sett_buff"/>
+		<ListPreference
+			android:defaultValue="-1"
+			android:entries="@array/select_verbosity_items"
+			android:entryValues="@array/background_verbosity_items"
+			android:key="timidityVerbosity"
+			android:summary="TiMidity++ command line output"
+			android:title="Verbosity"/>
 	</PreferenceCategory>
 	<PreferenceCategory android:title="@string/sett_dat">
 

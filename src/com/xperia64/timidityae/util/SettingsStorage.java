@@ -59,6 +59,7 @@ public class SettingsStorage {
 	public static int audioRate;
 	public static boolean nativeMidi;
 	public static int bufferSize;
+	public static int verbosity;
 	public static boolean keepPartialWav;
 	public static boolean onlyNative;
 	public static boolean showVideos;
@@ -104,8 +105,6 @@ public class SettingsStorage {
 
 	public static boolean nativeMedia = true;
 
-
-
 	public static void reloadSettings(Activity c, AssetManager assets) {
 
 		prefs = PreferenceManager.getDefaultSharedPreferences(c);
@@ -123,6 +122,7 @@ public class SettingsStorage {
 		bufferSize = Integer.parseInt(prefs.getString(Constants.sett_buffer_size, "192000"));
 		showVideos = prefs.getBoolean(Constants.sett_show_videos, true);
 		shouldExtStorageNag = prefs.getBoolean(Constants.sett_should_ext_storage_nag, true);
+		verbosity = Integer.parseInt(prefs.getString(Constants.sett_t_verbosity, "-1"));
 		keepPartialWav = prefs.getBoolean(Constants.sett_keep_partal_wave, false);
 		useDefaultBack = prefs.getBoolean(Constants.sett_default_back_btn, false);
 		compressCfg = prefs.getBoolean(Constants.sett_compress_midi_cfg, true);

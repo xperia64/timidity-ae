@@ -216,6 +216,22 @@
 		<item>1</item>
 		<item>2</item>
 	</string-array>
+	<string-array name="select_verbosity_items">
+		<item>-1 (Silent)</item>
+		<item>0 (Normal)</item>
+		<item>1 (Verbose)</item>
+		<item>2 (Noisy)</item>
+		<item>3 (Debug)</item>
+		<item>4 (Debug Silly)</item>
+	</string-array>
+	<string-array name="background_verbosity_items">
+		<item>-1</item>
+		<item>0</item>
+		<item>1</item>
+		<item>2</item>
+		<item>3</item>
+		<item>4</item>
+	</string-array>
 	<string-array name="select_bit_items">
 		<item>8-Bit</item>
 		<item>16-Bit</item>

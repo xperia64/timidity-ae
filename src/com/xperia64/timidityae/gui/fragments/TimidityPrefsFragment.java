@@ -48,6 +48,7 @@ public class TimidityPrefsFragment extends PreferenceFragment {
 	private ListPreference stereoMode; // Synth Mono, Downmixed Mono, or Stereo
 	private ListPreference rates; // Audio rates
 	private EditTextPreference bufferSize; // Buffer size, in something. I use 192000 by default.
+	private ListPreference verbosity;
 
 	// Timidity AE Data Settings
 	private Preference reinstallSoundfont;
@@ -69,6 +70,7 @@ public class TimidityPrefsFragment extends PreferenceFragment {
 		stereoMode = (ListPreference) findPreference("sdlChanValue");
 		rates = (ListPreference) findPreference("tplusRate");
 		bufferSize = (EditTextPreference) findPreference("tplusBuff");
+		verbosity = (ListPreference) findPreference("timidityVerbosity");
 
 		reinstallSoundfont = findPreference("reSF");
 		dataFoldPreference = findPreference("defData");
@@ -230,6 +232,16 @@ public class TimidityPrefsFragment extends PreferenceFragment {
 					}
 					return false;
 				}
+				return true;
+			}
+
+		});
+
+		verbosity.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+
+			@Override
+			public boolean onPreferenceChange(Preference arg0, Object arg1) {
+				s.needRestart = true;
 				return true;
 			}
 

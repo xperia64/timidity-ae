@@ -206,7 +206,7 @@ public class Globals {
 		String ext = getFileExtension(songFileName);
 		if(ext!=null)
 		{
-			return !SettingsStorage.nativeMidi&& TIMIDITY_FILES.contains("*"+ext.toLowerCase(Locale.US)+"*");
+			return !SettingsStorage.nativeMidi&&TIMIDITY_FILES.contains("*"+ext.toLowerCase(Locale.US)+"*");
 		}
 		return false;
 	}

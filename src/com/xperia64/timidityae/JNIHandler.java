@@ -37,7 +37,7 @@ public class JNIHandler {
 
 	public static native int unloadLib();
 
-	private static native int prepareTimidity(String config, String config2, int jmono, int jcustResamp, int jsixteen, int jPresSil, int jreloading, int jfreeInsts);
+	private static native int prepareTimidity(String config, String config2, int jmono, int jcustResamp, int jsixteen, int jPresSil, int jreloading, int jfreeInsts, int jverbosity);
 
 	private static native int loadSongTimidity(String filename);
 
@@ -231,6 +231,7 @@ public class JNIHandler {
 				break;
 			case FMT_TIMIDITY:
 				state = STATE_SEEKING;
+				controlTimidity(Constants.jni_tim_jump, time);
 				waitUntilReady();
 				state = oldstate;
 				break;
@@ -364,7 +365,7 @@ public class JNIHandler {
 		}
 	}
 
-	public static int init(String path, String file, int mono, int resamp, boolean sixteen, int b, int r, boolean preserveSilence, boolean reloading, boolean freeInsts) {
+	public static int init(String path, String file, int mono, int resamp, boolean sixteen, int b, int r, boolean preserveSilence, boolean reloading, boolean freeInsts, int verbosity) {
 		if (state == STATE_UNINIT) {
 
 			System.out.println(String.format(Locale.US, "Opening Timidity: Path: %s cfgFile: %s resample: %s mono: %s sixteenBit: %s buffer: %d rate: %d", path, file, Globals.sampls[resamp], ((mono == 1) ? "true" : "false"), (sixteen ? "true" : "false"), b, r));
@@ -383,7 +384,7 @@ public class JNIHandler {
 			if (mMediaPlayer == null)
 				mMediaPlayer = new MediaPlayer();
 
-			int code = prepareTimidity(path, path + file, (channelMode == 1) ? 1 : 0, resamp, sixteenBit ? 1 : 0, preserveSilence ? 1 : 0, reloading ? 1 : 0, freeInsts ? 1 : 0)
+			int code = prepareTimidity(path, path + file, (channelMode == 1) ? 1 : 0, resamp, sixteenBit ? 1 : 0, preserveSilence ? 1 : 0, reloading ? 1 : 0, freeInsts ? 1 : 0, verbosity)
 					+ soxInit(reloading ? 1 : 0, rate);
 			state = STATE_IDLE; // TODO: Maybe keep as UNINIT if code != 0?
 			return code;
@@ -649,6 +650,17 @@ public class JNIHandler {
 			stb.append("\n");
 			overwriteLyricAt = stb.length();
 		}
+		currentLyric = stb.toString();
+	}
+
+	public static void updateCmsg(byte[] b)
+	{
+		final StringBuilder stb = new StringBuilder(currentLyric);
+		for(byte bb : b)
+		{
+			stb.append((char)bb);
+		}
+		stb.append("\n");
 		currentLyric = stb.toString();
 	}
 

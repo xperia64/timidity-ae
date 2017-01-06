@@ -505,8 +505,10 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 							getSupportActionBar().setDisplayHomeAsUpEnabled(needFileBack);
 						}
 						if (fileFrag != null)
-							if (fileFrag.getListView() != null)
+							if (fileFrag.getListView() != null) {
 								fileFrag.getListView().setFastScrollEnabled(true);
+								fileFrag.fixLongClick();
+							}
 						break;
 					case 1:
 						if (getSupportActionBar() != null) {
@@ -625,7 +627,8 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 	}
 
 	public void initCallback2() {
-		int x = JNIHandler.init(SettingsStorage.dataFolder + "timidity/", "timidity.cfg", SettingsStorage.channelMode, SettingsStorage.defaultResamp, SettingsStorage.sixteenBit, SettingsStorage.bufferSize, SettingsStorage.audioRate, SettingsStorage.preserveSilence, false, SettingsStorage.freeInsts);
+		int x = JNIHandler.init(SettingsStorage.dataFolder + "timidity/", "timidity.cfg", SettingsStorage.channelMode, SettingsStorage.defaultResamp, SettingsStorage.sixteenBit,
+				SettingsStorage.bufferSize, SettingsStorage.audioRate, SettingsStorage.preserveSilence, false, SettingsStorage.freeInsts, SettingsStorage.verbosity);
 		if (x != 0 && x != -99) {
 			SettingsStorage.onlyNative = SettingsStorage.nativeMidi = true;
 			Toast.makeText(this, String.format(getResources().getString(R.string.tcfg_error), x), Toast.LENGTH_LONG).show();

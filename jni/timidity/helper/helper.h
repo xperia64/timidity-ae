@@ -16,5 +16,7 @@
 	extern void setVol(int ch, int vol);
 	extern void sendTempo(int t, int tr);
 	extern void sendKey(int k);
+	extern int getVerbosity();
 	extern void andro_timidity_log_print(const char* tag, const char* fmt, ...);
+	extern void andro_timidity_cmsg_print(const char* msg);
 #endif

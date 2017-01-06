@@ -45,6 +45,19 @@ public class FileBrowserFragment extends ListFragment {
 	private ActionFileBackListener mCallback;
 	private Activity mActivity;
 
+	private final OnItemLongClickListener longClick = new OnItemLongClickListener() {
+
+		@Override
+		public boolean onItemLongClick(AdapterView<?> l, View v, final int position, long id) {
+			if (new File(path.get(position)).isFile() && Globals.isMidi(path.get(position))) {
+				((TimidityActivity) mActivity).dynExport(path.get(position), false);
+				return true;
+			}
+			return false;
+		}
+
+	};
+
 	public interface ActionFileBackListener {
 		void needFileBackCallback(boolean yes);
 	}
@@ -191,20 +204,17 @@ public class FileBrowserFragment extends ListFragment {
 				}
 				ArrayAdapter<String> fileList = new ArrayAdapter<>(mActivity, R.layout.row, fname);
 				getListView().setFastScrollEnabled(true);
-				getListView().setOnItemLongClickListener(new OnItemLongClickListener() {
-
-					@Override
-					public boolean onItemLongClick(AdapterView<?> l, View v, final int position, long id) {
-						if (new File(path.get(position)).isFile() && Globals.isMidi(path.get(position))) {
-							((TimidityActivity) mActivity).dynExport(path.get(position), false);
-							return true;
-						}
-						return false;
-					}
-
-				});
+				getListView().setOnItemLongClickListener(longClick);
 				setListAdapter(fileList);
 			}
+		}
+	}
+
+	public void fixLongClick()
+	{
+		if(getListView()!=null)
+		{
+			getListView().setOnItemLongClickListener(longClick);
 		}
 	}
 
@@ -251,6 +261,7 @@ public class FileBrowserFragment extends ListFragment {
 				((TimidityActivity) mActivity).selectedSong(files, position - firstFile, true, false, true);
 			}
 		}
+		fixLongClick();
 	}
 
 	@Override

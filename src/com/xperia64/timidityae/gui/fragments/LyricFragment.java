@@ -46,7 +46,7 @@ public class LyricFragment extends Fragment {
 			getActivity().runOnUiThread(new Runnable() {
 				@Override
 				public void run() {
-					lyrics.setText(TextUtils.isEmpty(JNIHandler.currentLyric) ? "(No Lyrics)" : JNIHandler.currentLyric);
+					lyrics.setText(JNIHandler.currentLyric.isEmpty() ? "(No Lyrics)" : JNIHandler.currentLyric);
 					lyrics.invalidate();
 					if (scrollContainer != null)
 						scrollContainer.fullScroll(ScrollView.FOCUS_DOWN);

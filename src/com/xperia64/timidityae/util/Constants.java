@@ -103,6 +103,8 @@ public class Constants {
 	public static final String sett_fancy_plist = "fpSwitch";
 	public static final String sett_soundfonts = "tplusSoundfonts";
 
+	public static final String sett_t_verbosity = "timidityVerbosity";
+
 	public static final String sett_native_media = "nativeMediaSwitch";
 
 	public static final String sett_sox_speed = "soxSpeed";

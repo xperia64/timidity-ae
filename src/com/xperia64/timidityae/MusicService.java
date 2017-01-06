@@ -362,7 +362,6 @@ public class MusicService extends Service {
 						stop();
 						// TODO: Consider replacing with "waitForStop"
 						while (JNIHandler.state != JNIHandler.PlaybackState.STATE_IDLE) {
-							System.out.println("Waiting for writing to stop!");
 							try {
 								Thread.sleep(10);
 							} catch (InterruptedException e) {
@@ -372,8 +371,9 @@ public class MusicService extends Service {
 						final String input = intent.getStringExtra(Constants.msrv_infile);
 						String output = intent.getStringExtra(Constants.msrv_outfile);
 						if (input != null && output != null) {
-							System.out.println("Setting up output file "+output+" "+input);
 							JNIHandler.setupOutputFile(output);
+							// We are calling JNIHandler.play(), not play() so we must
+							breakLoops = false;
 							JNIHandler.play(input);
 						}
 						new Thread(new Runnable() {
@@ -382,10 +382,8 @@ public class MusicService extends Service {
 							public void run() {
 								// Wait for TiMidity to start or until canceled or aborted.
 								while (!breakLoops && ((JNIHandler.state != JNIHandler.PlaybackState.STATE_PLAYING))) {
-									System.out.println("Waiting for starting");
 									if (JNIHandler.state == JNIHandler.PlaybackState.STATE_IDLE) {
 										// LOADING -> IDLE = Error
-										System.out.println("Bad state transition. Killing file write.");
 										breakLoops = true;
 									}
 									try {
@@ -425,7 +423,6 @@ public class MusicService extends Service {
 										Thread.sleep(25);
 									} catch (InterruptedException ignored) {}
 								}
-
 								Intent outgoingIntent = new Intent();
 								outgoingIntent.setAction(Constants.ta_rec);
 								outgoingIntent.putExtra(Constants.ta_cmd, Constants.ta_cmd_special_notification_finished);
@@ -648,7 +645,8 @@ public class MusicService extends Service {
 						JNIHandler.custVol = new ArrayList<>();
 						logRet = JNIHandler.loadLib(Globals.getLibDir(MusicService.this) + "libtimidityplusplus.so");
 						Log.d("TIMIDITY", "Reloading: " + logRet);
-						int x = JNIHandler.init(SettingsStorage.dataFolder + "timidity/", "timidity.cfg", SettingsStorage.channelMode, SettingsStorage.defaultResamp, SettingsStorage.sixteenBit, SettingsStorage.bufferSize, SettingsStorage.audioRate, SettingsStorage.preserveSilence, true, SettingsStorage.freeInsts);
+						int x = JNIHandler.init(SettingsStorage.dataFolder + "timidity/", "timidity.cfg", SettingsStorage.channelMode, SettingsStorage.defaultResamp, SettingsStorage.sixteenBit,
+								SettingsStorage.bufferSize, SettingsStorage.audioRate, SettingsStorage.preserveSilence, true, SettingsStorage.freeInsts, SettingsStorage.verbosity);
 						if (x != 0 && x != -99) {
 							SettingsStorage.onlyNative = SettingsStorage.nativeMidi = true;
 							Toast.makeText(MusicService.this, String.format(getResources().getString(R.string.tcfg_error), x), Toast.LENGTH_LONG).show();
