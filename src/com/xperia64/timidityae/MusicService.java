@@ -29,7 +29,6 @@ import android.os.PowerManager;
 import android.support.v4.app.NotificationCompat;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
-import android.text.TextUtils;
 import android.util.Log;
 import android.util.SparseIntArray;
 import android.view.KeyEvent;
@@ -749,12 +748,9 @@ public class MusicService extends Service {
 		} catch (RuntimeException e) {
 			tmpTitle = fileName.substring(fileName.lastIndexOf('/') + 1);
 		}
-		if (tmpTitle != null) {
-			if (TextUtils.isEmpty(tmpTitle))
+		if (tmpTitle == null || tmpTitle.isEmpty()) {
 				tmpTitle = fileName.substring(fileName.lastIndexOf('/') + 1);
-		} else {
-			tmpTitle = fileName.substring(fileName.lastIndexOf('/') + 1);
-		}
+		};
 		setupMediaArtAndWidget(fileName, mmr);
 		return tmpTitle;
 	}

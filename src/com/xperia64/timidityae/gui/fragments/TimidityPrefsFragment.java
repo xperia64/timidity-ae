@@ -19,7 +19,6 @@ import android.preference.CheckBoxPreference;
 import android.preference.EditTextPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
-import android.text.TextUtils;
 import android.util.SparseIntArray;
 import android.widget.BaseAdapter;
 import android.widget.Toast;
@@ -208,7 +207,7 @@ public class TimidityPrefsFragment extends PreferenceFragment {
 					s.needRestart = true;
 					String txt = (String) newValue;
 					if (txt != null) {
-						if (!TextUtils.isEmpty(txt)) {
+						if (!txt.isEmpty()) {
 							String stereo = stereoMode.getValue();
 							String sixteen = "16"; // s.bitMode.getValue();
 							boolean sb = stereo == null || stereo.equals("2");

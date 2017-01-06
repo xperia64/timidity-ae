@@ -17,7 +17,7 @@ import android.os.Bundle;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.ListFragment;
 import android.text.Editable;
-import android.text.TextUtils;
+import android.text.InputType;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -359,7 +359,7 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 			String strLine;
 
 			while ((strLine = br.readLine()) != null) {
-				if (!TextUtils.isEmpty(strLine))
+				if (!strLine.isEmpty())
 					plist.add(strLine);
 
 			}
@@ -479,7 +479,7 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 			alert.setTitle(getResources().getString(R.string.plist_crea));
 
 			final EditText input = new EditText(getActivity());
-			input.setSingleLine(true);
+			input.setInputType(InputType.TYPE_CLASS_TEXT);
 			alert.setView(input);
 
 			alert.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
@@ -712,6 +712,7 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 						alert.setTitle(String.format(getResources().getString(R.string.plist_ren2), fname.get(pos)));
 
 						final EditText input = new EditText(getActivity());
+						input.setInputType(InputType.TYPE_CLASS_TEXT);
 						alert.setView(input);
 
 						alert.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
@@ -759,13 +760,14 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 			} else {
 
 				final EditText input2 = new EditText(getActivity());
+				input2.setInputType(InputType.TYPE_CLASS_TEXT);
 				builderSingle.setView(input2);
 				builderSingle.setPositiveButton(getResources().getString(R.string.plist_save), new DialogInterface.OnClickListener() {
 
 					@Override
 					public void onClick(DialogInterface dialog, int which) {
 						if (input2.getText() != null) {
-							if (!TextUtils.isEmpty(input2.getText().toString())) {
+							if (!input2.getText().toString().isEmpty()) {
 								tmpName = playlistDir + File.separator + input2.getText().toString() + ".tpl";
 								vola = currPlist;
 								write();

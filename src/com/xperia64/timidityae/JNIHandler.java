@@ -623,6 +623,10 @@ public class JNIHandler {
 	// Used by native (TiMidity++)
 	@SuppressWarnings("unused")
 	public static void updateLyrics(byte[] b) {
+		if(b.length<3)
+		{
+			return;
+		}
 		final StringBuilder stb = new StringBuilder(currentLyric);
 		final StringBuilder tmpBuild = new StringBuilder();
 		boolean isNormalLyric = (b[0] == 'L');

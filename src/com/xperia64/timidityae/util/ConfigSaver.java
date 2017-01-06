@@ -16,6 +16,7 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Environment;
 import android.text.InputFilter;
+import android.text.InputType;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -50,6 +51,7 @@ public class ConfigSaver implements TimidityActivity.SpecialAction {
 
 			// Set an EditText view to get user input
 			final EditText input = new EditText(context);
+			input.setInputType(InputType.TYPE_CLASS_TEXT);
 			input.setFilters(new InputFilter[]{Globals.fileNameInputFilter});
 			saveMidiConfigDialog.setView(input);
 

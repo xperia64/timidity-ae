@@ -47,6 +47,7 @@
 		<EditTextPreference
 			android:defaultValue="192000"
 			android:inputType="number"
+			android:maxLines="1"
 			android:key="tplusBuff"
 			android:summary="@string/sett_buff_sum"
 			android:title="@string/sett_buff"/>
@@ -73,6 +74,8 @@
 		<EditTextPreference
 			android:defaultValue="/sdcard/TimidityAE/"
 			android:key="dataDir"
+			android:inputType="text"
+			android:maxLines="1"
 			android:summary="@string/sett_mandir_sum"
 			android:title="@string/sett_mandir"/>
 

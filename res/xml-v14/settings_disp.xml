@@ -36,6 +36,8 @@
 		<EditTextPreference
 			android:defaultValue="/sdcard/"
 			android:key="defaultPath"
+			android:inputType="text"
+			android:maxLines="1"
 			android:summary="@string/sett_fbpath"
 			android:title="@string/sett_fbpath"/>
 	</PreferenceCategory>

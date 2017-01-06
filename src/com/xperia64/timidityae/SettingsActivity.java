@@ -21,7 +21,6 @@ import android.support.annotation.RequiresApi;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
-import android.text.TextUtils;
 import android.view.MenuItem;
 import android.widget.BaseAdapter;
 import android.widget.Toast;
@@ -121,7 +120,7 @@ public class SettingsActivity extends AppCompatActivity implements FileBrowserDi
 	@Override
 	public void setItem(String path, int type) {
 		if (path != null) {
-			if (!TextUtils.isEmpty(path)) {
+			if (!path.isEmpty()) {
 				switch (type) {
 					case 3:
 						prefs.edit().putString("defaultPath", path).commit();

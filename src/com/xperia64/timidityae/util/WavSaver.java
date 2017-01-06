@@ -16,6 +16,7 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Environment;
 import android.text.InputFilter;
+import android.text.InputType;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -52,6 +53,7 @@ public class WavSaver implements TimidityActivity.SpecialAction {
 			alert.setTitle(context.getResources().getString(R.string.dynex_alert1));
 			alert.setMessage(context.getResources().getString(R.string.dynex_alert1_msg));
 			final EditText input = new EditText(context);
+			input.setInputType(InputType.TYPE_CLASS_TEXT);
 			input.setFilters(new InputFilter[]{Globals.fileNameInputFilter});
 			alert.setView(input);
 

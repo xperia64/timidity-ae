@@ -44,6 +44,7 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 
+import static com.xperia64.timidityae.gui.DynamicListView.DragState.DRAG_DISABLED;
 import static com.xperia64.timidityae.gui.DynamicListView.DragState.DRAG_ENABLED;
 import static com.xperia64.timidityae.gui.DynamicListView.DragState.DRAG_WARNING;
 
@@ -105,7 +106,7 @@ public class DynamicListView extends ListView {
 		DRAG_ENABLED, DRAG_DISABLED, DRAG_WARNING
 	}
 
-	private DragState dragState = DRAG_ENABLED;
+	private DragState dragState = DRAG_DISABLED;
 	private DraggerCallback arrayListCallback;
 
 	public DynamicListView(Context context) {
