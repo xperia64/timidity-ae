@@ -2297,7 +2297,7 @@ These may be changed or removed in future versions of libSoX.
 Plugins API:
 Print a fatal error in libSoX.
 */
-#ifdef __ANDROID__ // Hooray for abstraction
+#ifdef __ANDROID_API__ // Hooray for abstraction
 void
 LSX_API
 lsx_fail_impl(

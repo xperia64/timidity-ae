@@ -203,7 +203,7 @@ void name(char const * fmt, ...) { \
   va_end(ap); \
 }
 
-#ifdef __ANDROID__
+#ifdef __ANDROID_API__
 extern void droid_fail();
 void LSX_API lsx_fail_impl(
     LSX_PARAM_IN_PRINTF char const *fmt,
