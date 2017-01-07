@@ -24,6 +24,8 @@ public class LyricFragment extends Fragment {
 	private ScrollView scrollContainer;
 	private boolean ready;
 
+	private String oldLyrics;
+
 	// TODO Make lyrics shiny-er
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -45,9 +47,10 @@ public class LyricFragment extends Fragment {
 			getActivity().runOnUiThread(new Runnable() {
 				@Override
 				public void run() {
+					oldLyrics = lyrics.getText().toString();
 					lyrics.setText(JNIHandler.currentLyric.isEmpty() ? "(No Lyrics)" : JNIHandler.currentLyric);
 					lyrics.invalidate();
-					if (scrollContainer != null)
+					if (scrollContainer != null && !oldLyrics.equals(lyrics.getText().toString()))
 						scrollContainer.fullScroll(ScrollView.FOCUS_DOWN);
 				}
 			});
