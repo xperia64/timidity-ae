@@ -83,7 +83,7 @@ Java_com_xperia64_timidityae_JNIHandler_soxInit(JNIEnv * env, jobject this, jint
 }
 
 	JNIEXPORT int JNICALL
-Java_com_xperia64_timidityae_JNIHandler_soxPlay(JNIEnv * env, jobject this, jstring jfilename, jobjectArray jeffects, jignoreSafety)
+Java_com_xperia64_timidityae_JNIHandler_soxPlay(JNIEnv * env, jobject this, jstring jfilename, jobjectArray jeffects, jint jignoreSafety)
 {
 	playEnv = env;	
 	stopSox = 0;
@@ -150,7 +150,7 @@ Java_com_xperia64_timidityae_JNIHandler_soxPlay(JNIEnv * env, jobject this, jstr
 				}
 				for (i=0; i<strcnt; i++) {
 					jstring stringy = (jstring) ((*env)->GetObjectArrayElement(env, effectArray, i));
-					const char *rawString = (*env)->GetStringUTFChars(env, stringy, 0);
+					char *rawString = (char*)(*env)->GetStringUTFChars(env, stringy, 0);
 					if(i>0)
 					{	
 						args[i-1] = rawString;

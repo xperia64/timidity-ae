@@ -636,6 +636,7 @@ public class MusicService extends Service {
 						}
 						int logRet = JNIHandler.unloadLib();
 						Log.d("TIMIDITY", "Unloading: " + logRet);
+						JNIHandler.PlaybackState oldstate = JNIHandler.state;
 						JNIHandler.state = JNIHandler.PlaybackState.STATE_UNINIT;
 						JNIHandler.volumes = new ArrayList<>();
 						JNIHandler.programs = new ArrayList<>();
@@ -654,6 +655,7 @@ public class MusicService extends Service {
 							outgoingIntent16.putExtra(Constants.ta_cmd, Constants.ta_cmd_refresh_filebrowser);
 							sendBroadcast(outgoingIntent16);
 						}
+						JNIHandler.state = oldstate;
 						break;
 				}
 			}
@@ -949,7 +951,6 @@ public class MusicService extends Service {
 
 	public void stop() {
 		if (JNIHandler.isActive()) {
-
 			breakLoops = true;
 			Intent stopIntent = new Intent();
 			stopIntent.setAction(Constants.ta_rec);
@@ -985,7 +986,6 @@ public class MusicService extends Service {
 				}
 				stopForeground(true);
 				// stopSelf();
-
 			}
 		}
 	}
