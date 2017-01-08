@@ -1127,8 +1127,12 @@ Instrument *load_instrument(int dr, int b, int prog)
 	/* preload soundfont */
 	ip = load_soundfont_inst(0, font_bank, font_preset, font_keynote);
 	if (ip != NULL) {
+		// This causes some issues when enabled. I don't know what the issues are when disabled.
+		// If I find any, I'll make a toggle
+#if 0
 		if (bank->tone[prog].name == NULL) /* this should not be NULL to play the instrument */
 			bank->tone[prog].name = safe_strdup(DYNAMIC_INSTRUMENT_NAME);
+#endif
 		if (bank->tone[prog].comment)
 			free(bank->tone[prog].comment);
 		bank->tone[prog].comment = safe_strdup(ip->instname);
