@@ -198,7 +198,7 @@ cleanup:
 		free(e);
 	}
 
-	timescale *= ((float)in->signal.length/in->signal.rate)/((float)ilength/irate);
+	timescale = ((float)in->signal.length/in->signal.rate)/((float)ilength/irate);
 
 	e = sox_create_effect(sox_find_effect("output"));
 	sargs[0] = (char *) out;
