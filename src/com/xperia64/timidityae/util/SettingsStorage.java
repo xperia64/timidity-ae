@@ -1,20 +1,12 @@
+/*******************************************************************************
+ * Copyright (C) 2017 xperia64 <xperiancedapps@gmail.com>
+ * <p>
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the GNU Public License v2.0
+ * which accompanies this distribution, and is available at
+ * http://www.gnu.org/licenses/gpl.html
+ ******************************************************************************/
 package com.xperia64.timidityae.util;
-
-import java.io.BufferedReader;
-import java.io.DataInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Locale;
-
-import com.xperia64.timidityae.JNIHandler;
-import com.xperia64.timidityae.R;
-import com.xperia64.timidityae.TimidityActivity;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -34,6 +26,23 @@ import android.preference.PreferenceManager;
 import android.util.SparseIntArray;
 import android.widget.Toast;
 
+import com.xperia64.timidityae.JNIHandler;
+import com.xperia64.timidityae.R;
+import com.xperia64.timidityae.TimidityActivity;
+
+import java.io.BufferedReader;
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Locale;
+
+@SuppressLint("CommitPrefEdits")
 public class SettingsStorage {
 	// ---------SETTINGS STORAGE----------
 	private static SharedPreferences prefs; // The preferences used by this class
@@ -46,10 +55,10 @@ public class SettingsStorage {
 	public static int defaultResamp;
 	public static boolean shouldExtStorageNag;
 	public static int channelMode; // 0 = stereo downsampled to mono, 1 = timidity-synthesized mono, 2 = stereo
-	public static boolean sixteenBit;
 	public static int audioRate;
 	public static boolean nativeMidi;
 	public static int bufferSize;
+	public static int verbosity;
 	public static boolean keepPartialWav;
 	public static boolean onlyNative;
 	public static boolean showVideos;
@@ -61,50 +70,84 @@ public class SettingsStorage {
 	public static boolean freeInsts = true;
 	public static boolean isTV;
 	public static boolean enableDragNDrop = true;
-	
-	
+
+	public static boolean soxEnableSpeed = false;
+	public static double soxSpeedVal = -1;
+
+	public static boolean soxEnableTempo = false;
+	public static double soxTempoVal = -1;
+
+	public static boolean soxEnablePitch = false;
+	public static int soxPitchVal = 0;
+
+	public static boolean soxEnableDelay = false;
+	public static double soxDelayL = 0;
+	public static double soxDelayR = 0;
+
+	public static String soxManCmd;
+
+	public static String soxEffStr = "";
+
+	public static boolean unsafeSoxSwitch = false;
+
 	// Delay: d = disabled, l = Left, r = Right, b = Both 
 	public static int delay = 0;
 	public static int delayLevel = -1;
-	
+
 	// Chorus: d = disabled, n = normal, s = surround, level = [0,127]
 	public static int chorus = 0;
 	public static int chorusLevel = -1;
-	
+
 	// Reverb: d = disabled, n = normal, g = global, f = freeverb, G = global freeverb
 	public static int reverb = 0;
 	public static int reverbLevel = -1;
-	
-	@SuppressLint("NewApi")
+
+	public static boolean nativeMedia = true;
+
 	public static void reloadSettings(Activity c, AssetManager assets) {
 
 		prefs = PreferenceManager.getDefaultSharedPreferences(c);
-		firstRun = prefs.getBoolean(CommandStrings.sett_first_run, true);
-		theme = Integer.parseInt(prefs.getString(CommandStrings.sett_theme, "1"));
-		showHiddenFiles = prefs.getBoolean(CommandStrings.sett_show_hidden_files, false);
-		homeFolder = prefs.getString(CommandStrings.sett_home_folder, Environment.getExternalStorageDirectory().getAbsolutePath());
-		dataFolder = prefs.getString(CommandStrings.sett_data_folder, Environment.getExternalStorageDirectory() + "/TimidityAE/");
-		manualConfig = prefs.getBoolean(CommandStrings.sett_man_config, false);
-		JNIHandler.currsamp = defaultResamp = Integer.parseInt(prefs.getString(CommandStrings.sett_default_resamp, "0"));
-		channelMode = Integer.parseInt(prefs.getString(CommandStrings.sett_channel_mode, "2"));
-		sixteenBit = true;// prefs.getString("tplusBits", "16").equals("16");
-		audioRate = Integer.parseInt(prefs.getString(CommandStrings.sett_audio_rate, Integer.toString(AudioTrack.getNativeOutputSampleRate(AudioTrack.MODE_STREAM))));
-		bufferSize = Integer.parseInt(prefs.getString(CommandStrings.sett_buffer_size, "192000"));
-		showVideos = prefs.getBoolean(CommandStrings.sett_show_videos, true);
-		shouldExtStorageNag = prefs.getBoolean(CommandStrings.sett_should_ext_storage_nag, true);
-		keepPartialWav = prefs.getBoolean(CommandStrings.sett_keep_partal_wave, false);
-		useDefaultBack = prefs.getBoolean(CommandStrings.sett_default_back_btn, false);
-		compressCfg = prefs.getBoolean(CommandStrings.sett_compress_midi_cfg, true);
-		reShuffle = prefs.getBoolean(CommandStrings.sett_reshuffle_plist, false);
-		freeInsts = prefs.getBoolean(CommandStrings.sett_free_insts, true);
-		preserveSilence = prefs.getBoolean(CommandStrings.sett_preserve_silence, true);
-		enableDragNDrop = prefs.getBoolean(CommandStrings.sett_fancy_plist, true);
-		if (!onlyNative)
-			nativeMidi = prefs.getBoolean(CommandStrings.sett_native_midi, false);
-		else
-			nativeMidi = true;
-		
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.FROYO) {
+		firstRun = prefs.getBoolean(Constants.sett_first_run, true);
+		// The light theme is broken below ICS it seems.
+		theme = (Build.VERSION.SDK_INT < Build.VERSION_CODES.ICE_CREAM_SANDWICH)?0:Integer.parseInt(prefs.getString(Constants.sett_theme, "1"));
+		showHiddenFiles = prefs.getBoolean(Constants.sett_show_hidden_files, false);
+		homeFolder = prefs.getString(Constants.sett_home_folder, Environment.getExternalStorageDirectory().getAbsolutePath());
+		dataFolder = prefs.getString(Constants.sett_data_folder, Environment.getExternalStorageDirectory() + "/TimidityAE/");
+		manualConfig = prefs.getBoolean(Constants.sett_man_config, false);
+		JNIHandler.currsamp = defaultResamp = Integer.parseInt(prefs.getString(Constants.sett_default_resamp, "0"));
+		channelMode = Integer.parseInt(prefs.getString(Constants.sett_channel_mode, "2"));
+		audioRate = Integer.parseInt(prefs.getString(Constants.sett_audio_rate, Integer.toString(AudioTrack.getNativeOutputSampleRate(AudioTrack.MODE_STREAM))));
+		bufferSize = Integer.parseInt(prefs.getString(Constants.sett_buffer_size, "192000"));
+		showVideos = prefs.getBoolean(Constants.sett_show_videos, true);
+		shouldExtStorageNag = prefs.getBoolean(Constants.sett_should_ext_storage_nag, true);
+		verbosity = Integer.parseInt(prefs.getString(Constants.sett_t_verbosity, "-1"));
+		keepPartialWav = prefs.getBoolean(Constants.sett_keep_partal_wave, false);
+		useDefaultBack = prefs.getBoolean(Constants.sett_default_back_btn, false);
+		compressCfg = prefs.getBoolean(Constants.sett_compress_midi_cfg, true);
+		reShuffle = prefs.getBoolean(Constants.sett_reshuffle_plist, false);
+		freeInsts = prefs.getBoolean(Constants.sett_free_insts, true);
+		preserveSilence = prefs.getBoolean(Constants.sett_preserve_silence, true);
+		enableDragNDrop = prefs.getBoolean(Constants.sett_fancy_plist, true);
+		nativeMidi = onlyNative || prefs.getBoolean(Constants.sett_native_midi, false);
+
+		nativeMedia = prefs.getBoolean(Constants.sett_native_media, true);
+
+		soxEnableSpeed = prefs.getBoolean(Constants.sett_sox_speed, false);
+		soxSpeedVal = prefs.getFloat(Constants.sett_sox_speed_val, -1);
+		soxEnableTempo = prefs.getBoolean(Constants.sett_sox_tempo, false);
+		soxTempoVal = prefs.getFloat(Constants.sett_sox_tempo_val, -1);
+		soxEnablePitch = prefs.getBoolean(Constants.sett_sox_pitch, false);
+		soxPitchVal = prefs.getInt(Constants.sett_sox_pitch_val, 0);
+		soxEnableDelay = prefs.getBoolean(Constants.sett_sox_delay, false);
+		soxDelayL = prefs.getFloat(Constants.sett_sox_delay_valL, 0);
+		soxDelayR = prefs.getFloat(Constants.sett_sox_delay_valR, 0);
+		soxManCmd = prefs.getString(Constants.sett_sox_mancmd, "");
+
+		soxEffStr = prefs.getString(Constants.sett_sox_fullcmd, "");
+
+		unsafeSoxSwitch = prefs.getBoolean(Constants.sett_sox_unsafe, false);
+
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
 			UiModeManager uiModeManager = (UiModeManager) c.getSystemService(Context.UI_MODE_SERVICE);
 			isTV = (uiModeManager.getCurrentModeType() == Configuration.UI_MODE_TYPE_TELEVISION);
 		}
@@ -114,12 +157,12 @@ public class SettingsStorage {
 
 	public static int[] updateRates() {
 		if (prefs != null) {
-			int[] values = validRates(prefs.getString(CommandStrings.sett_channel_mode, "2").equals("2"), true);
-			CharSequence[] hz = new CharSequence[values.length];
+			int[] values = validRates(prefs.getString(Constants.sett_channel_mode, "2").equals("2"), true);
+			//CharSequence[] hz = new CharSequence[values.length];
 			CharSequence[] hzItems = new CharSequence[values.length];
 			boolean validRate = false;
 			for (int i = 0; i < values.length; i++) {
-				hz[i] = Integer.toString(values[i]) + "Hz";
+				//hz[i] = Integer.toString(values[i]) + "Hz";
 				hzItems[i] = Integer.toString(values[i]);
 				if (prefs.getString("tplusRate", Integer.toString(AudioTrack.getNativeOutputSampleRate(AudioTrack.MODE_STREAM))).equals(hzItems[i])) {
 					validRate = true;
@@ -137,10 +180,10 @@ public class SettingsStorage {
 
 	public static boolean updateBuffers(int[] rata) {
 		if (rata != null) {
-			SparseIntArray buffMap = validBuffers(rata, prefs.getString(CommandStrings.sett_channel_mode, "2").equals("2"), true);
-			int realMin = buffMap.get(Integer.parseInt(prefs.getString(CommandStrings.sett_audio_rate, Integer.toString(AudioTrack.getNativeOutputSampleRate(AudioTrack.MODE_STREAM)))));
+			SparseIntArray buffMap = validBuffers(rata, prefs.getString(Constants.sett_channel_mode, "2").equals("2"), true);
+			int realMin = buffMap.get(Integer.parseInt(prefs.getString(Constants.sett_audio_rate, Integer.toString(AudioTrack.getNativeOutputSampleRate(AudioTrack.MODE_STREAM)))));
 			if (bufferSize < realMin) {
-				prefs.edit().putString(CommandStrings.sett_buffer_size, Integer.toString(bufferSize = realMin)).commit();
+				prefs.edit().putString(Constants.sett_buffer_size, Integer.toString(bufferSize = realMin)).commit();
 				return false;
 			}
 		}
@@ -148,7 +191,7 @@ public class SettingsStorage {
 	}
 
 	public static void disableLollipopStorageNag() {
-		prefs.edit().putBoolean(CommandStrings.sett_should_ext_storage_nag, shouldExtStorageNag = false).commit();
+		prefs.edit().putBoolean(Constants.sett_should_ext_storage_nag, shouldExtStorageNag = false).commit();
 	}
 
 	public static boolean initialize(final Activity a) {
@@ -205,17 +248,15 @@ public class SettingsStorage {
 					String line;
 					try {
 						while ((line = br.readLine()) != null) {
-							if (line.indexOf("soundfont \"") >= 0 && line.lastIndexOf('"') >= 0) {
+							if (line.contains("soundfont \"") && line.lastIndexOf('"') >= 0) {
 								try {
 									String st = line.substring(line.indexOf("soundfont \"") + 11, line.lastIndexOf('"'));
 									soundfonts.add(st);
 								} catch (ArrayIndexOutOfBoundsException e1) {
 									e1.printStackTrace();
 								}
-							}else if(line.indexOf("#extension opt ")==0)
-							{
-								if(line.indexOf("--no-unload-instruments")>0)
-								{
+							} else if (line.indexOf("#extension opt ") == 0) {
+								if (line.indexOf("--no-unload-instruments") > 0) {
 									SettingsStorage.freeInsts = false;
 								}/*else if(line.indexOf("")>0)
 								{
@@ -235,8 +276,8 @@ public class SettingsStorage {
 						e.printStackTrace();
 					}
 					try {
-						eee.putString(CommandStrings.sett_soundfonts, ObjectSerializer.serialize(soundfonts));
-						eee.putBoolean(CommandStrings.sett_free_insts, SettingsStorage.freeInsts);
+						eee.putString(Constants.sett_soundfonts, ObjectSerializer.serialize(soundfonts));
+						eee.putBoolean(Constants.sett_free_insts, SettingsStorage.freeInsts);
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
@@ -247,7 +288,7 @@ public class SettingsStorage {
 				// Should probably check if 8rock11e exists no matter what
 				eee.putBoolean("manConfig", false);
 
-				AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
+				AsyncTask<Void, Void, Integer> task = new AsyncTask<Void, Void, Integer>() {
 
 					ProgressDialog pd;
 
@@ -262,22 +303,23 @@ public class SettingsStorage {
 					}
 
 					@Override
-					protected Void doInBackground(Void... arg0) {
-
-						if (Globals.extract8Rock(a) != 777) {
-							Toast.makeText(a, "Could not extrct default soundfont", Toast.LENGTH_SHORT).show();
-						}
-						return null;
+					protected Integer doInBackground(Void... arg0) {
+						return Globals.extract8Rock(a);
 					}
 
 					@Override
-					protected void onPostExecute(Void result) {
-						if (pd != null)
+					protected void onPostExecute(Integer result) {
+						if (pd != null) {
 							pd.dismiss();
+							if (result != 777) {
+								Toast.makeText(a, a.getResources().getString(R.string.sett_resf_err), Toast.LENGTH_SHORT).show();
+								return;
+							}
+						}
 						ArrayList<String> tmpConfig = new ArrayList<String>();
 						tmpConfig.add(rootStorage.getAbsolutePath() + "/soundfonts/8Rock11e.sf2");
 						try {
-							eee.putString(CommandStrings.sett_soundfonts, ObjectSerializer.serialize(tmpConfig));
+							eee.putString(Constants.sett_soundfonts, ObjectSerializer.serialize(tmpConfig));
 						} catch (IOException e) {
 							e.printStackTrace();
 						}
@@ -295,9 +337,9 @@ public class SettingsStorage {
 			return true;
 		}
 	}
-	
+
 	// This can probably be removed soon.
-	public static void migrateFrom1X(File newData) {
+	private static void migrateFrom1X(File newData) {
 		File oldPlists = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Android/data/com.xperia64.timidityae/playlists/");
 		if (oldPlists.exists()) {
 			if (oldPlists.isDirectory()) {
@@ -329,7 +371,7 @@ public class SettingsStorage {
 			Toast.makeText(c, "Soundfonts null (4)", Toast.LENGTH_LONG).show();
 			return;
 		}
-		path = path.replaceAll("[/]+", "/");
+		path = path.replaceAll(Globals.repeatedSeparatorString, "/");
 		if (!manualConfig) {
 			String[] needLol = null;
 			try {
@@ -344,8 +386,8 @@ public class SettingsStorage {
 				if (DocumentFileUtils.docFileDevice != null) {
 					String probablyTheDirectory = needLol[0];
 					String probablyTheRoot = needLol[1];
-					String needRename = null;
-					String value = null;
+					String needRename;
+					String value;
 					if (probablyTheDirectory.length() > 1) {
 						needRename = path.substring(path.indexOf(probablyTheRoot) + probablyTheRoot.length());
 						value = probablyTheDirectory + path.substring(path.lastIndexOf('/'));
@@ -406,10 +448,9 @@ public class SettingsStorage {
 						Toast.makeText(c, "Renaming manually edited cfg... (6)", Toast.LENGTH_LONG).show();
 						theConfig.renameTo(new File(path + ".manualTimidityCfg." + Long.toString(System.currentTimeMillis()))); // manual config, rename for later
 					}
-				}else{
-					File parent = new File(path.substring(0,path.lastIndexOf(File.separator)));
-					if(!parent.mkdirs() && !parent.isDirectory())
-					{
+				} else {
+					File parent = new File(path.substring(0, path.lastIndexOf(File.separator)));
+					if (!parent.mkdirs() && !parent.isDirectory()) {
 						Toast.makeText(c, "Error writing config. Make sure data directory is writable (7)", Toast.LENGTH_LONG).show();
 						return;
 					}
@@ -421,8 +462,7 @@ public class SettingsStorage {
 
 					e.printStackTrace();
 				}
-				if(fw == null)
-				{
+				if (fw == null) {
 					Toast.makeText(c, "Error writing config. Make sure data directory is writable (8)", Toast.LENGTH_LONG).show();
 					return;
 				}
@@ -450,7 +490,7 @@ public class SettingsStorage {
 		}
 	}
 
-	public static boolean cfgIsAuto(String path) {
+	private static boolean cfgIsAuto(String path) {
 		String firstLine = "";
 		try {
 			FileInputStream fstream = new FileInputStream(path);
@@ -459,16 +499,13 @@ public class SettingsStorage {
 			firstLine = br.readLine();
 
 			in.close();
-		} catch (Exception e) {
-		}
-		if (firstLine != null)
-			return firstLine.contains(Globals.autoSoundfontHeader);
-		return false;
+		} catch (Exception ignored) {}
+		return firstLine != null && firstLine.contains(Globals.autoSoundfontHeader);
 	}
 
 	public static int[] validRates(boolean stereo, boolean sixteen) {
-		ArrayList<Integer> valid = new ArrayList<Integer>();
-		for (int rate : new int[] { 8000, 11025, 16000, 22050, 44100, 48000, 88200, 96000 }) {
+		ArrayList<Integer> valid = new ArrayList<>();
+		for (int rate : new int[]{8000, 11025, 16000, 22050, 44100, 48000, 88200, 96000}) {
 
 			int bufferSize = AudioTrack.getMinBufferSize(rate, (stereo) ? AudioFormat.CHANNEL_OUT_STEREO : AudioFormat.CHANNEL_OUT_MONO, (sixteen) ? AudioFormat.ENCODING_PCM_16BIT : AudioFormat.ENCODING_PCM_8BIT);
 			if (bufferSize > 0) {

@@ -1,24 +1,12 @@
 /*******************************************************************************
- * Copyright (C) 2014 xperia64 <xperiancedapps@gmail.com>
- * 
- * Copyright (C) 1999-2008 Masanao Izumo <iz@onicos.co.jp>
- *     
- * Copyright (C) 1995 Tuukka Toivonen <tt@cgs.fi>
+ * Copyright (C) 2017 xperia64 <xperiancedapps@gmail.com>
+ * <p>
  * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the GNU Public License v3.0
+ * are made available under the terms of the GNU Public License v2.0
  * which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/gpl.html
  ******************************************************************************/
 package com.xperia64.timidityae.gui.dialogs;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Locale;
-
-import com.xperia64.timidityae.util.Globals;
-import com.xperia64.timidityae.JNIHandler;
-import com.xperia64.timidityae.R;
-import com.xperia64.timidityae.gui.dialogs.FileBrowserDialog.FileBrowserDialogListener;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -35,28 +23,36 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.xperia64.timidityae.JNIHandler;
+import com.xperia64.timidityae.R;
+import com.xperia64.timidityae.gui.dialogs.FileBrowserDialog.FileBrowserDialogListener;
+import com.xperia64.timidityae.util.Globals;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Locale;
+
 public class SoundfontDialog implements OnItemLongClickListener, FileBrowserDialogListener, SoundfontArrayAdapter.SoundfontArrayAdapterListener {
 
-	ArrayList<String> sfList;
-	ArrayList<String> tmpList;
-	Context context;
-	ListView mList;
-	LinearLayout mLayout;
-	SoundfontDialogListener mCallback;
+	private ArrayList<String> sfList;
+	private ArrayList<String> tmpList;
+	private Context context;
+	private ListView mList;
+	private SoundfontDialogListener mCallback;
 
 	public interface SoundfontDialogListener {
-		public void writeSoundfonts(ArrayList<String> l);
+		void writeSoundfonts(ArrayList<String> l);
 	}
 
 	public void create(ArrayList<String> currList, SoundfontDialogListener sl, final Activity c, final LayoutInflater f, final String path) {
-		sfList = new ArrayList<String>(currList.size());
+		sfList = new ArrayList<>(currList.size());
 		for (String foo : currList) {
-			sfList.add((String) foo);
+			sfList.add(foo);
 		}
 		context = c;
 		mCallback = sl;
 		AlertDialog.Builder b = new AlertDialog.Builder(context);
-		mLayout = (LinearLayout) f.inflate(R.layout.list, null);
+		LinearLayout mLayout = (LinearLayout) f.inflate(R.layout.list, null);
 		mList = (ListView) mLayout.findViewById(android.R.id.list);
 
 		SoundfontArrayAdapter fileList = new SoundfontArrayAdapter(this, context, sfList);
@@ -88,7 +84,7 @@ public class SoundfontDialog implements OnItemLongClickListener, FileBrowserDial
 		theButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				tmpList = new ArrayList<String>();
+				tmpList = new ArrayList<>();
 				new FileBrowserDialog().create(0, Globals.fontFiles, SoundfontDialog.this, c, f, false, path, c.getResources().getString(R.string.fb_add));
 			}
 		});

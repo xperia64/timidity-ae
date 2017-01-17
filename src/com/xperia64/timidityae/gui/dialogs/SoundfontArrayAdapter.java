@@ -1,23 +1,15 @@
 /*******************************************************************************
- * Copyright (C) 2014 xperia64 <xperiancedapps@gmail.com>
- * 
- * Copyright (C) 1999-2008 Masanao Izumo <iz@onicos.co.jp>
- *     
- * Copyright (C) 1995 Tuukka Toivonen <tt@cgs.fi>
+ * Copyright (C) 2017 xperia64 <xperiancedapps@gmail.com>
+ * <p>
  * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the GNU Public License v3.0
+ * are made available under the terms of the GNU Public License v2.0
  * which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/gpl.html
  ******************************************************************************/
 package com.xperia64.timidityae.gui.dialogs;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-
-import com.xperia64.timidityae.R;
-
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,17 +19,23 @@ import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
-public class SoundfontArrayAdapter extends ArrayAdapter<String> {
+import com.xperia64.timidityae.R;
 
-	public interface SoundfontArrayAdapterListener {
-		public void setSFEnabled(int position, boolean yes);
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+
+class SoundfontArrayAdapter extends ArrayAdapter<String> {
+
+	interface SoundfontArrayAdapterListener {
+		void setSFEnabled(int position, boolean yes);
 	}
 
-	SoundfontArrayAdapterListener mc;
+	private SoundfontArrayAdapterListener mc;
 	private LayoutInflater inflater;
-	private ArrayList<Boolean> itemChecked = new ArrayList<Boolean>();
+	private ArrayList<Boolean> itemChecked = new ArrayList<>();
 
-	public SoundfontArrayAdapter(SoundfontArrayAdapterListener c, Context context, List<String> sfList) {
+	SoundfontArrayAdapter(SoundfontArrayAdapterListener c, Context context, List<String> sfList) {
 		super(context, R.layout.row_check, R.id.checkText, sfList);
 		mc = c;
 		inflater = LayoutInflater.from(context);
@@ -46,8 +44,9 @@ public class SoundfontArrayAdapter extends ArrayAdapter<String> {
 		}
 	}
 
+	@NonNull
 	@Override
-	public View getView(final int position, View convertView, final ViewGroup parent) {
+	public View getView(final int position, View convertView, @NonNull final ViewGroup parent) {
 		View view = convertView;
 		final SoundfontHolder viewHolder;
 		if (view == null) {
@@ -79,7 +78,7 @@ public class SoundfontArrayAdapter extends ArrayAdapter<String> {
 		return view;
 	}
 
-	static class SoundfontHolder {
+	private static class SoundfontHolder {
 
 		TextView name;
 		ToggleButton b;

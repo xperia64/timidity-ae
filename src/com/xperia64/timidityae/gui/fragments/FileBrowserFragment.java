@@ -1,28 +1,12 @@
 /*******************************************************************************
- * Copyright (C) 2014 xperia64 <xperiancedapps@gmail.com>
- * 
- * Copyright (C) 1999-2008 Masanao Izumo <iz@onicos.co.jp>
- *     
- * Copyright (C) 1995 Tuukka Toivonen <tt@cgs.fi>
+ * Copyright (C) 2017 xperia64 <xperiancedapps@gmail.com>
+ * <p>
  * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the GNU Public License v3.0
+ * are made available under the terms of the GNU Public License v2.0
  * which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/gpl.html
  ******************************************************************************/
 package com.xperia64.timidityae.gui.fragments;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
-
-import com.xperia64.timidityae.R;
-import com.xperia64.timidityae.TimidityActivity;
-import com.xperia64.timidityae.util.FileComparator;
-import com.xperia64.timidityae.util.Globals;
-import com.xperia64.timidityae.util.CommandStrings;
-import com.xperia64.timidityae.util.SettingsStorage;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -40,21 +24,47 @@ import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
+import com.xperia64.timidityae.R;
+import com.xperia64.timidityae.TimidityActivity;
+import com.xperia64.timidityae.util.Constants;
+import com.xperia64.timidityae.util.FileComparator;
+import com.xperia64.timidityae.util.Globals;
+import com.xperia64.timidityae.util.SettingsStorage;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
+
 public class FileBrowserFragment extends ListFragment {
 	public String currPath;
-	List<String> path;
-	List<String> fname;
-	boolean gotDir = false;
-	ActionFileBackListener mCallback;
-	public boolean localfinished = false;
+
+	private List<String> path;
+	private boolean gotDir = false;
+	private ActionFileBackListener mCallback;
 	private Activity mActivity;
+
+	private final OnItemLongClickListener longClick = new OnItemLongClickListener() {
+
+		@Override
+		public boolean onItemLongClick(AdapterView<?> l, View v, final int position, long id) {
+			if (new File(path.get(position)).isFile() && Globals.isMidi(path.get(position))) {
+				((TimidityActivity) mActivity).dynExport(path.get(position), false);
+				return true;
+			}
+			return false;
+		}
+
+	};
+
 	public interface ActionFileBackListener {
-		public void needFileBackCallback(boolean yes);
+		void needFileBackCallback(boolean yes);
 	}
 
 	public static FileBrowserFragment create(String fold) {
 		Bundle args = new Bundle();
-		args.putString(CommandStrings.currFoldKey, fold);
+		args.putString(Constants.currFoldKey, fold);
 		FileBrowserFragment fragment = new FileBrowserFragment();
 		fragment.setArguments(args);
 		return fragment;
@@ -64,7 +74,7 @@ public class FileBrowserFragment extends ListFragment {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		if (getArguments() != null)
-			currPath = getArguments().getString(CommandStrings.currFoldKey);
+			currPath = getArguments().getString(Constants.currFoldKey);
 		if (currPath == null)
 			currPath = Environment.getExternalStorageDirectory().getAbsolutePath();
 		else if (!new File(currPath).exists())
@@ -73,8 +83,7 @@ public class FileBrowserFragment extends ListFragment {
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		View v = inflater.inflate(R.layout.list, container, false);
-		return v;
+		return inflater.inflate(R.layout.list, container, false);
 	}
 
 	@Override
@@ -89,8 +98,7 @@ public class FileBrowserFragment extends ListFragment {
 	@Override
 	public void onAttach(Context activity) {
 		super.onAttach(activity);
-		if(activity instanceof Activity)
-		{
+		if (activity instanceof Activity) {
 			mActivity = (Activity) activity;
 		}
 		try {
@@ -100,82 +108,79 @@ public class FileBrowserFragment extends ListFragment {
 		}
 		if (Globals.shouldRestore) {
 			Intent new_intent = new Intent();
-			new_intent.setAction(CommandStrings.msrv_rec);
-			new_intent.putExtra(CommandStrings.msrv_cmd, CommandStrings.msrv_cmd_get_fold);
+			new_intent.setAction(Constants.msrv_rec);
+			new_intent.putExtra(Constants.msrv_cmd, Constants.msrv_cmd_get_fold);
 			mActivity.sendBroadcast(new_intent);
 		}
 	}
 
 	@Override
-	public void onDetach()
-	{
+	public void onDetach() {
 		mActivity = null;
 		mCallback = null;
 		super.onDetach();
 	}
+
 	@Override
-	public void onDestroy()
-	{
+	public void onDestroy() {
 		mActivity = null;
 		mCallback = null;
 		super.onDestroy();
 	}
-	public void refresh()
-	{
+
+	public void refresh() {
 		getDir(currPath);
 	}
+
 	public void getDir(String dirPath) {
-		if(dirPath.matches(Globals.repeatedSeparatorString)&&!new File(dirPath).canRead())
-		{
+		if (dirPath.matches(Globals.repeatedSeparatorString) && !new File(dirPath).canRead()) {
 			return;
 		}
-		if(!new File(dirPath).canRead()&&(dirPath.toLowerCase(Locale.US).equals("/storage/emulated")||dirPath.toLowerCase(Locale.US).equals("/storage/emulated/")))
-		{
+		if (!new File(dirPath).canRead() && (dirPath.toLowerCase(Locale.US).equals("/storage/emulated") || dirPath.toLowerCase(Locale.US).equals("/storage/emulated/"))) {
 			getDir(new File(dirPath).getParent());
 			return;
 		}
 		currPath = dirPath;
-		fname = new ArrayList<String>();
-		path = new ArrayList<String>();
+		List<String> fname = new ArrayList<>();
+		path = new ArrayList<>();
 		if (currPath != null) {
 			File f = new File(currPath);
 			if (f.exists()) {
 				File[] files = f.listFiles();
 				if (files != null && files.length > 0) {
 					Arrays.sort(files, new FileComparator());
-					if (!currPath.matches(Globals.repeatedSeparatorString) && !((currPath.equals(File.separator+"storage"+File.separator)||currPath.equals(File.separator+"storage")) && !(new File(File.separator).canRead()))) {
+					if (!currPath.matches(Globals.repeatedSeparatorString) && !((currPath.equals(File.separator + "storage" + File.separator) || currPath.equals(File.separator + "storage")) && !(new File(File.separator).canRead()))) {
 						fname.add(Globals.parentString);
 						// Thank you Marshmallow.
 						// Disallowing access to /storage/emulated has now
 						// prevent billions of hacking attempts daily.
 						if (new File(f.getParent()).canRead()) {
 							path.add(f.getParent() + File.separator);
-						} else if(new File(File.separator).canRead()) {
+						} else if (new File(File.separator).canRead()) {
 							path.add(File.separator);
-						}else{
-							path.add(File.separator+"storage"+File.separator);
+						} else {
+							path.add(File.separator + "storage" + File.separator);
 						}
 						mCallback.needFileBackCallback(true);
 					} else {
 						mCallback.needFileBackCallback(false);
 					}
-					for (int i = 0; i < files.length; i++) {
-						File file = files[i];
+					for (File file : files) {
 						if ((!file.getName().startsWith(".") && !SettingsStorage.showHiddenFiles) || SettingsStorage.showHiddenFiles) {
 							if (file.isFile()) {
 								String extension = Globals.getFileExtension(file);
-									if (extension != null) {
+								if (extension != null) {
 
-										if (Globals.getSupportedExtensions().contains("*" + extension + "*")) {
+									if (Globals.getSupportedExtensions().contains("*" + extension + "*")) {
 
-											path.add(file.getAbsolutePath());
-											fname.add(file.getName());
-										}
-									} else if (file.getName().endsWith(File.separator)) {
-										path.add(file.getAbsolutePath() + File.separator);
-										fname.add(file.getName() + File.separator);
+										path.add(file.getAbsolutePath());
+										fname.add(file.getName());
 									}
-								
+								} else if (file.getName().endsWith(File.separator)) {
+									path.add(file.getAbsolutePath() + File.separator);
+									fname.add(file.getName() + File.separator);
+								}
+
 							} else {
 								path.add(file.getAbsolutePath() + File.separator);
 								fname.add(file.getName() + File.separator);
@@ -183,36 +188,33 @@ public class FileBrowserFragment extends ListFragment {
 						}
 					}
 				} else {
-					if (!currPath.matches(Globals.repeatedSeparatorString) && !(currPath.equals(File.separator+"storage"+File.separator) && !(new File(File.separator).canRead()))) {
+					if (!currPath.matches(Globals.repeatedSeparatorString) && !(currPath.equals(File.separator + "storage" + File.separator) && !(new File(File.separator).canRead()))) {
 						fname.add(Globals.parentString);
 						// Thank you Marshmallow.
 						// Disallowing access to /storage/emulated has now prevent billions of hacking attempts daily.
 						if (new File(f.getParent()).canRead()) {
 							path.add(f.getParent() + File.separator);
-						} else if (new File(File.separator).canRead()){ // N seems to block reading /
+						} else if (new File(File.separator).canRead()) { // N seems to block reading /
 							path.add(File.separator);
-						}else{
-							path.add(File.separator+"storage"+File.separator);
+						} else {
+							path.add(File.separator + "storage" + File.separator);
 						}
 
 					}
 				}
-				ArrayAdapter<String> fileList = new ArrayAdapter<String>(mActivity, R.layout.row, fname);
+				ArrayAdapter<String> fileList = new ArrayAdapter<>(mActivity, R.layout.row, fname);
 				getListView().setFastScrollEnabled(true);
-				getListView().setOnItemLongClickListener(new OnItemLongClickListener() {
-
-					@Override
-					public boolean onItemLongClick(AdapterView<?> l, View v, final int position, long id) {
-						if (new File(path.get(position)).isFile()&&Globals.isMidi(path.get(position))) {
-							((TimidityActivity) mActivity).dynExport(path.get(position), false);
-							return true;
-						}
-						return false;
-					}
-
-				});
+				getListView().setOnItemLongClickListener(longClick);
 				setListAdapter(fileList);
 			}
+		}
+	}
+
+	public void fixLongClick()
+	{
+		if(getListView()!=null)
+		{
+			getListView().setOnItemLongClickListener(longClick);
 		}
 	}
 
@@ -222,17 +224,15 @@ public class FileBrowserFragment extends ListFragment {
 		if (file.isDirectory()) {
 			if (file.canRead()) {
 				getDir(path.get(position));
-			} else if (file.getAbsolutePath().equals("/storage/emulated")&&
-					((new File("/storage/emulated/0").exists()&&new File("/storage/emulated/0").canRead())||
-							(new File("/storage/emulated/legacy").exists()&&new File("/storage/emulated/legacy").canRead())||
-							(new File("/storage/self/primary").exists()&&new File("/storage/self/primary").canRead())))
-			{
-				if(new File("/storage/emulated/0").exists()&&new File("/storage/emulated/0").canRead())
-				{
+			} else if (file.getAbsolutePath().equals("/storage/emulated") &&
+					((new File("/storage/emulated/0").exists() && new File("/storage/emulated/0").canRead()) ||
+							(new File("/storage/emulated/legacy").exists() && new File("/storage/emulated/legacy").canRead()) ||
+							(new File("/storage/self/primary").exists() && new File("/storage/self/primary").canRead()))) {
+				if (new File("/storage/emulated/0").exists() && new File("/storage/emulated/0").canRead()) {
 					getDir("/storage/emulated/0");
-				}else if((new File("/storage/emulated/legacy").exists()&&new File("/storage/emulated/legacy").canRead())){
+				} else if ((new File("/storage/emulated/legacy").exists() && new File("/storage/emulated/legacy").canRead())) {
 					getDir("/storage/emulated/legacy");
-				}else{
+				} else {
 					getDir("/storage/self/primary");
 				}
 			} else {
@@ -248,7 +248,7 @@ public class FileBrowserFragment extends ListFragment {
 			}
 		} else {
 			if (file.canRead()) {
-				ArrayList<String> files = new ArrayList<String>();
+				ArrayList<String> files = new ArrayList<>();
 				int firstFile = -1;
 				for (int i = 0; i < path.size(); i++) {
 					if (!path.get(i).endsWith(File.separator)) {
@@ -261,11 +261,12 @@ public class FileBrowserFragment extends ListFragment {
 				((TimidityActivity) mActivity).selectedSong(files, position - firstFile, true, false, true);
 			}
 		}
+		fixLongClick();
 	}
 
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
-		outState.putString(CommandStrings.currFoldKey, currPath);
+		outState.putString(Constants.currFoldKey, currPath);
 	}
 }

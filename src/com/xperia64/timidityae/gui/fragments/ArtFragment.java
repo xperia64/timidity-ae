@@ -1,11 +1,8 @@
 /*******************************************************************************
- * Copyright (C) 2014 xperia64 <xperiancedapps@gmail.com>
- * 
- * Copyright (C) 1999-2008 Masanao Izumo <iz@onicos.co.jp>
- *     
- * Copyright (C) 1995 Tuukka Toivonen <tt@cgs.fi>
+ * Copyright (C) 2017 xperia64 <xperiancedapps@gmail.com>
+ * <p>
  * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the GNU Public License v3.0
+ * are made available under the terms of the GNU Public License v2.0
  * which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/gpl.html
  ******************************************************************************/

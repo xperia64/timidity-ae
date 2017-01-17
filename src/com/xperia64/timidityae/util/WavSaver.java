@@ -1,14 +1,12 @@
+/*******************************************************************************
+ * Copyright (C) 2017 xperia64 <xperiancedapps@gmail.com>
+ * <p>
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the GNU Public License v2.0
+ * which accompanies this distribution, and is available at
+ * http://www.gnu.org/licenses/gpl.html
+ ******************************************************************************/
 package com.xperia64.timidityae.util;
-
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.Locale;
-
-import com.xperia64.timidityae.JNIHandler;
-import com.xperia64.timidityae.R;
-import com.xperia64.timidityae.TimidityActivity;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -18,16 +16,27 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Environment;
 import android.text.InputFilter;
+import android.text.InputType;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.xperia64.timidityae.JNIHandler;
+import com.xperia64.timidityae.R;
+import com.xperia64.timidityae.TimidityActivity;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.Locale;
+
 public class WavSaver implements TimidityActivity.SpecialAction {
-	Activity context;
-	String currSongName;
-	boolean localfinished;
-	AlertDialog exportAlert;
-	boolean playingExport; // export while playing
+	private Activity context;
+	private String currSongName;
+	private boolean localfinished;
+	private AlertDialog exportAlert;
+	private boolean playingExport; // export while playing
 
 	public WavSaver(Activity context, String currSongName, boolean playingExport) {
 		this.context = context;
@@ -37,14 +46,15 @@ public class WavSaver implements TimidityActivity.SpecialAction {
 
 	public void dynExport() {
 		localfinished = false;
-		if (Globals.isMidi(currSongName) && (JNIHandler.isPlaying || !playingExport)) {
+		if (Globals.isMidi(currSongName) && (JNIHandler.isActive() || !playingExport)) {
 
 			AlertDialog.Builder alert = new AlertDialog.Builder(context);
 
 			alert.setTitle(context.getResources().getString(R.string.dynex_alert1));
 			alert.setMessage(context.getResources().getString(R.string.dynex_alert1_msg));
 			final EditText input = new EditText(context);
-			input.setFilters(new InputFilter[] { Globals.fileNameInputFilter });
+			input.setInputType(InputType.TYPE_CLASS_TEXT);
+			input.setFilters(new InputFilter[]{Globals.fileNameInputFilter});
 			alert.setView(input);
 
 			alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
@@ -75,7 +85,7 @@ public class WavSaver implements TimidityActivity.SpecialAction {
 						String[] tmp = DocumentFileUtils.getExternalFilePaths(context, parent);
 						probablyTheDirectory = tmp[0];
 						probablyTheRoot = tmp[1];
-						
+
 						if (probablyTheDirectory.length() > 1) {
 							needRename = parent.substring(parent.indexOf(probablyTheRoot) + probablyTheRoot.length()) + value;
 							value = probablyTheDirectory + '/' + value;
@@ -132,14 +142,14 @@ public class WavSaver implements TimidityActivity.SpecialAction {
 		}
 	}
 
-	public void saveWavPart2(final String finalval, final String needToRename) {
+	private void saveWavPart2(final String finalval, final String needToRename) {
 		Intent new_intent = new Intent();
-		new_intent.setAction(CommandStrings.msrv_rec);
-		new_intent.putExtra(CommandStrings.msrv_cmd, playingExport ? CommandStrings.msrv_cmd_write_curr : CommandStrings.msrv_cmd_write_new);
+		new_intent.setAction(Constants.msrv_rec);
+		new_intent.putExtra(Constants.msrv_cmd, playingExport ? Constants.msrv_cmd_write_curr : Constants.msrv_cmd_write_new);
 		if (!playingExport) {
-			new_intent.putExtra(CommandStrings.msrv_infile, currSongName);
+			new_intent.putExtra(Constants.msrv_infile, currSongName);
 		}
-		new_intent.putExtra(CommandStrings.msrv_outfile, finalval);
+		new_intent.putExtra(Constants.msrv_outfile, finalval);
 		context.sendBroadcast(new_intent);
 		final ProgressDialog prog;
 		prog = new ProgressDialog(context);
@@ -164,8 +174,7 @@ public class WavSaver implements TimidityActivity.SpecialAction {
 					try {
 
 						Thread.sleep(25);
-					} catch (InterruptedException e) {
-					}
+					} catch (InterruptedException ignored) {}
 				}
 				if (!localfinished) {
 					JNIHandler.stop();
@@ -177,8 +186,8 @@ public class WavSaver implements TimidityActivity.SpecialAction {
 									new File(finalval).delete();
 							} else {
 								Intent outgoingIntent = new Intent();
-								outgoingIntent.setAction(CommandStrings.ta_rec);
-								outgoingIntent.putExtra(CommandStrings.ta_cmd, CommandStrings.ta_cmd_refresh_filebrowser);
+								outgoingIntent.setAction(Constants.ta_rec);
+								outgoingIntent.putExtra(Constants.ta_cmd, Constants.ta_cmd_refresh_filebrowser);
 								context.sendBroadcast(outgoingIntent);
 							}
 						}
@@ -188,9 +197,8 @@ public class WavSaver implements TimidityActivity.SpecialAction {
 					context.runOnUiThread(new Runnable() {
 						@Override
 						public void run() {
-							if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.M)
-							{
-								TextView messageView = (TextView)prog.findViewById(android.R.id.message);
+							if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+								TextView messageView = (TextView) prog.findViewById(android.R.id.message);
 								messageView.setText("Copying... Please wait...");
 								messageView.invalidate();
 							}
@@ -198,7 +206,7 @@ public class WavSaver implements TimidityActivity.SpecialAction {
 					});
 					String trueName = finalval;
 					if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && DocumentFileUtils.docFileDevice != null && needToRename != null) {
-						
+
 						if (DocumentFileUtils.renameDocumentFile(context, finalval, needToRename)) {
 							trueName = needToRename;
 						} else {
@@ -208,14 +216,13 @@ public class WavSaver implements TimidityActivity.SpecialAction {
 					final String tn = trueName;
 					context.runOnUiThread(new Runnable() {
 						public void run() {
-							
-							
-							
+
+
 							prog.dismiss();
 							Toast.makeText(context, "Wrote " + tn, Toast.LENGTH_SHORT).show();
 							Intent outgoingIntent = new Intent();
-							outgoingIntent.setAction(CommandStrings.ta_rec);
-							outgoingIntent.putExtra(CommandStrings.ta_cmd, CommandStrings.ta_cmd_refresh_filebrowser);
+							outgoingIntent.setAction(Constants.ta_rec);
+							outgoingIntent.putExtra(Constants.ta_cmd, Constants.ta_cmd_refresh_filebrowser);
 							context.sendBroadcast(outgoingIntent);
 						}
 					});

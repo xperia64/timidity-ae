@@ -1,13 +1,12 @@
+/*******************************************************************************
+ * Copyright (C) 2017 xperia64 <xperiancedapps@gmail.com>
+ * <p>
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the GNU Public License v2.0
+ * which accompanies this distribution, and is available at
+ * http://www.gnu.org/licenses/gpl.html
+ ******************************************************************************/
 package com.xperia64.timidityae.util;
-
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.Locale;
-
-import com.xperia64.timidityae.JNIHandler;
-import com.xperia64.timidityae.TimidityActivity;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -17,29 +16,34 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Environment;
 import android.text.InputFilter;
+import android.text.InputType;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.xperia64.timidityae.JNIHandler;
+import com.xperia64.timidityae.TimidityActivity;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.Locale;
+
 public class ConfigSaver implements TimidityActivity.SpecialAction {
 
-	Activity context;
-	String currSongName;
-	AlertDialog alerty;
-	boolean localfinished;
+	private Activity context;
+	private String currSongName;
+	private AlertDialog alerty;
+	private boolean localfinished;
 
 	public ConfigSaver(Activity context, String currSongName) {
 		this.context = context;
 		this.currSongName = currSongName;
 	}
 
-	public void saveDefaultCfg(String songTitle)
-	{
-		
-	}
-	
 	public void promptSaveCfg() {
 		localfinished = false;
-		if (Globals.isMidi(currSongName) && JNIHandler.isPlaying) {
+		if (Globals.isMidi(currSongName) && JNIHandler.isActive()) {
 			AlertDialog.Builder saveMidiConfigDialog = new AlertDialog.Builder(context);
 
 			saveMidiConfigDialog.setTitle("Save Cfg");
@@ -47,7 +51,8 @@ public class ConfigSaver implements TimidityActivity.SpecialAction {
 
 			// Set an EditText view to get user input
 			final EditText input = new EditText(context);
-			input.setFilters(new InputFilter[] { Globals.fileNameInputFilter});
+			input.setInputType(InputType.TYPE_CLASS_TEXT);
+			input.setFilters(new InputFilter[]{Globals.fileNameInputFilter});
 			saveMidiConfigDialog.setView(input);
 
 			saveMidiConfigDialog.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
@@ -75,8 +80,8 @@ public class ConfigSaver implements TimidityActivity.SpecialAction {
 		boolean alreadyExists = new File(parent + configFileName).exists();
 		String needRename = null;
 		String probablyTheRoot = "";
-		String probablyTheDirectory = "";
-		
+		String probablyTheDirectory;
+
 		// Safest way to check if we truly have write access to a file.
 		// We will be touching this file anyway.
 		// File.canWrite() lies with Lollipop's storage handling.
@@ -148,9 +153,9 @@ public class ConfigSaver implements TimidityActivity.SpecialAction {
 
 	public void writeConfig(final String finalval, final String needToRename) {
 		Intent new_intent = new Intent();
-		new_intent.setAction(CommandStrings.msrv_rec);
-		new_intent.putExtra(CommandStrings.msrv_cmd, CommandStrings.msrv_cmd_save_cfg);
-		new_intent.putExtra(CommandStrings.msrv_outfile, finalval);
+		new_intent.setAction(Constants.msrv_rec);
+		new_intent.putExtra(Constants.msrv_cmd, Constants.msrv_cmd_save_cfg);
+		new_intent.putExtra(Constants.msrv_outfile, finalval);
 		context.sendBroadcast(new_intent);
 		final ProgressDialog prog;
 		prog = new ProgressDialog(context);
@@ -172,8 +177,7 @@ public class ConfigSaver implements TimidityActivity.SpecialAction {
 					try {
 
 						Thread.sleep(25);
-					} catch (InterruptedException e) {
-					}
+					} catch (InterruptedException ignored) {}
 				}
 
 				context.runOnUiThread(new Runnable() {
@@ -189,8 +193,8 @@ public class ConfigSaver implements TimidityActivity.SpecialAction {
 						Toast.makeText(context, "Wrote " + trueName, Toast.LENGTH_SHORT).show();
 						prog.dismiss();
 						Intent outgoingIntent = new Intent();
-						outgoingIntent.setAction(CommandStrings.ta_rec);
-						outgoingIntent.putExtra(CommandStrings.ta_cmd, CommandStrings.ta_cmd_refresh_filebrowser);
+						outgoingIntent.setAction(Constants.ta_rec);
+						outgoingIntent.putExtra(Constants.ta_cmd, Constants.ta_cmd_refresh_filebrowser);
 						context.sendBroadcast(outgoingIntent);
 					}
 				});

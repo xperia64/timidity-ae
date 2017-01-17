@@ -1,15 +1,49 @@
 /*******************************************************************************
- * Copyright (C) 2014 xperia64 <xperiancedapps@gmail.com>
- * 
- * Copyright (C) 1999-2008 Masanao Izumo <iz@onicos.co.jp>
- *     
- * Copyright (C) 1995 Tuukka Toivonen <tt@cgs.fi>
+ * Copyright (C) 2017 xperia64 <xperiancedapps@gmail.com>
+ * <p>
  * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the GNU Public License v3.0
+ * are made available under the terms of the GNU Public License v2.0
  * which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/gpl.html
  ******************************************************************************/
 package com.xperia64.timidityae.gui.fragments;
+
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.os.Build;
+import android.os.Bundle;
+import android.support.annotation.RequiresApi;
+import android.support.v4.app.ListFragment;
+import android.text.Editable;
+import android.text.InputType;
+import android.text.TextWatcher;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemLongClickListener;
+import android.widget.ArrayAdapter;
+import android.widget.EditText;
+import android.widget.ListView;
+import android.widget.Toast;
+
+import com.xperia64.timidityae.R;
+import com.xperia64.timidityae.TimidityActivity;
+import com.xperia64.timidityae.gui.DynamicListView;
+import com.xperia64.timidityae.gui.DynamicListView.DraggerCallback;
+import com.xperia64.timidityae.gui.SearchableAdapter;
+import com.xperia64.timidityae.gui.SearchableArrayAdapter;
+import com.xperia64.timidityae.gui.StableArrayAdapter;
+import com.xperia64.timidityae.gui.StableArrayAdapter.PlistMenuCallback;
+import com.xperia64.timidityae.gui.dialogs.FileBrowserDialog;
+import com.xperia64.timidityae.gui.dialogs.FileBrowserDialog.FileBrowserDialogListener;
+import com.xperia64.timidityae.util.Constants;
+import com.xperia64.timidityae.util.DocumentFileUtils;
+import com.xperia64.timidityae.util.FileComparator;
+import com.xperia64.timidityae.util.Globals;
+import com.xperia64.timidityae.util.SettingsStorage;
 
 import java.io.BufferedReader;
 import java.io.DataInputStream;
@@ -23,71 +57,41 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import com.xperia64.timidityae.gui.dialogs.FileBrowserDialog;
-import com.xperia64.timidityae.gui.dialogs.FileBrowserDialog.FileBrowserDialogListener;
-import com.xperia64.timidityae.util.DocumentFileUtils;
-import com.xperia64.timidityae.util.FileComparator;
-import com.xperia64.timidityae.util.Globals;
-import com.xperia64.timidityae.util.CommandStrings;
-import com.xperia64.timidityae.util.SettingsStorage;
-import com.xperia64.timidityae.gui.DynamicListView;
-import com.xperia64.timidityae.R;
-import com.xperia64.timidityae.gui.StableArrayAdapter;
-import com.xperia64.timidityae.TimidityActivity;
-import com.xperia64.timidityae.gui.DynamicListView.DraggerCallback;
-import com.xperia64.timidityae.gui.StableArrayAdapter.PlistMenuCallback;
-
-import android.app.AlertDialog;
-import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.os.Build;
-import android.os.Bundle;
-import android.support.v4.app.ListFragment;
-import android.text.TextUtils;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemLongClickListener;
-import android.widget.ArrayAdapter;
-import android.widget.EditText;
-import android.widget.ListView;
-import android.widget.TextView;
-//import android.widget.TextView;
-import android.widget.Toast;
-
 public class PlaylistFragment extends ListFragment implements FileBrowserDialogListener, DraggerCallback, PlistMenuCallback {
 
-	String playlistDir;
-	boolean gotPlaylists = false;
-	ActionPlaylistBackListener mCallback;
-	ArrayList<String> path;
-	ArrayList<String> fname;
+	private String playlistDir;
+	private boolean gotPlaylists = false;
+	private ActionPlaylistBackListener mCallback;
+	private ArrayList<String> path;
+	private ArrayList<String> fname;
 	public ArrayList<String> currPlist;
-	ArrayList<String> vola;
+	private ArrayList<String> vola;
 	public String plistName;
-	String tmpName;
-	int loki = -1;
-	//public int highlightMe = -1;
+	private String tmpName;
+	private int loki = -1;
 	public boolean isPlaylist = false;
-	// 
-	boolean copyPlist = true;
-	
-	boolean refreshAfterWrite = true;
-	//final boolean shouldUseDragNDrop() = (Build.VERSION.SDK_INT>=Build.VERSION_CODES.ICE_CREAM_SANDWICH);
-	boolean shouldUseDragNDrop()
-	{
-		return (SettingsStorage.enableDragNDrop&&(Build.VERSION.SDK_INT>=Build.VERSION_CODES.ICE_CREAM_SANDWICH));
-	}
-	public interface ActionPlaylistBackListener {
-		public void needPlaylistBackCallback(boolean yes, boolean current);
+	private boolean copyPlist = true;
+
+	private boolean refreshAfterWrite = true;
+
+	private int scrollPosition = -1;
+
+	private EditText searchTxt;
+	private String oldSearchTxt;
+	private SearchableAdapter ada;
+
+	boolean shouldUseDragNDrop() {
+		return (SettingsStorage.enableDragNDrop && (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH));
 	}
 
-	
+	public interface ActionPlaylistBackListener {
+		void needPlaylistBackCallback(boolean yes, boolean current);
+	}
+
+
 	public static PlaylistFragment create(String fold) {
 		Bundle args = new Bundle();
-		args.putString(CommandStrings.currPlistDirectory, fold);
+		args.putString(Constants.currPlistDirectory, fold);
 		PlaylistFragment fragment = new PlaylistFragment();
 		fragment.setArguments(args);
 		return fragment;
@@ -97,7 +101,7 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		if (getArguments() != null)
-			playlistDir = getArguments().getString(CommandStrings.currPlistDirectory);
+			playlistDir = getArguments().getString(Constants.currPlistDirectory);
 		if (playlistDir == null)
 			playlistDir = File.separator; // TODO this should not be root.
 	}
@@ -105,38 +109,71 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View v;
-		if(shouldUseDragNDrop())
-		{
-			 v = inflater.inflate(R.layout.list_reorder, container, false);
-		}else{
-			 v = inflater.inflate(R.layout.list, container, false);
+		if (shouldUseDragNDrop()) {
+			v = inflater.inflate(R.layout.plist_reorder, container, false);
+		} else {
+			v = inflater.inflate(R.layout.plist, container, false);
 		}
-		
+		searchTxt = (EditText) v.findViewById(R.id.searchText);
+		searchTxt.setVisibility(View.GONE);
+		searchTxt.addTextChangedListener(new TextWatcher() {
+			@Override
+			public void onTextChanged(CharSequence cs, int arg1, int arg2, int arg3) {
+				// When user changed the Text
+				if(ada!=null) {
+					if(oldSearchTxt.equals(cs.toString()))
+					{
+						// Sometimes this will fire the previous filter and the new filter at the same time.
+						// This branch is to prevent that.
+						//System.out.println("Warning: Not filtering the same string");
+					}else {
+						ada.getFilter().filter(cs);
+						oldSearchTxt = cs.toString();
+					}
+					if(getListView() instanceof DynamicListView && plistName != null) {
+						if (cs.toString().isEmpty()) {
+							// If the ListView is a DynamicListView, we are already on high enough of an API
+							//noinspection NewApi
+							((DynamicListView)getListView()).setDragState(plistName.equals("CURRENT")? DynamicListView.DragState.DRAG_DISABLED: DynamicListView.DragState.DRAG_ENABLED);
+						} else {
+							//noinspection NewApi
+							((DynamicListView)getListView()).setDragState(plistName.equals("CURRENT")? DynamicListView.DragState.DRAG_DISABLED: DynamicListView.DragState.DRAG_WARNING);
+						}
+					}
+				}
+			}
+			@Override
+			public void beforeTextChanged(CharSequence arg0, int arg1, int arg2, int arg3) {}
+
+			@Override
+			public void afterTextChanged(Editable arg0) {}
+		});
+
 		return v;
 	}
 
 	@Override
 	public void onViewCreated(View view, Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
-		if(shouldUseDragNDrop())
-		{
-			((DynamicListView)getListView()).setDraggerCallback(this);
+		if (shouldUseDragNDrop()) {
+			// We alread check for this in the above statement
+			//noinspection NewApi
+			((DynamicListView) getListView()).setDraggerCallback(this);
 		}
 		if (!gotPlaylists) {
 			gotPlaylists = true;
 			getPlaylists(null);
 		}
-		if(!shouldUseDragNDrop())
-		{
-		getListView().setOnItemLongClickListener(new OnItemLongClickListener() {
+		if (!shouldUseDragNDrop()) {
+			getListView().setOnItemLongClickListener(new OnItemLongClickListener() {
 
-			@Override
-			public boolean onItemLongClick(AdapterView<?> arg0, View arg1, final int pos, long id) {
-				openMenu(pos);
-				return true;
-			}
-		});
-	}
+				@Override
+				public boolean onItemLongClick(AdapterView<?> arg0, View arg1, final int pos, long id) {
+					openMenu(pos);
+					return true;
+				}
+			});
+		}
 	}
 
 	@Override
@@ -149,61 +186,75 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 		}
 		if (Globals.shouldRestore && (Globals.plist == null || Globals.plist.size() == 0)) {
 			Intent new_intent = new Intent();
-			new_intent.setAction(CommandStrings.msrv_rec);
-			new_intent.putExtra(CommandStrings.msrv_cmd, CommandStrings.msrv_cmd_get_plist);
+			new_intent.setAction(Constants.msrv_rec);
+			new_intent.putExtra(Constants.msrv_cmd, Constants.msrv_cmd_get_plist);
 			getActivity().sendBroadcast(new_intent);
 		}
 	}
 
-	public void getPlaylists(final String which)
-	{
-		if(shouldUseDragNDrop())
+	public void getPlaylists(final String which) {
+		if(which == null || which.equals("CURRENT"))
 		{
-			getPlaylists14(which);
+			searchTxt.setVisibility(View.GONE);
+			searchTxt.getText().clear();
 		}else{
+			searchTxt.setVisibility(View.VISIBLE);
+		}
+		if (shouldUseDragNDrop()) {
+			// We alread check for this in the above statement
+			//noinspection NewApi
+			getPlaylists14(which);
+		} else {
 			getPlaylists13(which);
 		}
+		if(scrollPosition>=0)
+		{
+			if(scrollPosition>=getListView().getCount())
+			{
+				scrollPosition = getListView().getCount()-1;
+			}
+			getListView().setSelection(scrollPosition);
+			scrollPosition = -1;
+		}
 	}
-	public void getPlaylists14(final String which)
-	{
-		StableArrayAdapter fileList = null; 
+
+	@RequiresApi(api = Build.VERSION_CODES.ICE_CREAM_SANDWICH)
+	public void getPlaylists14(final String which) {
+		StableArrayAdapter fileList = null;
 		if (which == null) // Root playlist dir.
 		{
 			isPlaylist = false;
 			mCallback.needPlaylistBackCallback(false, false);
-			fname = new ArrayList<String>();
-			path = new ArrayList<String>();
+			fname = new ArrayList<>();
+			path = new ArrayList<>();
 			File f = new File(playlistDir);
 			fname.add("[ " + getResources().getString(R.string.plist_curr) + " ]");
 			path.add("CURRENT");
 			if (f.exists()) {
 				File[] files = f.listFiles();
 				if (files != null && files.length > 0) {
-					if (files != null) {
-						Arrays.sort(files, new FileComparator());
-					}
+					Arrays.sort(files, new FileComparator());
 					mCallback.needPlaylistBackCallback(false, false);
-					for (int i = 0; i < files.length; i++)
-					{
-						if (files[i].isFile()) {
-							String extension = Globals.getFileExtension(files[i]);
-								if (extension != null) {
-									if (Globals.playlistFiles.contains("*" + extension + "*")) {
-										fname.add(files[i].getName().substring(0, files[i].getName().lastIndexOf('.')));
-										path.add(files[i].getAbsolutePath());
-									}
+					for (File file : files) {
+						if (file.isFile()) {
+							String extension = Globals.getFileExtension(file);
+							if (extension != null) {
+								if (Globals.playlistFiles.contains("*" + extension + "*")) {
+									fname.add(file.getName().substring(0, file.getName().lastIndexOf('.')));
+									path.add(file.getAbsolutePath());
 								}
 							}
+						}
 					}
 				}
-				fileList = new StableArrayAdapter(getActivity(),R.layout.row_menu,fname, this, false);
 			}
-			((DynamicListView)getListView()).setDragEnabled(false);
+			ada = fileList = new StableArrayAdapter(getActivity(), R.layout.row_menu, fname, this, false);
+			((DynamicListView) getListView()).setDragState(DynamicListView.DragState.DRAG_DISABLED);
 		} else { // An actual playlist
 			mCallback.needPlaylistBackCallback(true, which.equals("CURRENT"));
 			isPlaylist = true;
-			path = new ArrayList<String>();
-			fname = new ArrayList<String>();
+			path = new ArrayList<>();
+			fname = new ArrayList<>();
 			if (which.equals("CURRENT")) // current playlist
 			{
 				if (currPlist != null) {
@@ -223,55 +274,49 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 				}
 			}
 			path = Globals.normalToUuid(path);
-			((DynamicListView)getListView()).setDragEnabled(!(which != null && which.equals("CURRENT")));
-			fileList = new StableArrayAdapter(getActivity(),R.layout.row_menu,path, this, which != null && which.equals("CURRENT"));
+			((DynamicListView) getListView()).setDragState(which.equals("CURRENT")? DynamicListView.DragState.DRAG_DISABLED: DynamicListView.DragState.DRAG_ENABLED);
+			ada = fileList = new StableArrayAdapter(getActivity(), R.layout.row_menu, path, this, which.equals("CURRENT"));
 		}
-		
 
-		// @formatter:off
-		// fileList.notifyDataSetChanged();
-		// getListView().setFastScrollEnabled(true);
-		// getListView().setChoiceMode(ListView.CHOICE_MODE_SINGLE);
-		 
-		// @formatter:on
 		setListAdapter(fileList);
+		if(ada != null)
+			ada.getFilter().filter(searchTxt.getText());
+		oldSearchTxt = searchTxt.getText().toString();
 	}
+
 	public void getPlaylists13(final String which) {
 		if (which == null) // Root playlist dir.
 		{
 			isPlaylist = false;
 			mCallback.needPlaylistBackCallback(false, false);
-			fname = new ArrayList<String>();
-			path = new ArrayList<String>();
+			fname = new ArrayList<>();
+			path = new ArrayList<>();
 			File f = new File(playlistDir);
 			fname.add("[ " + getResources().getString(R.string.plist_curr) + " ]");
 			path.add("CURRENT");
 			if (f.exists()) {
 				File[] files = f.listFiles();
 				if (files != null && files.length > 0) {
-					if (files != null) {
-						Arrays.sort(files, new FileComparator());
-					}
+					Arrays.sort(files, new FileComparator());
 					mCallback.needPlaylistBackCallback(false, false);
-					for (int i = 0; i < files.length; i++)
-					{
-						if (files[i].isFile()) {
-							String extension = Globals.getFileExtension(files[i]);
-								if (extension != null) {
-									if (Globals.playlistFiles.contains("*" + extension + "*")) {
-										fname.add(files[i].getName().substring(0, files[i].getName().lastIndexOf('.')));
-										path.add(files[i].getAbsolutePath());
-									}
+					for (File file : files) {
+						if (file.isFile()) {
+							String extension = Globals.getFileExtension(file);
+							if (extension != null) {
+								if (Globals.playlistFiles.contains("*" + extension + "*")) {
+									fname.add(file.getName().substring(0, file.getName().lastIndexOf('.')));
+									path.add(file.getAbsolutePath());
 								}
 							}
+						}
 					}
 				}
 			}
 		} else { // An actual playlist
 			mCallback.needPlaylistBackCallback(true, which.equals("CURRENT"));
 			isPlaylist = true;
-			path = new ArrayList<String>();
-			fname = new ArrayList<String>();
+			path = new ArrayList<>();
+			fname = new ArrayList<>();
 			if (which.equals("CURRENT")) // current playlist
 			{
 				if (currPlist != null) {
@@ -291,44 +336,16 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 				}
 			}
 		}
-		ArrayAdapter<String> fileList;
-		if (which != null && which.equals("CURRENT")) {
-			fileList = new ArrayAdapter<String>(getActivity(), R.layout.row, fname) {
 
-				// @formatter:off
-				@Override
-				public View getView(int position, View convertView, ViewGroup parent) {
-					final View renderer = super.getView(position, convertView, parent);
-					if (Globals.defaultListColor == -1) {
-						Globals.defaultListColor = Globals.getBackgroundColor(((TextView) renderer));
-					}
-					if (position == Globals.highlightMe) {
-						// TODO Choose a nicer color in settings?
-						renderer.setBackgroundColor(0xFF00CC00);
-					} else {
-						renderer.setBackgroundColor(Globals.defaultListColor);
-					}
-					renderer.postInvalidate();
-					return renderer;
-				}
-				// @formatter:on
-
-			};
-		} else {
-			fileList = new ArrayAdapter<String>(getActivity(), R.layout.row, fname);
-		}
-
-		// @formatter:off
-		// fileList.notifyDataSetChanged();
-		// getListView().setFastScrollEnabled(true);
-		// getListView().setChoiceMode(ListView.CHOICE_MODE_SINGLE);
-		 
-		// @formatter:on
+		SearchableArrayAdapter fileList = new SearchableArrayAdapter(getActivity(), R.layout.row, fname, which!=null && which.equals("CURRENT"));
+		ada = fileList;
 		setListAdapter(fileList);
+		ada.getFilter().filter(searchTxt.getText());
+		oldSearchTxt = searchTxt.getText().toString();
 	}
 
 	public ArrayList<String> parsePlist(String path) {
-		ArrayList<String> plist = new ArrayList<String>();
+		ArrayList<String> plist = new ArrayList<>();
 		try {
 			FileInputStream fstream = new FileInputStream(path);
 			DataInputStream in = new DataInputStream(fstream);
@@ -336,7 +353,7 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 			String strLine;
 
 			while ((strLine = br.readLine()) != null) {
-				if (!TextUtils.isEmpty(strLine))
+				if (!strLine.isEmpty())
 					plist.add(strLine);
 
 			}
@@ -350,7 +367,11 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 	@Override
 	public void onListItemClick(ListView l, View v, int position, long id) {
 		if (isPlaylist) {
-			ArrayList<String> paths = (shouldUseDragNDrop()?Globals.uuidToNormal(path):path);
+			if(!searchTxt.getText().toString().isEmpty() && ada != null)
+			{
+				position = ada.currentToReal(position);
+			}
+			ArrayList<String> paths = (shouldUseDragNDrop() ? Globals.uuidToNormal(path) : path);
 			((TimidityActivity) getActivity()).selectedSong(paths, position, true, true, copyPlist);
 		} else {
 			getPlaylists(plistName = path.get(position));
@@ -361,54 +382,54 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 	public void setItem(String path, int type) {
 
 		switch (type) {
-		case -1:
-			vola.remove(loki);
-			break;
-		case 0:
-			vola.add(loki++, path);
-			break;
-		case 1:
-			File f = new File(path);
-
-			if (f.exists() && f.isDirectory()) {
-				File[] files = f.listFiles();
-				Arrays.sort(files, new FileComparator());
-				for (File ff : files) {
-					if (ff != null) {
-						if (ff.isFile()) {
-							if (Globals.hasSupportedExtension(ff)) {
-								vola.add(loki++, ff.getAbsolutePath());
+			case -1:
+				vola.remove(loki);
+				break;
+			case 0:
+				vola.add(loki++, path);
+				break;
+			case 1:
+				File f = new File(path);
+				if (f.exists() && f.isDirectory()) {
+					File[] files = f.listFiles();
+					Arrays.sort(files, new FileComparator());
+					for (File ff : files) {
+						if (ff != null) {
+							if (ff.isFile()) {
+								if (Globals.hasSupportedExtension(ff)) {
+									vola.add(loki++, ff.getAbsolutePath());
+								}
 							}
 						}
 					}
 				}
-			}
-			break;
-		case 2:
-			ArrayList<File> fff = recurseFolder(new File(path));
-			for (File foo : fff) {
-				if (foo != null) {
-					if (foo.isFile()) {
+				break;
+			case 2:
+				ArrayList<File> fff = recurseFolder(new File(path));
+				for (File foo : fff) {
+					if (foo != null) {
+						if (foo.isFile()) {
 							if (Globals.hasSupportedExtension(foo)) {
 								vola.add(loki++, foo.getAbsolutePath());
 							}
 						}
+					}
 				}
-			}
-			break;
+				break;
 		}
 
 	}
 
 	public void add() {
 		if (isPlaylist) {
+			scrollPosition = getListView().getCount();
 			vola = parsePlist(tmpName = plistName);
 			AlertDialog.Builder builderSingle = new AlertDialog.Builder(getActivity());
 			loki = vola.size();
 
 			builderSingle.setIcon(R.drawable.ic_launcher);
 			builderSingle.setTitle(getResources().getString(R.string.plist_addto));
-			final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.select_dialog_item);
+			final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(getActivity(), android.R.layout.select_dialog_item);
 			arrayAdapter.add(getResources().getString(R.string.plist_addcs));
 			arrayAdapter.add(getResources().getString(R.string.plist_adds));
 			arrayAdapter.add(getResources().getString(R.string.plist_addf));
@@ -427,22 +448,21 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 				public void onClick(DialogInterface dialog, int which) {
 					vola = parsePlist(plistName);
 					switch (which) {
-					case 0:
-						if(((TimidityActivity)getActivity()).currSongName!=null)
-                    	{
-                    		setItem(((TimidityActivity)getActivity()).currSongName, 0);
-                    		write();
-                    	}
-						break;
-					case 1:
-						new FileBrowserDialog().create(0, Globals.getSupportedExtensions(), PlaylistFragment.this, getActivity(), getActivity().getLayoutInflater(), false, SettingsStorage.homeFolder, getActivity().getResources().getString(R.string.fb_add));
-						break;
-					case 2:
-						new FileBrowserDialog().create(1, null, PlaylistFragment.this, getActivity(), getActivity().getLayoutInflater(), false, SettingsStorage.homeFolder, getActivity().getResources().getString(R.string.fb_add));
-						break;
-					case 3:
-						new FileBrowserDialog().create(2, null, PlaylistFragment.this, getActivity(), getActivity().getLayoutInflater(), false, SettingsStorage.homeFolder, getActivity().getResources().getString(R.string.fb_add));
-						break;
+						case 0:
+							if (((TimidityActivity) getActivity()).currSongName != null) {
+								setItem(((TimidityActivity) getActivity()).currSongName, 0);
+								write();
+							}
+							break;
+						case 1:
+							new FileBrowserDialog().create(0, Globals.getSupportedExtensions(), PlaylistFragment.this, getActivity(), getActivity().getLayoutInflater(), false, SettingsStorage.homeFolder, getActivity().getResources().getString(R.string.fb_add));
+							break;
+						case 2:
+							new FileBrowserDialog().create(1, null, PlaylistFragment.this, getActivity(), getActivity().getLayoutInflater(), false, SettingsStorage.homeFolder, getActivity().getResources().getString(R.string.fb_add));
+							break;
+						case 3:
+							new FileBrowserDialog().create(2, null, PlaylistFragment.this, getActivity(), getActivity().getLayoutInflater(), false, SettingsStorage.homeFolder, getActivity().getResources().getString(R.string.fb_add));
+							break;
 					}
 				}
 			});
@@ -453,7 +473,7 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 			alert.setTitle(getResources().getString(R.string.plist_crea));
 
 			final EditText input = new EditText(getActivity());
-			input.setSingleLine(true);
+			input.setInputType(InputType.TYPE_CLASS_TEXT);
 			alert.setView(input);
 
 			alert.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
@@ -501,20 +521,19 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 	public ArrayList<File> recurseFolder(File fill) {
 
 		File[] files = fill.listFiles();
-		if(fill.canRead()&&files!=null)
-		{
+		if (fill.canRead() && files != null) {
 			Arrays.sort(files, new FileComparator());
-			ArrayList<File> filez = new ArrayList<File>();
+			ArrayList<File> filez = new ArrayList<>();
 			for (File file : files) {
 				if (file.isDirectory()) {
 					ArrayList<File> test = recurseFolder(file);
-					if(test!=null)
+					if (test != null)
 						filez.addAll(test);
 				} else {
 					filez.add(file);
 				}
 			}
-	
+
 			return filez;
 		}
 		return null;
@@ -544,18 +563,22 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 
 			String probablyTheDirectory = needLol[0];
 			String probablyTheRoot = needLol[1];
-			String needRename = null;
-			String value = null;
+			String needRename;
+			String fileToWrite;
 			if (probablyTheDirectory.length() > 1) {
 				needRename = tmpName.substring(tmpName.indexOf(probablyTheRoot) + probablyTheRoot.length());
-				value = probablyTheDirectory + tmpName.substring(tmpName.lastIndexOf('/'));
+				fileToWrite = probablyTheDirectory + tmpName.substring(tmpName.lastIndexOf('/'));
 			} else {
 				return;
 			}
 			try {
-				writer = new FileWriter(value);
+				writer = new FileWriter(fileToWrite);
 			} catch (IOException e1) {
 				e1.printStackTrace();
+			}
+			if(writer == null)
+			{
+				return;
 			}
 			for (String str : vola) {
 				try {
@@ -569,7 +592,7 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			DocumentFileUtils.renameDocumentFile(getActivity(), value, needRename);
+			DocumentFileUtils.renameDocumentFile(getActivity(), fileToWrite, needRename);
 		} else {
 			FileWriter writer = null;
 			if (new File(tmpName).exists())
@@ -578,6 +601,10 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 				writer = new FileWriter(tmpName);
 			} catch (IOException e1) {
 				e1.printStackTrace();
+			}
+			if(writer == null)
+			{
+				return;
 			}
 			for (String str : vola) {
 				try {
@@ -593,18 +620,19 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 			}
 		}
 
-		if(refreshAfterWrite)
-		{
+		if (refreshAfterWrite) {
 			getPlaylists(plistName);
-		}else{
+		} else {
 			refreshAfterWrite = true;
 		}
 	}
+
 	// DynamicListCallback
 	@Override
 	public ArrayList<String> getArrayList() {
-		return path; 
+		return path;
 	}
+
 	@Override
 	public void saveReordering() {
 		vola = Globals.uuidToNormal(path);
@@ -612,7 +640,7 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 		refreshAfterWrite = false;
 		write();
 	}
-	
+
 	// PlistMenuCallback
 	@Override
 	public void openMenu(final int pos) {
@@ -678,6 +706,7 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 						alert.setTitle(String.format(getResources().getString(R.string.plist_ren2), fname.get(pos)));
 
 						final EditText input = new EditText(getActivity());
+						input.setInputType(InputType.TYPE_CLASS_TEXT);
 						alert.setView(input);
 
 						alert.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
@@ -725,13 +754,14 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 			} else {
 
 				final EditText input2 = new EditText(getActivity());
+				input2.setInputType(InputType.TYPE_CLASS_TEXT);
 				builderSingle.setView(input2);
 				builderSingle.setPositiveButton(getResources().getString(R.string.plist_save), new DialogInterface.OnClickListener() {
 
 					@Override
 					public void onClick(DialogInterface dialog, int which) {
 						if (input2.getText() != null) {
-							if (!TextUtils.isEmpty(input2.getText().toString())) {
+							if (!input2.getText().toString().isEmpty()) {
 								tmpName = playlistDir + File.separator + input2.getText().toString() + ".tpl";
 								vola = currPlist;
 								write();
@@ -742,11 +772,12 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 			}
 			builderSingle.show();
 		} else if (!plistName.equals("CURRENT")) {
+			scrollPosition = pos;
 			AlertDialog.Builder builderSingle = new AlertDialog.Builder(getActivity());
 
 			builderSingle.setIcon(R.drawable.ic_launcher);
 			builderSingle.setTitle(getResources().getString(R.string.plist_modit));
-			final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.select_dialog_item);
+			final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(getActivity(), android.R.layout.select_dialog_item);
 			arrayAdapter.add(getResources().getString(R.string.plist_ds));
 			arrayAdapter.add(getResources().getString(R.string.plist_addcsh));
 			arrayAdapter.add(getResources().getString(R.string.plist_addsh));
@@ -766,26 +797,30 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 				public void onClick(DialogInterface dialog, int which) {
 					vola = parsePlist(tmpName = plistName);
 					loki = pos;
+					if(!searchTxt.getText().toString().isEmpty() && ada != null)
+					{
+						loki = ada.currentToReal(loki);
+					}
 					switch (which) {
-					case 0:
-						setItem(null, -1);
-						write();
-						break;
-					case 1:
-						if (((TimidityActivity) getActivity()).currSongName != null) {
-							setItem(((TimidityActivity) getActivity()).currSongName, 0);
+						case 0:
+							setItem(null, -1);
 							write();
-						}
-						break;
-					case 2:
-						new FileBrowserDialog().create(0, Globals.getSupportedExtensions(), PlaylistFragment.this, getActivity(), getActivity().getLayoutInflater(), false, SettingsStorage.homeFolder, getActivity().getResources().getString(R.string.fb_add));
-						break;
-					case 3:
-						new FileBrowserDialog().create(1, null, PlaylistFragment.this, getActivity(), getActivity().getLayoutInflater(), false, SettingsStorage.homeFolder, getActivity().getResources().getString(R.string.fb_add));
-						break;
-					case 4:
-						new FileBrowserDialog().create(2, null, PlaylistFragment.this, getActivity(), getActivity().getLayoutInflater(), false, SettingsStorage.homeFolder, getActivity().getResources().getString(R.string.fb_add));
-						break;
+							break;
+						case 1:
+							if (((TimidityActivity) getActivity()).currSongName != null) {
+								setItem(((TimidityActivity) getActivity()).currSongName, 0);
+								write();
+							}
+							break;
+						case 2:
+							new FileBrowserDialog().create(0, Globals.getSupportedExtensions(), PlaylistFragment.this, getActivity(), getActivity().getLayoutInflater(), false, SettingsStorage.homeFolder, getActivity().getResources().getString(R.string.fb_add));
+							break;
+						case 3:
+							new FileBrowserDialog().create(1, null, PlaylistFragment.this, getActivity(), getActivity().getLayoutInflater(), false, SettingsStorage.homeFolder, getActivity().getResources().getString(R.string.fb_add));
+							break;
+						case 4:
+							new FileBrowserDialog().create(2, null, PlaylistFragment.this, getActivity(), getActivity().getLayoutInflater(), false, SettingsStorage.homeFolder, getActivity().getResources().getString(R.string.fb_add));
+							break;
 					}
 				}
 			});

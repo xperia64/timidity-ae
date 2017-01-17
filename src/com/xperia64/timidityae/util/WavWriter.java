@@ -1,3 +1,11 @@
+/*******************************************************************************
+ * Copyright (C) 2017 xperia64 <xperiancedapps@gmail.com>
+ * <p>
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the GNU Public License v2.0
+ * which accompanies this distribution, and is available at
+ * http://www.gnu.org/licenses/gpl.html
+ ******************************************************************************/
 package com.xperia64.timidityae.util;
 
 import java.io.BufferedOutputStream;
@@ -10,16 +18,15 @@ import java.io.OutputStream;
 import java.io.RandomAccessFile;
 
 public class WavWriter {
-	public boolean writeToFile = false;
-	public long filesize = 0;
-	public String fileToWrite = "";
+	//private boolean writeToFile = false;
+	private long filesize = 0;
+	private String fileToWrite = "";
 	public boolean finishedWriting = false;
-	public boolean dataWritten = false;
-	public DataOutputStream outFile;
+	//public boolean dataWritten = false;
+	private DataOutputStream outFile;
 
-	boolean bitSize;
-	boolean mono;
-	long sampleRate;
+	private boolean mono;
+	//private long sampleRate;
 
 	private byte[] intToByteArray(int i) {
 		byte[] b = new byte[4];
@@ -31,23 +38,21 @@ public class WavWriter {
 	}
 
 	private byte[] shortToByteArray(short data) {
-		return new byte[] { (byte) (data & 0xff), (byte) ((data >>> 8) & 0xff) };
+		return new byte[]{(byte) (data & 0xff), (byte) ((data >>> 8) & 0xff)};
 	}
 
-	public void setupOutputFile(String filename, boolean bitSize, boolean mono, long sampleRate) {
-		this.bitSize = bitSize;
-		this.sampleRate = sampleRate;
+	public void setupOutputFile(String filename, boolean mono, long mySampleRate) {
+		//this.sampleRate = sampleRate;
 		this.mono = mono;
-		writeToFile = true;
 		finishedWriting = false;
 		fileToWrite = filename;
 		filesize = 0;
 		try {
 			long mySubChunk1Size = 16;
-			int myBitsPerSample = (bitSize ? 16 : 8);
+			int myBitsPerSample = 16;
 			int myFormat = 1;
 			long myChannels = ((mono) ? 1 : 2);
-			long mySampleRate = sampleRate;
+			//long mySampleRate = sampleRate;
 			long myByteRate = mySampleRate * myChannels * myBitsPerSample / 8;
 			int myBlockAlign = (int) (myChannels * myBitsPerSample / 8);
 
@@ -94,7 +99,7 @@ public class WavWriter {
 		}
 		finishedWriting = true;
 		long myDataSize = filesize; // this changes
-		int myBitsPerSample = (bitSize ? 16 : 8);
+		int myBitsPerSample = 16;
 		long myChannels = ((mono) ? 1 : 2);
 		long myChunk2Size = myDataSize * myChannels * myBitsPerSample / 8;
 		long myChunkSize = 36 + myChunk2Size;
@@ -104,6 +109,7 @@ public class WavWriter {
 			raf = new RandomAccessFile(fileToWrite, "rw");
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
+			return;
 		}
 
 		try {

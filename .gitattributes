@@ -1,0 +1,12 @@
+* text=auto
+
+*.mk text
+*.java text
+*.c text
+*.cpp text
+*.h text
+*.xml text
+
+
+*.png binary
+*.sf2 binary

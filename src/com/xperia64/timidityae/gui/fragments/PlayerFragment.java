@@ -1,22 +1,12 @@
 /*******************************************************************************
- * Copyright (C) 2014 xperia64 <xperiancedapps@gmail.com>
- * 
- * Copyright (C) 1999-2008 Masanao Izumo <iz@onicos.co.jp>
- *     
- * Copyright (C) 1995 Tuukka Toivonen <tt@cgs.fi>
+ * Copyright (C) 2017 xperia64 <xperiancedapps@gmail.com>
+ * <p>
  * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the GNU Public License v3.0
+ * are made available under the terms of the GNU Public License v2.0
  * which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/gpl.html
  ******************************************************************************/
 package com.xperia64.timidityae.gui.fragments;
-
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
@@ -39,20 +29,31 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.SeekBar;
+import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.SeekBar.OnSeekBarChangeListener;
 
 import com.xperia64.timidityae.JNIHandler;
 import com.xperia64.timidityae.R;
 import com.xperia64.timidityae.TimidityActivity;
+import com.xperia64.timidityae.gui.dialogs.SoxEffectsDialog;
+import com.xperia64.timidityae.util.Constants;
 import com.xperia64.timidityae.util.DocumentFileUtils;
 import com.xperia64.timidityae.util.Globals;
-import com.xperia64.timidityae.util.CommandStrings;
 import com.xperia64.timidityae.util.SettingsStorage;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
 
 @SuppressLint("Recycle")
 public class PlayerFragment extends Fragment {
@@ -88,7 +89,7 @@ public class PlayerFragment extends Fragment {
 	private int fragMode = 0; // 0 = AlbumArt, 1 = midi controls, 2 = Kareoke
 	private boolean ffrw = false;
 	private boolean enabledControls = false;
-	private boolean canEnablePlay = true;
+	public boolean canEnablePlay = true;
 	private boolean shouldUpdateSeekBar = false;
 	//
 	public AlertDialog midiInfoDialog;
@@ -98,8 +99,7 @@ public class PlayerFragment extends Fragment {
 
 	//
 	public static PlayerFragment create() {
-		PlayerFragment fragment = new PlayerFragment();
-		return fragment;
+		return new PlayerFragment();
 	}
 
 	@Override
@@ -124,8 +124,8 @@ public class PlayerFragment extends Fragment {
 	};
 
 	public void lyricUpdation() {
-		if (JNIHandler.isPlaying) {
-			if (!JNIHandler.isMediaPlayerFormat && fragMode == 2) {
+		if (JNIHandler.isActive()) {
+			if ((JNIHandler.mediaBackendFormat == JNIHandler.MediaFormat.FMT_TIMIDITY) && fragMode == 2) {
 				lyrical.updateLyrics();
 			}
 			seekHandler.postDelayed(lyricUpdater, 10);
@@ -134,8 +134,8 @@ public class PlayerFragment extends Fragment {
 	}
 
 	public void seekUpdation() {
-		if (JNIHandler.isPlaying && isAdded()) {
-			if (!JNIHandler.isMediaPlayerFormat) {
+		if (JNIHandler.isActive() && isAdded()) {
+			if ((JNIHandler.mediaBackendFormat != JNIHandler.MediaFormat.FMT_MEDIAPLAYER)) {
 				if (JNIHandler.mAudioTrack != null) {
 					if ((JNIHandler.exceptional & 1) != 0) {
 						Toast.makeText(getActivity(), "Error initializing AudioTrack. Try decreasing the buffer size.", Toast.LENGTH_LONG).show();
@@ -151,9 +151,7 @@ public class PlayerFragment extends Fragment {
 							trackBar.setEnabled(true);
 							playButton.setEnabled(true);
 						}
-					} catch (Exception e) {
-
-					}
+					} catch (Exception ignored) {}
 				}
 			} else {
 				enabledControls = true;
@@ -175,19 +173,18 @@ public class PlayerFragment extends Fragment {
 					voices.setText(String.format(getResources().getString(R.string.mop_voice), JNIHandler.voice, JNIHandler.maxvoice));
 			}
 			try { // NOPE
-				if (JNIHandler.mMediaPlayer != null && JNIHandler.isMediaPlayerFormat && JNIHandler.mMediaPlayer.isPlaying()) // Are these evaluated in order? I hope so
+				if (JNIHandler.mMediaPlayer != null && (JNIHandler.mediaBackendFormat == JNIHandler.MediaFormat.FMT_MEDIAPLAYER) && JNIHandler.mMediaPlayer.isPlaying()) // Are these evaluated in order? I hope so
 				{
 					JNIHandler.currTime = JNIHandler.mMediaPlayer.getCurrentPosition();
 				}
-			} catch (Exception e) {
-			}
+			} catch (Exception ignored) {}
 			if (getActivity() != null && !changingTime) {
 				shouldUpdateSeekBar = false;
 				totalMinutes = 0;
 				totalSeconds = JNIHandler.maxTime;
 				currMinutes = 0;
 				currSeconds = JNIHandler.currTime;
-				if (JNIHandler.isMediaPlayerFormat) {
+				if ((JNIHandler.mediaBackendFormat == JNIHandler.MediaFormat.FMT_MEDIAPLAYER)) {
 					totalSeconds /= 1000; // ms to s
 					currSeconds /= 1000;
 				}
@@ -202,7 +199,7 @@ public class PlayerFragment extends Fragment {
 						trackBar.setProgress(JNIHandler.currTime);
 						trackBar.invalidate();
 
-						timeCounter.setText(String.format("%d:%02d/%d:%02d", currMinutes, currSeconds, totalMinutes, totalSeconds));
+						timeCounter.setText(String.format(Locale.US, "%1$d:%2$02d/%3$d:%4$02d", currMinutes, currSeconds, totalMinutes, totalSeconds));
 						timeCounter.invalidate();
 					}
 				});
@@ -218,8 +215,8 @@ public class PlayerFragment extends Fragment {
 		super.onAttach(activity);
 		if (Globals.shouldRestore) {
 			Intent new_intent = new Intent();
-			new_intent.setAction(CommandStrings.msrv_rec);
-			new_intent.putExtra(CommandStrings.msrv_cmd, CommandStrings.msrv_cmd_get_info);
+			new_intent.setAction(Constants.msrv_rec);
+			new_intent.putExtra(Constants.msrv_cmd, Constants.msrv_cmd_get_info);
 			getActivity().sendBroadcast(new_intent);
 		}
 	}
@@ -276,7 +273,6 @@ public class PlayerFragment extends Fragment {
 		FragmentManager fm = getFragmentManager();
 		FragmentTransaction ft = fm.beginTransaction();
 
-		fm.beginTransaction();
 		artsy = new ArtFragment();
 		ft.replace(R.id.midiContainer, artsy);
 		ft.commit();
@@ -294,7 +290,7 @@ public class PlayerFragment extends Fragment {
 			@Override
 			public void onClick(View arg0) {
 				ffrw = true;
-				int to = trackBar.getProgress() - (JNIHandler.isMediaPlayerFormat ? 3000 : 3);
+				int to = trackBar.getProgress() - ((JNIHandler.mediaBackendFormat == JNIHandler.MediaFormat.FMT_MEDIAPLAYER) ? 3000 : 3);
 				to = (to > trackBar.getMax() ? trackBar.getMax() : to < 0 ? 0 : to);
 				trackBar.setProgress(to);
 			}
@@ -319,7 +315,7 @@ public class PlayerFragment extends Fragment {
 				@Override
 				public void run() {
 					changingTime = true;
-					int to = trackBar.getProgress() - (3 * mult * (JNIHandler.isMediaPlayerFormat ? 1000 : 1));
+					int to = trackBar.getProgress() - (3 * mult * ((JNIHandler.mediaBackendFormat == JNIHandler.MediaFormat.FMT_MEDIAPLAYER) ? 1000 : 1));
 					to = (to > trackBar.getMax() ? trackBar.getMax() : to < 0 ? 0 : to);
 					trackBar.setProgress(to);
 					if (rewindButton.isPressed()) {
@@ -330,7 +326,7 @@ public class PlayerFragment extends Fragment {
 						mHandler.postDelayed(this, 500);
 					} else {
 						changingTime = false;
-						if (!JNIHandler.isMediaPlayerFormat)
+						if (JNIHandler.mediaBackendFormat != JNIHandler.MediaFormat.FMT_MEDIAPLAYER)
 							mActivity.seek(trackBar.getProgress());
 						seekUpdation();
 					}
@@ -342,7 +338,7 @@ public class PlayerFragment extends Fragment {
 		playButton.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View arg0) {
-				if (JNIHandler.isPlaying) {
+				if (JNIHandler.isActive()) {
 					mActivity.pause();
 				} else {
 					arg0.setEnabled(false);
@@ -356,7 +352,7 @@ public class PlayerFragment extends Fragment {
 			@Override
 			public void onClick(View arg0) {
 				ffrw = true;
-				int to = trackBar.getProgress() + (JNIHandler.isMediaPlayerFormat ? 3000 : 3);
+				int to = trackBar.getProgress() + ((JNIHandler.mediaBackendFormat == JNIHandler.MediaFormat.FMT_MEDIAPLAYER) ? 3000 : 3);
 				to = (to > trackBar.getMax() ? trackBar.getMax() : to < 0 ? 0 : to);
 				trackBar.setProgress(to);
 			}
@@ -381,7 +377,7 @@ public class PlayerFragment extends Fragment {
 				@Override
 				public void run() {
 					changingTime = true;
-					int to = trackBar.getProgress() + (3 * mult * (JNIHandler.isMediaPlayerFormat ? 1000 : 1));
+					int to = trackBar.getProgress() + (3 * mult * ((JNIHandler.mediaBackendFormat == JNIHandler.MediaFormat.FMT_MEDIAPLAYER) ? 1000 : 1));
 					to = (to > trackBar.getMax() ? trackBar.getMax() : to < 0 ? 0 : to);
 					trackBar.setProgress(to);
 					if (fastForwardButton.isPressed()) {
@@ -392,7 +388,7 @@ public class PlayerFragment extends Fragment {
 						mHandler.postDelayed(this, 500);
 					} else {
 						changingTime = false;
-						if (!JNIHandler.isMediaPlayerFormat)
+						if (JNIHandler.mediaBackendFormat != JNIHandler.MediaFormat.FMT_MEDIAPLAYER)
 							mActivity.seek(trackBar.getProgress());
 						seekUpdation();
 					}
@@ -415,15 +411,15 @@ public class PlayerFragment extends Fragment {
 					shuffleMode = 0;
 				int shufRes = R.drawable.ic_menu_forward;
 				switch (shuffleMode) {
-				case 0:
-					shufRes = R.drawable.ic_menu_forward;
-					break;
-				case 1:
-					shufRes = R.drawable.ic_menu_shuffle;
-					break;
-				case 2:
-					shufRes = R.drawable.ic_menu_revert;
-					break;
+					case 0:
+						shufRes = R.drawable.ic_menu_forward;
+						break;
+					case 1:
+						shufRes = R.drawable.ic_menu_shuffle;
+						break;
+					case 2:
+						shufRes = R.drawable.ic_menu_revert;
+						break;
 				}
 				((ImageButton) arg0).setImageResource(shufRes);
 				mActivity.shuffle(shuffleMode);
@@ -439,15 +435,15 @@ public class PlayerFragment extends Fragment {
 					@Override
 					public void run() {
 						switch (loopMode) {
-						case 0:
-							((ImageButton) arg0).setImageResource(R.drawable.ic_menu_forward);
-							break;
-						case 1:
-							((ImageButton) arg0).setImageResource(R.drawable.ic_menu_refresh);
-							break;
-						case 2:
-							((ImageButton) arg0).setImageResource(R.drawable.ic_menu_rotate);
-							break;
+							case 0:
+								((ImageButton) arg0).setImageResource(R.drawable.ic_menu_forward);
+								break;
+							case 1:
+								((ImageButton) arg0).setImageResource(R.drawable.ic_menu_refresh);
+								break;
+							case 2:
+								((ImageButton) arg0).setImageResource(R.drawable.ic_menu_rotate);
+								break;
 						}
 					}
 				});
@@ -467,7 +463,7 @@ public class PlayerFragment extends Fragment {
 			@Override
 			public void onProgressChanged(SeekBar arg0, int arg1, boolean arg2) {
 				if (arg2 || ffrw) {
-					if (arg0.isEnabled() && (JNIHandler.isMediaPlayerFormat || ffrw)) {
+					if (arg0.isEnabled() && ((JNIHandler.mediaBackendFormat == JNIHandler.MediaFormat.FMT_MEDIAPLAYER) || ffrw)) {
 						mActivity.seek(arg1);
 					}
 					if (!fastForwardButton.isPressed() && !rewindButton.isPressed())
@@ -476,7 +472,7 @@ public class PlayerFragment extends Fragment {
 					totalSeconds = arg0.getMax();
 					currMinutes = 0;
 					currSeconds = arg1;
-					if (JNIHandler.isMediaPlayerFormat) {
+					if (JNIHandler.mediaBackendFormat == JNIHandler.MediaFormat.FMT_MEDIAPLAYER) {
 						totalSeconds /= 1000; // ms to s
 						currSeconds /= 1000;
 					}
@@ -488,7 +484,7 @@ public class PlayerFragment extends Fragment {
 						@Override
 						public void run() {
 
-							timeCounter.setText(String.format("%d:%02d/%d:%02d", currMinutes, currSeconds, totalMinutes, totalSeconds));
+							timeCounter.setText(String.format(Locale.US, "%1$d:%2$02d/%3$d:%4$02d", currMinutes, currSeconds, totalMinutes, totalSeconds));
 							timeCounter.invalidate();
 						}
 					});
@@ -504,7 +500,7 @@ public class PlayerFragment extends Fragment {
 			public void onStopTrackingTouch(SeekBar arg0) {
 
 				changingTime = false;
-				if (!JNIHandler.isMediaPlayerFormat)
+				if (JNIHandler.mediaBackendFormat != JNIHandler.MediaFormat.FMT_MEDIAPLAYER)
 					mActivity.seek(arg0.getProgress());
 				if (shouldUpdateSeekBar)
 					seekUpdation();
@@ -539,39 +535,38 @@ public class PlayerFragment extends Fragment {
 					trackBar.setProgress(0);
 					songTitle.setText(title);
 					seekUpdation();
-					if (!JNIHandler.isMediaPlayerFormat)
+					if ((JNIHandler.mediaBackendFormat == JNIHandler.MediaFormat.FMT_TIMIDITY))
 						lyricUpdation();
 					switch (loopMode) {
-					case 0:
-						loopButton.setImageResource(R.drawable.ic_menu_forward);
-						break;
-					case 1:
-						loopButton.setImageResource(R.drawable.ic_menu_refresh);
-						break;
-					case 2:
-						loopButton.setImageResource(R.drawable.ic_menu_rotate);
-						break;
+						case 0:
+							loopButton.setImageResource(R.drawable.ic_menu_forward);
+							break;
+						case 1:
+							loopButton.setImageResource(R.drawable.ic_menu_refresh);
+							break;
+						case 2:
+							loopButton.setImageResource(R.drawable.ic_menu_rotate);
+							break;
 					}
 					int shufRes = R.drawable.ic_menu_forward;
 					switch (shuffleMode) {
-					case 0:
-						shufRes = R.drawable.ic_menu_forward;
-						break;
-					case 1:
-						shufRes = R.drawable.ic_menu_shuffle;
-						break;
-					case 2:
-						shufRes = R.drawable.ic_menu_revert;
-						break;
+						case 0:
+							shufRes = R.drawable.ic_menu_forward;
+							break;
+						case 1:
+							shufRes = R.drawable.ic_menu_shuffle;
+							break;
+						case 2:
+							shufRes = R.drawable.ic_menu_revert;
+							break;
 					}
 					shuffleButton.setImageResource(shufRes);
 				}
 			});
-			if (JNIHandler.isMediaPlayerFormat && fragMode != 0) {
+			if ((JNIHandler.mediaBackendFormat != JNIHandler.MediaFormat.FMT_TIMIDITY) && fragMode != 0) {
 				FragmentManager fm = getFragmentManager();
 				FragmentTransaction ft = fm.beginTransaction();
 				fragMode = 0;
-				fm.beginTransaction();
 				artsy = new ArtFragment();
 				ft.replace(R.id.midiContainer, artsy);
 				ft.commitAllowingStateLoss();
@@ -601,16 +596,15 @@ public class PlayerFragment extends Fragment {
 					trackBar.setMax(seekBarTime);
 					songTitle.setText(title);
 					seekUpdation();
-					if (!JNIHandler.isMediaPlayerFormat)
+					if (JNIHandler.mediaBackendFormat == JNIHandler.MediaFormat.FMT_TIMIDITY)
 						lyricUpdation();
 				}
 			});
 		}
-		if (JNIHandler.isMediaPlayerFormat && fragMode != 0) {
+		if ((JNIHandler.mediaBackendFormat != JNIHandler.MediaFormat.FMT_TIMIDITY) && fragMode != 0) {
 			FragmentManager fm = getFragmentManager();
 			FragmentTransaction ft = fm.beginTransaction();
 			fragMode = 0;
-			fm.beginTransaction();
 			artsy = new ArtFragment();
 			ft.replace(R.id.midiContainer, artsy);
 			ft.commitAllowingStateLoss();
@@ -621,29 +615,28 @@ public class PlayerFragment extends Fragment {
 		FragmentManager fm = getFragmentManager();
 		FragmentTransaction ft = fm.beginTransaction();
 
-		fm.beginTransaction();
-		if ((!JNIHandler.isMediaPlayerFormat) && JNIHandler.isPlaying) {
+		if ((JNIHandler.mediaBackendFormat == JNIHandler.MediaFormat.FMT_TIMIDITY) && JNIHandler.isActive()) {
 			if (++fragMode > 2)
 				fragMode = 0;
 		} else {
 			fragMode = 0;
 		}
 		switch (fragMode) {
-		case 0:
-			artsy = new ArtFragment();
-			ft.replace(R.id.midiContainer, artsy);
-			ft.commitAllowingStateLoss();
-			break;
-		case 1:
-			tracky = new TrackFragment();
-			ft.replace(R.id.midiContainer, tracky);
-			ft.commitAllowingStateLoss();
-			break;
-		case 2:
-			lyrical = new LyricFragment();
-			ft.replace(R.id.midiContainer, lyrical);
-			ft.commitAllowingStateLoss();
-			break;
+			case 0:
+				artsy = new ArtFragment();
+				ft.replace(R.id.midiContainer, artsy);
+				ft.commitAllowingStateLoss();
+				break;
+			case 1:
+				tracky = new TrackFragment();
+				ft.replace(R.id.midiContainer, tracky);
+				ft.commitAllowingStateLoss();
+				break;
+			case 2:
+				lyrical = new LyricFragment();
+				ft.replace(R.id.midiContainer, lyrical);
+				ft.commitAllowingStateLoss();
+				break;
 		}
 	}
 
@@ -651,29 +644,28 @@ public class PlayerFragment extends Fragment {
 		FragmentManager fm = getFragmentManager();
 		FragmentTransaction ft = fm.beginTransaction();
 		fragMode = which;
-		fm.beginTransaction();
-		if ((!JNIHandler.isMediaPlayerFormat) && JNIHandler.isPlaying) {
+		if ((JNIHandler.mediaBackendFormat == JNIHandler.MediaFormat.FMT_TIMIDITY) && JNIHandler.isActive()) {
 			if (fragMode > 2)
 				fragMode = 0;
 		} else {
 			fragMode = 0;
 		}
 		switch (fragMode) {
-		case 0:
-			artsy = new ArtFragment();
-			ft.replace(R.id.midiContainer, artsy);
-			ft.commitAllowingStateLoss();
-			break;
-		case 1:
-			tracky = new TrackFragment();
-			ft.replace(R.id.midiContainer, tracky);
-			ft.commitAllowingStateLoss();
-			break;
-		case 2:
-			lyrical = new LyricFragment();
-			ft.replace(R.id.midiContainer, lyrical);
-			ft.commitAllowingStateLoss();
-			break;
+			case 0:
+				artsy = new ArtFragment();
+				ft.replace(R.id.midiContainer, artsy);
+				ft.commitAllowingStateLoss();
+				break;
+			case 1:
+				tracky = new TrackFragment();
+				ft.replace(R.id.midiContainer, tracky);
+				ft.commitAllowingStateLoss();
+				break;
+			case 2:
+				lyrical = new LyricFragment();
+				ft.replace(R.id.midiContainer, lyrical);
+				ft.commitAllowingStateLoss();
+				break;
 		}
 	}
 
@@ -709,9 +701,9 @@ public class PlayerFragment extends Fragment {
 
 			@Override
 			public void onClick(View arg0) {
-				JNIHandler.controlTimidity(CommandStrings.jni_speedup, 1);
+				JNIHandler.controlTimidity(Constants.jni_tim_speedup, 1);
 				JNIHandler.waitUntilReady();
-				JNIHandler.tb++;
+				JNIHandler.tempoCount++;
 			}
 
 		});
@@ -719,9 +711,9 @@ public class PlayerFragment extends Fragment {
 
 			@Override
 			public void onClick(View arg0) {
-				JNIHandler.controlTimidity(CommandStrings.jni_speeddown, 1);
+				JNIHandler.controlTimidity(Constants.jni_tim_speeddown, 1);
 				JNIHandler.waitUntilReady();
-				JNIHandler.tb--;
+				JNIHandler.tempoCount--;
 			}
 
 		});
@@ -729,7 +721,7 @@ public class PlayerFragment extends Fragment {
 
 			@Override
 			public void onClick(View arg0) {
-				JNIHandler.controlTimidity(CommandStrings.jni_keyup, 1);
+				JNIHandler.controlTimidity(Constants.jni_tim_keyup, 1);
 				JNIHandler.waitUntilReady();
 			}
 
@@ -738,7 +730,7 @@ public class PlayerFragment extends Fragment {
 
 			@Override
 			public void onClick(View arg0) {
-				JNIHandler.controlTimidity(CommandStrings.jni_keydown, -1);
+				JNIHandler.controlTimidity(Constants.jni_tim_keydown, -1);
 				JNIHandler.waitUntilReady();
 			}
 
@@ -747,7 +739,7 @@ public class PlayerFragment extends Fragment {
 
 			@Override
 			public void onClick(View arg0) {
-				JNIHandler.controlTimidity(CommandStrings.jni_voiceincr, 5);
+				JNIHandler.controlTimidity(Constants.jni_tim_voiceincr, 5);
 				JNIHandler.waitUntilReady();
 			}
 
@@ -756,7 +748,7 @@ public class PlayerFragment extends Fragment {
 
 			@Override
 			public void onClick(View arg0) {
-				JNIHandler.controlTimidity(CommandStrings.jni_voicedecr, 5);
+				JNIHandler.controlTimidity(Constants.jni_tim_voicedecr, 5);
 				JNIHandler.waitUntilReady();
 			}
 
@@ -797,7 +789,7 @@ public class PlayerFragment extends Fragment {
 				String needRename1 = null;
 				String needRename2 = null;
 				String probablyTheRoot = "";
-				String probablyTheDirectory = "";
+				String probablyTheDirectory;
 				try {
 					if (SettingsStorage.compressCfg)
 						new FileOutputStream(mActivity.currSongName + ".def.tzf", true).close();
@@ -855,15 +847,10 @@ public class PlayerFragment extends Fragment {
 					dialog.setButton(DialogInterface.BUTTON_POSITIVE, getResources().getString(android.R.string.yes), new DialogInterface.OnClickListener() {
 						public void onClick(DialogInterface dialog, int buttonId) {
 							if (!canWrite && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-								if (needToRename1 != null) {
-									DocumentFileUtils.tryToDeleteFile(getActivity(), probRoot + needToRename1);
-									DocumentFileUtils.tryToDeleteFile(getActivity(), finalval1);
-									DocumentFileUtils.tryToDeleteFile(getActivity(), probRoot + needToRename2);
-									DocumentFileUtils.tryToDeleteFile(getActivity(), finalval2);
-								} else {
-									DocumentFileUtils.tryToDeleteFile(getActivity(), finalval1);
-									DocumentFileUtils.tryToDeleteFile(getActivity(), finalval2);
-								}
+								DocumentFileUtils.tryToDeleteFile(getActivity(), probRoot + needToRename1);
+								DocumentFileUtils.tryToDeleteFile(getActivity(), finalval1);
+								DocumentFileUtils.tryToDeleteFile(getActivity(), probRoot + needToRename2);
+								DocumentFileUtils.tryToDeleteFile(getActivity(), finalval2);
 							} else {
 								new File(mActivity.currSongName + ".def.tcf").delete();
 								new File(mActivity.currSongName + ".def.tzf").delete();
@@ -937,10 +924,9 @@ public class PlayerFragment extends Fragment {
 		});
 
 		final Spinner x = (Spinner) midiDialogView.findViewById(R.id.resampSpinner);
-		List<String> arrayAdapter = new ArrayList<String>();
-		for (String yyy : Globals.sampls)
-			arrayAdapter.add(yyy);
-		ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item, arrayAdapter);
+		List<String> arrayAdapter = new ArrayList<>();
+		Collections.addAll(arrayAdapter, Globals.sampls);
+		ArrayAdapter<String> dataAdapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_spinner_item, arrayAdapter);
 		dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		x.setAdapter(dataAdapter);
 		firstSelection = true;
@@ -986,4 +972,22 @@ public class PlayerFragment extends Fragment {
 		}
 	}
 
+	public void showSoxDialog() {
+		/*AlertDialog.Builder soxInfoDialogBuilder = new AlertDialog.Builder(getActivity());
+		View soxDialogView = getActivity().getLayoutInflater().inflate(R.layout.sox_options_basic, null);
+		final EditText soxEff = (EditText) soxDialogView.findViewById(R.id.soxDlgText);
+		soxEff.setText(SettingsStorage.soxEffStr);
+		soxInfoDialogBuilder.setView(soxDialogView);
+		soxInfoDialogBuilder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				SettingsStorage.soxEffStr = soxEff.getText().toString();
+			}
+		});
+		soxInfoDialogBuilder.setTitle("SoX Effects");
+		midiInfoDialog = soxInfoDialogBuilder.create();
+		midiInfoDialog.show();*/
+		new SoxEffectsDialog().create(getActivity(), getActivity().getLayoutInflater());
+	}
 }
