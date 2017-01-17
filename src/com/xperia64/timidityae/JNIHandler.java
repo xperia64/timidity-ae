@@ -31,14 +31,11 @@ public class JNIHandler {
 
 
 
-	// config folder, config file, mono, resampling algorithm, bits, preserve
+	// config folder, config file, mono, resampling algorithm, preserve
 	// silence
 	public static native int loadLib(String libPath);
-
 	public static native int unloadLib();
-
-	private static native int prepareTimidity(String config, String config2, int jmono, int jcustResamp, int jsixteen, int jPresSil, int jreloading, int jfreeInsts, int jverbosity);
-
+	private static native int prepareTimidity(String config, String config2, int jmono, int jcustResamp, int jPresSil, int jreloading, int jfreeInsts, int jverbosity);
 	private static native int loadSongTimidity(String filename);
 
 	// See globals for commands
@@ -76,7 +73,6 @@ public class JNIHandler {
 	public static MediaFormat mediaBackendFormat = MediaFormat.FMT_MEDIAPLAYER;
 
 	private static int channelMode; // 0 = mono (downmixed), 1 = mono (synthesized), 2 = stereo
-	private static boolean sixteenBit;
 	public static int rate;
 	public static int buffer;
 
@@ -288,7 +284,7 @@ public class JNIHandler {
 
 	public static void setupOutputFile(String filename) {
 		currentWavWriter = new WavWriter();
-		currentWavWriter.setupOutputFile(filename, sixteenBit, (channelMode < 2), rate);
+		currentWavWriter.setupOutputFile(filename, (channelMode < 2), rate);
 	}
 
 	// Used by native (TiMidity++)
@@ -299,23 +295,14 @@ public class JNIHandler {
 
 			if (channelMode == 0) {
 				byte[] mono = new byte[length / 2];
-				if (sixteenBit) {
-					for (int i = 0; i < mono.length / 2; ++i) {
-						int HI = 1;
-						int LO = 0;
-						int left = (data[i * 4 + HI] << 8) | (data[i * 4 + LO] & 0xff);
-						int right = (data[i * 4 + 2 + HI] << 8) | (data[i * 4 + 2 + LO] & 0xff);
-						int avg = (left + right) / 2;
-						mono[i * 2 + HI] = (byte) ((avg >> 8) & 0xff);
-						mono[i * 2 + LO] = (byte) (avg & 0xff);
-					}
-				} else {
-					for (int i = 0; i < mono.length; ++i) {
-						int left = (data[i * 2]) & 0xff;
-						int right = (data[i * 2 + 1]) & 0xff;
-						int avg = (left + right) / 2;
-						mono[i] = (byte) (avg);
-					}
+				for (int i = 0; i < mono.length / 2; ++i) {
+					int HI = 1;
+					int LO = 0;
+					int left = (data[i * 4 + HI] << 8) | (data[i * 4 + LO] & 0xff);
+					int right = (data[i * 4 + 2 + HI] << 8) | (data[i * 4 + 2 + LO] & 0xff);
+					int avg = (left + right) / 2;
+					mono[i * 2 + HI] = (byte) ((avg >> 8) & 0xff);
+					mono[i * 2 + LO] = (byte) (avg & 0xff);
 				}
 				if (currentWavWriter != null && !currentWavWriter.finishedWriting) {
 					try {
@@ -365,10 +352,10 @@ public class JNIHandler {
 		}
 	}
 
-	public static int init(String path, String file, int mono, int resamp, boolean sixteen, int b, int r, boolean preserveSilence, boolean reloading, boolean freeInsts, int verbosity) {
+	public static int init(String path, String file, int mono, int resamp, int b, int r, boolean preserveSilence, boolean reloading, boolean freeInsts, int verbosity) {
 		if (state == STATE_UNINIT) {
 
-			System.out.println(String.format(Locale.US, "Opening Timidity: Path: %s cfgFile: %s resample: %s mono: %s sixteenBit: %s buffer: %d rate: %d", path, file, Globals.sampls[resamp], ((mono == 1) ? "true" : "false"), (sixteen ? "true" : "false"), b, r));
+			System.out.println(String.format(Locale.US, "Opening Timidity: Path: %s cfgFile: %s resample: %s mono: %s buffer: %d rate: %d", path, file, Globals.sampls[resamp], ((mono == 1) ? "true" : "false"), b, r));
 			System.out.println("Max channels: " + MAX_CHANNELS);
 			for (int i = 0; i < MAX_CHANNELS; i++) {
 				volumes.add(75); // Assuming not XG
@@ -378,13 +365,12 @@ public class JNIHandler {
 				custVol.add(false);
 			}
 			channelMode = mono;
-			sixteenBit = sixteen;
 			rate = r;
 			buffer = b;
 			if (mMediaPlayer == null)
 				mMediaPlayer = new MediaPlayer();
 
-			int code = prepareTimidity(path, path + file, (channelMode == 1) ? 1 : 0, resamp, sixteenBit ? 1 : 0, preserveSilence ? 1 : 0, reloading ? 1 : 0, freeInsts ? 1 : 0, verbosity)
+			int code = prepareTimidity(path, path + file, (channelMode == 1) ? 1 : 0, resamp, preserveSilence ? 1 : 0, reloading ? 1 : 0, freeInsts ? 1 : 0, verbosity)
 					+ soxInit(reloading ? 1 : 0, rate);
 			state = STATE_IDLE; // TODO: Maybe keep as UNINIT if code != 0?
 			return code;
@@ -495,7 +481,7 @@ public class JNIHandler {
 							public void run() {
 								mAudioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, rate,
 										(channelMode == 2) ? AudioFormat.CHANNEL_OUT_STEREO : AudioFormat.CHANNEL_OUT_MONO,
-										(sixteenBit) ? AudioFormat.ENCODING_PCM_16BIT : AudioFormat.ENCODING_PCM_8BIT,
+										AudioFormat.ENCODING_PCM_16BIT,
 										buffer, AudioTrack.MODE_STREAM);
 
 								if (!(currentWavWriter != null && !currentWavWriter.finishedWriting)) {
@@ -582,9 +568,8 @@ public class JNIHandler {
 		}
 		try {
 			// Samples * Number of Channels * sample size
-			return (((mAudioTrack.getPlaybackHeadPosition() *
-					mAudioTrack.getChannelCount() *
-					(2 - (mAudioTrack.getAudioFormat() & 1))))); // 16 bit is 2, 8 bit is 3. We should never have to worry about 4, which is floating.
+			return (mAudioTrack.getPlaybackHeadPosition() *
+					mAudioTrack.getChannelCount() * 2); // 16 bit is 2
 		} catch (IllegalStateException e) {
 			return 0;
 		}

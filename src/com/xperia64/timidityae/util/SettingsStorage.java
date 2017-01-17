@@ -55,7 +55,6 @@ public class SettingsStorage {
 	public static int defaultResamp;
 	public static boolean shouldExtStorageNag;
 	public static int channelMode; // 0 = stereo downsampled to mono, 1 = timidity-synthesized mono, 2 = stereo
-	public static boolean sixteenBit;
 	public static int audioRate;
 	public static boolean nativeMidi;
 	public static int bufferSize;
@@ -117,7 +116,6 @@ public class SettingsStorage {
 		manualConfig = prefs.getBoolean(Constants.sett_man_config, false);
 		JNIHandler.currsamp = defaultResamp = Integer.parseInt(prefs.getString(Constants.sett_default_resamp, "0"));
 		channelMode = Integer.parseInt(prefs.getString(Constants.sett_channel_mode, "2"));
-		sixteenBit = true; // 8 bit is very questionable on Android
 		audioRate = Integer.parseInt(prefs.getString(Constants.sett_audio_rate, Integer.toString(AudioTrack.getNativeOutputSampleRate(AudioTrack.MODE_STREAM))));
 		bufferSize = Integer.parseInt(prefs.getString(Constants.sett_buffer_size, "192000"));
 		showVideos = prefs.getBoolean(Constants.sett_show_videos, true);

@@ -289,7 +289,7 @@ Java_com_xperia64_timidityae_JNIHandler_unloadLib(JNIEnv * env, jobject  obj)
 }
 
 	JNIEXPORT int JNICALL
-Java_com_xperia64_timidityae_JNIHandler_prepareTimidity(JNIEnv * env, jobject  obj, jstring config, jstring config2, jint jmono, jint jcustResamp, jint jsixteen, jint jPresSil, jint jreloading, jint jfreeInsts, jint jverbosity)
+Java_com_xperia64_timidityae_JNIHandler_prepareTimidity(JNIEnv * env, jobject  obj, jstring config, jstring config2, jint jmono, jint jcustResamp, jint jPresSil, jint jreloading, jint jfreeInsts, jint jverbosity)
 {
 	outputOpen = 0;
 	if(!jreloading)
@@ -317,7 +317,7 @@ Java_com_xperia64_timidityae_JNIHandler_prepareTimidity(JNIEnv * env, jobject  o
 	}
 
 	mono = (int)jmono;
-	sixteen = (int)jsixteen;
+	sixteen = 1;
 	shouldFreeInsts = (int)jfreeInsts;
 	jboolean isCopy;
 	configFile=(char*)(*env)->GetStringUTFChars(env, config, &isCopy); 

@@ -25,7 +25,6 @@ public class WavWriter {
 	//public boolean dataWritten = false;
 	private DataOutputStream outFile;
 
-	private boolean bitSize;
 	private boolean mono;
 	//private long sampleRate;
 
@@ -42,8 +41,7 @@ public class WavWriter {
 		return new byte[]{(byte) (data & 0xff), (byte) ((data >>> 8) & 0xff)};
 	}
 
-	public void setupOutputFile(String filename, boolean bitSize, boolean mono, long mySampleRate) {
-		this.bitSize = bitSize;
+	public void setupOutputFile(String filename, boolean mono, long mySampleRate) {
 		//this.sampleRate = sampleRate;
 		this.mono = mono;
 		finishedWriting = false;
@@ -51,7 +49,7 @@ public class WavWriter {
 		filesize = 0;
 		try {
 			long mySubChunk1Size = 16;
-			int myBitsPerSample = (bitSize ? 16 : 8);
+			int myBitsPerSample = 16;
 			int myFormat = 1;
 			long myChannels = ((mono) ? 1 : 2);
 			//long mySampleRate = sampleRate;
@@ -101,7 +99,7 @@ public class WavWriter {
 		}
 		finishedWriting = true;
 		long myDataSize = filesize; // this changes
-		int myBitsPerSample = (bitSize ? 16 : 8);
+		int myBitsPerSample = 16;
 		long myChannels = ((mono) ? 1 : 2);
 		long myChunk2Size = myDataSize * myChannels * myBitsPerSample / 8;
 		long myChunkSize = 36 + myChunk2Size;
