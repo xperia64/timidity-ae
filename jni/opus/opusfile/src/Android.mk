@@ -13,7 +13,7 @@ LOCAL_MODULE := opusfile
 
 LOCAL_C_INCLUDES := $(LOCAL_PATH) \
 $(LOCAL_PATH)/../include/ \
-$(LOCAL_PATH)/../../libogg/include/ \
+$(LOCAL_PATH)/../../../libogg/include/ \
 $(LOCAL_PATH)/../../include/ \
 
 LOCAL_SRC_FILES := opusfile.c internal.c info.c stream.c http.c

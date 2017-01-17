@@ -17,6 +17,8 @@ LOCAL_MODULE := sox
 LOCAL_ARM_MODE := arm
 LOCAL_C_INCLUDES := $(LOCAL_PATH) \
 $(LOCAL_PATH)/../../lame/include/ \
+$(LOCAL_PATH)/../../libogg/include \
+$(LOCAL_PATH)/../../vorbis/include \
 $(LOCAL_PATH)/../../libmad/ \
 $(LOCAL_PATH)/../../flac/include/ \
 $(LOCAL_PATH)/../../wavpack/ \
