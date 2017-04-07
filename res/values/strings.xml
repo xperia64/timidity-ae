@@ -218,6 +218,9 @@
 	<string name="sop_add_title">Additional SoX Effects:</string>
 	<string name="plist_search">Search for Song</string>
 	<string name="help_root">Select the topic you need help with:</string>
+	<string name="sett_def_dir">/sdcard/TimidityAE/</string>
+	<string name="sett_vol_sum">Master Timidity Amplification</string>
+	<string name="sett_vol">Amplification</string>
 
 	<!-- Arrays -->
 	<string-array name="theme_items">

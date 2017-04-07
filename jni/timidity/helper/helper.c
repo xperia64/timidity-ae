@@ -3,7 +3,7 @@
 #include <android/log.h>
 #include <dlfcn.h>
 #include <string.h>
-
+#include <stdint.h>
 #include "helper.h"
 
 typedef double FLOAT_T;
@@ -64,6 +64,8 @@ int * preserve_silence;
 
 char* configFile;
 char* configFile2;
+
+int32_t * amplification;
 int sixteen;
 int mono;
 int outputOpen = 0;
@@ -262,6 +264,11 @@ Java_com_xperia64_timidityae_JNIHandler_loadLib(JNIEnv * env, jobject  obj, jstr
 		{
 			return -15;
 		}
+		amplification = dlsym(libHandle, "amplification");
+		if(checkLibError())
+		{
+			return -16;
+		}
 		libsLoaded = 1;
 		(*env)->ReleaseStringUTFChars(env, path, libPath);
 		return 0;
@@ -289,7 +296,7 @@ Java_com_xperia64_timidityae_JNIHandler_unloadLib(JNIEnv * env, jobject  obj)
 }
 
 	JNIEXPORT int JNICALL
-Java_com_xperia64_timidityae_JNIHandler_prepareTimidity(JNIEnv * env, jobject  obj, jstring config, jstring config2, jint jmono, jint jcustResamp, jint jPresSil, jint jreloading, jint jfreeInsts, jint jverbosity)
+Java_com_xperia64_timidityae_JNIHandler_prepareTimidity(JNIEnv * env, jobject  obj, jstring config, jstring config2, jint jmono, jint jcustResamp, jint jPresSil, jint jreloading, jint jfreeInsts, jint jverbosity, jint volume)
 {
 	outputOpen = 0;
 	if(!jreloading)
@@ -335,6 +342,7 @@ Java_com_xperia64_timidityae_JNIHandler_prepareTimidity(JNIEnv * env, jobject  o
 	}
 
 	*preserve_silence = (int)jPresSil;
+	*amplification = (int)volume;
 	(*timidity_initplayer)();
 	(*set_resamp)(jcustResamp);
 	(*env)->ReleaseStringUTFChars(env, config, configFile);

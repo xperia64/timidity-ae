@@ -632,7 +632,7 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 
 	public void initCallback2() {
 		int x = JNIHandler.init(SettingsStorage.dataFolder + "timidity/", "timidity.cfg", SettingsStorage.channelMode, SettingsStorage.defaultResamp,
-				SettingsStorage.bufferSize, SettingsStorage.audioRate, SettingsStorage.preserveSilence, false, SettingsStorage.freeInsts, SettingsStorage.verbosity);
+				SettingsStorage.bufferSize, SettingsStorage.audioRate, SettingsStorage.preserveSilence, false, SettingsStorage.freeInsts, SettingsStorage.verbosity, SettingsStorage.volume);
 		if (x != 0 && x != -99) {
 			SettingsStorage.onlyNative = SettingsStorage.nativeMidi = true;
 			Toast.makeText(this, String.format(getResources().getString(R.string.tcfg_error), x), Toast.LENGTH_LONG).show();

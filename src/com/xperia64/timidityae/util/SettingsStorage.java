@@ -57,6 +57,7 @@ public class SettingsStorage {
 	public static int channelMode; // 0 = stereo downsampled to mono, 1 = timidity-synthesized mono, 2 = stereo
 	public static int audioRate;
 	public static boolean nativeMidi;
+	public static int volume;
 	public static int bufferSize;
 	public static int verbosity;
 	public static boolean keepPartialWav;
@@ -117,6 +118,7 @@ public class SettingsStorage {
 		JNIHandler.currsamp = defaultResamp = Integer.parseInt(prefs.getString(Constants.sett_default_resamp, "0"));
 		channelMode = Integer.parseInt(prefs.getString(Constants.sett_channel_mode, "2"));
 		audioRate = Integer.parseInt(prefs.getString(Constants.sett_audio_rate, Integer.toString(AudioTrack.getNativeOutputSampleRate(AudioTrack.MODE_STREAM))));
+		volume = Integer.parseInt(prefs.getString(Constants.sett_vol, "70"));
 		bufferSize = Integer.parseInt(prefs.getString(Constants.sett_buffer_size, "192000"));
 		showVideos = prefs.getBoolean(Constants.sett_show_videos, true);
 		shouldExtStorageNag = prefs.getBoolean(Constants.sett_should_ext_storage_nag, true);

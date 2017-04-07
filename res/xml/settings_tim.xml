@@ -43,7 +43,13 @@
 			android:key="tplusRate"
 			android:summary="@string/sett_rate_sum"
 			android:title="@string/sett_rate"/>
-
+		<EditTextPreference
+			android:defaultValue="70"
+			android:inputType="number"
+			android:maxLines="1"
+			android:key="tplusVol"
+			android:summary="@string/sett_vol_sum"
+			android:title="@string/sett_vol"/>
 		<EditTextPreference
 			android:defaultValue="192000"
 			android:inputType="number"
@@ -72,7 +78,7 @@
 			android:title="@string/sett_ddir"/>
 
 		<EditTextPreference
-			android:defaultValue="/sdcard/TimidityAE/"
+			android:defaultValue="@string/sett_def_dir"
 			android:key="dataDir"
 			android:inputType="text"
 			android:maxLines="1"

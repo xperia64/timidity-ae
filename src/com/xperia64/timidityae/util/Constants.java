@@ -90,6 +90,7 @@ public class Constants {
 	public static final String sett_default_resamp = "tplusResamp";
 	public static final String sett_channel_mode = "sdlChanValue";
 	public static final String sett_audio_rate = "tplusRate";
+	public static final String sett_vol = "tplusVol";
 	public static final String sett_buffer_size = "tplusBuff";
 	public static final String sett_show_videos = "videoSwitch";
 	public static final String sett_should_ext_storage_nag = "shouldLolNag";
@@ -163,6 +164,7 @@ public class Constants {
 	public static final int jni_tim_mute_clear = 33;
 	public static final int jni_tim_holdmask = 0x800;
 	public static final int jni_tim_unholdmask = 0x8000;
+
 
 
 	/*

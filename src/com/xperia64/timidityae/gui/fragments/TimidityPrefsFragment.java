@@ -46,6 +46,7 @@ public class TimidityPrefsFragment extends PreferenceFragment {
 	private ListPreference resampMode; // Default resampling algorithm
 	private ListPreference stereoMode; // Synth Mono, Downmixed Mono, or Stereo
 	private ListPreference rates; // Audio rates
+	private EditTextPreference volume; // Amplification. Default 70, max 800
 	private EditTextPreference bufferSize; // Buffer size, in something. I use 192000 by default.
 	private ListPreference verbosity;
 
@@ -68,6 +69,7 @@ public class TimidityPrefsFragment extends PreferenceFragment {
 		resampMode = (ListPreference) findPreference("tplusResamp");
 		stereoMode = (ListPreference) findPreference("sdlChanValue");
 		rates = (ListPreference) findPreference("tplusRate");
+		volume = (EditTextPreference) findPreference("tplusVol");
 		bufferSize = (EditTextPreference) findPreference("tplusBuff");
 		verbosity = (ListPreference) findPreference("timidityVerbosity");
 
@@ -195,6 +197,29 @@ public class TimidityPrefsFragment extends PreferenceFragment {
 							((BaseAdapter) TimidityPrefsFragment.this.getPreferenceScreen().getRootAdapter()).notifyDataSetInvalidated();
 						}
 					}
+				}
+				return true;
+			}
+		});
+
+		volume.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+			@Override
+			public boolean onPreferenceChange(Preference preference, Object newValue) {
+				if (!volume.getText().equals(newValue)) {
+					s.needRestart = true;
+					String txt = (String) newValue;
+					if (txt != null) {
+						if (!txt.isEmpty()) {
+							int volume = Integer.parseInt(txt);
+							if(volume < 0 || volume > 800)
+							{
+								Toast.makeText(s, "Invalid volume. Must be between 0 and 800", Toast.LENGTH_SHORT).show();
+								return false;
+							}
+							return true;
+						}
+					}
+					return false;
 				}
 				return true;
 			}

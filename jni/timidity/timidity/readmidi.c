@@ -3475,7 +3475,10 @@ static int read_smf_track(struct timidity_file *tf, int trackno, int rewindp)
 	if(readmidi_error_flag)
 	    return -1;
 	if((len = getvl(tf)) < 0)
-	    return -1;
+	{
+		continue; // Just because one track looks weird doesn't mean the entire midi is bad
+		//return -1;
+	}
 	smf_at_time += len;
 	errno = 0;
 	if((i = tf_getc(tf)) == EOF)

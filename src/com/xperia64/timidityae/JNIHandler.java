@@ -35,7 +35,7 @@ public class JNIHandler {
 	// silence
 	public static native int loadLib(String libPath);
 	public static native int unloadLib();
-	private static native int prepareTimidity(String config, String config2, int jmono, int jcustResamp, int jPresSil, int jreloading, int jfreeInsts, int jverbosity);
+	private static native int prepareTimidity(String config, String config2, int jmono, int jcustResamp, int jPresSil, int jreloading, int jfreeInsts, int jverbosity, int jvolume);
 	private static native int loadSongTimidity(String filename);
 
 	// See globals for commands
@@ -352,7 +352,7 @@ public class JNIHandler {
 		}
 	}
 
-	public static int init(String path, String file, int mono, int resamp, int b, int r, boolean preserveSilence, boolean reloading, boolean freeInsts, int verbosity) {
+	public static int init(String path, String file, int mono, int resamp, int b, int r, boolean preserveSilence, boolean reloading, boolean freeInsts, int verbosity, int v) {
 		if (state == STATE_UNINIT) {
 
 			System.out.println(String.format(Locale.US, "Opening Timidity: Path: %s cfgFile: %s resample: %s mono: %s buffer: %d rate: %d", path, file, Globals.sampls[resamp], ((mono == 1) ? "true" : "false"), b, r));
@@ -370,7 +370,7 @@ public class JNIHandler {
 			if (mMediaPlayer == null)
 				mMediaPlayer = new MediaPlayer();
 
-			int code = prepareTimidity(path, path + file, (channelMode == 1) ? 1 : 0, resamp, preserveSilence ? 1 : 0, reloading ? 1 : 0, freeInsts ? 1 : 0, verbosity)
+			int code = prepareTimidity(path, path + file, (channelMode == 1) ? 1 : 0, resamp, preserveSilence ? 1 : 0, reloading ? 1 : 0, freeInsts ? 1 : 0, verbosity, v)
 					+ soxInit(reloading ? 1 : 0, rate);
 			state = STATE_IDLE; // TODO: Maybe keep as UNINIT if code != 0?
 			return code;
