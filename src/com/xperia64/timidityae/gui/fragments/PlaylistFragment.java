@@ -100,10 +100,11 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		if (getArguments() != null)
+		if (getArguments() != null) {
 			playlistDir = getArguments().getString(Constants.currPlistDirectory);
-		if (playlistDir == null)
-			playlistDir = File.separator; // TODO this should not be root.
+			if (playlistDir == null)
+				playlistDir = File.separator; // TODO this should not be root
+		}
 	}
 
 	@Override
@@ -115,7 +116,9 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 			v = inflater.inflate(R.layout.plist, container, false);
 		}
 		searchTxt = (EditText) v.findViewById(R.id.searchText);
-		searchTxt.setVisibility(View.GONE);
+		if(!isPlaylist) {
+			searchTxt.setVisibility(View.GONE);
+		}
 		searchTxt.addTextChangedListener(new TextWatcher() {
 			@Override
 			public void onTextChanged(CharSequence cs, int arg1, int arg2, int arg3) {
@@ -162,7 +165,7 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 		}
 		if (!gotPlaylists) {
 			gotPlaylists = true;
-			getPlaylists(null);
+			getPlaylists(isPlaylist?plistName:null);
 		}
 		if (!shouldUseDragNDrop()) {
 			getListView().setOnItemLongClickListener(new OnItemLongClickListener() {
@@ -274,7 +277,7 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 				}
 			}
 			path = Globals.normalToUuid(path);
-			((DynamicListView) getListView()).setDragState(which.equals("CURRENT")? DynamicListView.DragState.DRAG_DISABLED: DynamicListView.DragState.DRAG_ENABLED);
+			((DynamicListView) getListView()).setDragState(which.equals("CURRENT")? DynamicListView.DragState.DRAG_DISABLED:(searchTxt.getText().toString().isEmpty()?DynamicListView.DragState.DRAG_ENABLED:DynamicListView.DragState.DRAG_WARNING));
 			ada = fileList = new StableArrayAdapter(getActivity(), R.layout.row_menu, path, this, which.equals("CURRENT"));
 		}
 

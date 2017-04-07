@@ -148,7 +148,7 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 					break;
 				case Constants.ta_cmd_gui_play_full:
 					currSongName = intent.getStringExtra(Constants.ta_filename);
-					if (viewPager.getCurrentItem() == 1) {
+					if (viewPager.getCurrentItem() == 1 && menuButtonR != null && menuButtonL != null) {
 						menuButtonR.setIcon(R.drawable.ic_menu_agenda);
 						menuButtonR.setTitle(getResources().getString(R.string.view));
 						menuButtonR.setTitleCondensed(getResources().getString(R.string.viewcon));
@@ -437,6 +437,7 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 			tmp = getSupportFragmentManager().getFragment(savedInstanceState, "plfrag");
 			if (tmp != null)
 				plistFrag = (PlaylistFragment) tmp;
+
 			tmp = getSupportFragmentManager().getFragment(savedInstanceState, "fffrag");
 			if (tmp != null)
 				fileFrag = (FileBrowserFragment) tmp;

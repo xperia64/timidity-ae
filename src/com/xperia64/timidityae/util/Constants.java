@@ -125,7 +125,7 @@ public class Constants {
 	// Fragment Keys
 	public static final String currFoldKey = "CURRENT_FOLDER";
 	public static final String currPlistDirectory = "CURRENT_PLIST_DIR";
-
+	public static final String currPlistSearch = "CURRENT_PLIST_SEARCH";
 
 	// controlTimidity commands
 	public static final int jni_tim_none = 0;
@@ -164,6 +164,7 @@ public class Constants {
 	public static final int jni_tim_mute_clear = 33;
 	public static final int jni_tim_holdmask = 0x800;
 	public static final int jni_tim_unholdmask = 0x8000;
+
 
 
 
