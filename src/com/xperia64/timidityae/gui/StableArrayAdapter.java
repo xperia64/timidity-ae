@@ -44,7 +44,7 @@ public class StableArrayAdapter extends ArrayAdapter<String> implements Searchab
 	private PlistMenuCallback ayylmao;
 	private List<String> list;
 	private List<String> displayedList; // Values to be displayed
-	private List<Integer> realPositions;
+	private final List<Integer> realPositions;
 	private final boolean shouldHighlight;
 
 	public interface PlistMenuCallback {
@@ -153,36 +153,38 @@ public class StableArrayAdapter extends ArrayAdapter<String> implements Searchab
 			protected FilterResults performFiltering(CharSequence constraint) {
 				FilterResults results = new FilterResults();        // Holds the results of a filtering operation in values
 				List<String> FilteredArrList = new ArrayList<>();
+				synchronized (realPositions) {
 
-				if (list == null) {
-					list = new ArrayList<>(displayedList); // saves the original data in mOriginalValues
-				}
-
-				/********
-				 *
-				 *  If constraint(CharSequence that is received) is null returns the mOriginalValues(Original) values
-				 *  else does the Filtering and returns FilteredArrList(Filtered)
-				 *
-				 ********/
-				if (constraint == null || constraint.length() == 0) {
-
-					// set the Original result to return
-					results.count = list.size();
-					results.values = list;
-				} else {
-					constraint = constraint.toString().toLowerCase();
-					realPositions.clear();
-					for (int i = 0; i < list.size(); i++) {
-						String data = list.get(i);
-						if (data.toLowerCase().contains(constraint.toString())) {
-							FilteredArrList.add(data);
-							realPositions.add(i);
-						}
-
+					if (list == null) {
+						list = new ArrayList<>(displayedList); // saves the original data in mOriginalValues
 					}
-					// set the Filtered result to return
-					results.count = FilteredArrList.size();
-					results.values = FilteredArrList;
+
+					/********
+					 *
+					 *  If constraint(CharSequence that is received) is null returns the mOriginalValues(Original) values
+					 *  else does the Filtering and returns FilteredArrList(Filtered)
+					 *
+					 ********/
+					if (constraint == null || constraint.length() == 0) {
+
+						// set the Original result to return
+						results.count = list.size();
+						results.values = list;
+					} else {
+						constraint = constraint.toString().toLowerCase();
+						realPositions.clear();
+						for (int i = 0; i < list.size(); i++) {
+							String data = list.get(i);
+							if (data.toLowerCase().contains(constraint.toString())) {
+								FilteredArrList.add(data);
+								realPositions.add(i);
+							}
+
+						}
+						// set the Filtered result to return
+						results.count = FilteredArrList.size();
+						results.values = FilteredArrList;
+					}
 				}
 				return results;
 			}

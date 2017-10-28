@@ -21,11 +21,14 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.BitmapFactory;
 import android.media.MediaMetadataRetriever;
+import android.media.session.MediaSession;
+import android.media.session.PlaybackState;
 import android.os.Binder;
 import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.PowerManager;
+import android.os.SystemClock;
 import android.support.v4.app.NotificationCompat;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
@@ -165,6 +168,7 @@ public class MusicService extends Service {
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			if (intent.getAction().equals(Intent.ACTION_MEDIA_BUTTON)) {
+
 				KeyEvent event = intent.getParcelableExtra(Intent.EXTRA_KEY_EVENT);
 				if (event.getAction() == KeyEvent.ACTION_DOWN) {
 					switch (event.getKeyCode()) {
@@ -662,6 +666,8 @@ public class MusicService extends Service {
 		}
 	};
 
+	MediaSession audioSession;
+
 	@Override
 	public void onCreate() {
 		super.onCreate();
@@ -671,6 +677,59 @@ public class MusicService extends Service {
 			intentFilter.addAction(Intent.ACTION_HEADSET_PLUG);
 			intentFilter.addAction(Intent.ACTION_MEDIA_BUTTON);
 			registerReceiver(serviceReceiver, intentFilter);
+
+			// Lollipop+ MediaButton receiver
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && audioSession == null) {
+				audioSession = new MediaSession(getApplicationContext(), "TimidityAE");
+				audioSession.setCallback(new MediaSession.Callback() {
+					@Override
+					public boolean onMediaButtonEvent(final Intent mediaButtonIntent) {
+						String intentAction = mediaButtonIntent.getAction();
+						if (Intent.ACTION_MEDIA_BUTTON.equals(intentAction)) {
+							KeyEvent event = mediaButtonIntent.getParcelableExtra(Intent.EXTRA_KEY_EVENT);
+							if (event != null) {
+								if (event.getAction() == KeyEvent.ACTION_DOWN) {
+									switch (event.getKeyCode()) {
+										case KeyEvent.KEYCODE_MEDIA_PLAY:
+										case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
+										case KeyEvent.KEYCODE_MEDIA_PAUSE:
+											if (JNIHandler.isActive()) {
+												pause();
+											} else {
+												play();
+											}
+											break;
+										case KeyEvent.KEYCODE_MEDIA_NEXT:
+											shouldAdvance = false;
+											next();
+											break;
+										case KeyEvent.KEYCODE_MEDIA_PREVIOUS:
+											shouldAdvance = false;
+											previous();
+											break;
+										case KeyEvent.KEYCODE_MEDIA_STOP:
+											fullStop = true;
+											shouldAdvance = false;
+											stop();
+											break;
+									}
+								}
+							}
+						}
+						return true;
+					}
+				});
+				PlaybackState state = new PlaybackState.Builder()
+						.setActions(PlaybackState.ACTION_PLAY_PAUSE| PlaybackState.ACTION_SKIP_TO_NEXT | PlaybackState.ACTION_SKIP_TO_PREVIOUS | PlaybackState.ACTION_STOP)
+						.setState(PlaybackState.STATE_PLAYING, 0, 0, 0)
+						.build();
+				audioSession.setPlaybackState(state);
+
+				audioSession.setFlags(MediaSession.FLAG_HANDLES_MEDIA_BUTTONS | MediaSession.FLAG_HANDLES_TRANSPORT_CONTROLS);
+
+				audioSession.setActive(true);
+			}
+
 		}
 		Intent outgoingIntent = new Intent();
 		outgoingIntent.setAction(Constants.ta_rec);
@@ -698,6 +757,9 @@ public class MusicService extends Service {
 	public void onDestroy() {
 		super.onDestroy();
 		unregisterReceiver(serviceReceiver);
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+			audioSession.release();
+		}
 	}
 
 	public void toastErrorCode(final int code) {

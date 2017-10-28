@@ -107,6 +107,11 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 		}
 	}
 
+	public synchronized void updateFilter(CharSequence cs) {
+		ada.getFilter().filter(cs);
+		oldSearchTxt = cs.toString();
+	}
+
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View v;
@@ -130,8 +135,7 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 						// This branch is to prevent that.
 						//System.out.println("Warning: Not filtering the same string");
 					}else {
-						ada.getFilter().filter(cs);
-						oldSearchTxt = cs.toString();
+						updateFilter(cs);
 					}
 					if(getListView() instanceof DynamicListView && plistName != null) {
 						if (cs.toString().isEmpty()) {
@@ -159,7 +163,7 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 	public void onViewCreated(View view, Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 		if (shouldUseDragNDrop()) {
-			// We alread check for this in the above statement
+			// We already check for this in the above statement
 			//noinspection NewApi
 			((DynamicListView) getListView()).setDraggerCallback(this);
 		}
