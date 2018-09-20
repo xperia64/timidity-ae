@@ -8,10 +8,12 @@
  ******************************************************************************/
 package com.xperia64.timidityae;
 
+import android.media.AudioAttributes;
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioTrack;
 import android.media.MediaPlayer;
+import android.os.Build;
 
 import com.xperia64.timidityae.util.Constants;
 import com.xperia64.timidityae.util.Globals;
@@ -352,9 +354,12 @@ public class JNIHandler {
 		}
 	}
 
+	private static AudioAttributes mAudioAttributes;
 	public static int init(String path, String file, int mono, int resamp, int b, int r, boolean preserveSilence, boolean reloading, boolean freeInsts, int verbosity, int v) {
 		if (state == STATE_UNINIT) {
-
+			if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+				mAudioAttributes = new AudioAttributes.Builder().setContentType(AudioAttributes.CONTENT_TYPE_MUSIC).setUsage(AudioAttributes.USAGE_MEDIA).build();
+			}
 			System.out.println(String.format(Locale.US, "Opening Timidity: Path: %s cfgFile: %s resample: %s mono: %s buffer: %d rate: %d", path, file, Globals.sampls[resamp], ((mono == 1) ? "true" : "false"), b, r));
 			System.out.println("Max channels: " + MAX_CHANNELS);
 			for (int i = 0; i < MAX_CHANNELS; i++) {
@@ -418,7 +423,11 @@ public class JNIHandler {
 						try {
 							mMediaPlayer.setOnCompletionListener(null);
 							mMediaPlayer.reset();
-							mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+							if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+								mMediaPlayer.setAudioAttributes(mAudioAttributes);
+							} else {
+								mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+							}
 							mMediaPlayer.setVolume(100, 100);
 							mMediaPlayer.setDataSource(songTitle);
 							mMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
@@ -444,10 +453,16 @@ public class JNIHandler {
 					case FMT_SOX:
 						playThread = new Thread(new Runnable() {
 							public void run() {
-								mAudioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, rate,
-										AudioFormat.CHANNEL_OUT_STEREO,
-										AudioFormat.ENCODING_PCM_16BIT,
-										buffer, AudioTrack.MODE_STREAM);
+								if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+									mAudioTrack = new AudioTrack(mAudioAttributes, new AudioFormat.Builder().setChannelMask(AudioFormat.CHANNEL_OUT_STEREO).setEncoding(AudioFormat.ENCODING_PCM_16BIT).setSampleRate(rate).build(),
+											buffer, AudioTrack.MODE_STREAM, AudioManager.AUDIO_SESSION_ID_GENERATE);
+								} else {
+									mAudioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, rate,
+											AudioFormat.CHANNEL_OUT_STEREO,
+											AudioFormat.ENCODING_PCM_16BIT,
+											buffer, AudioTrack.MODE_STREAM);
+								}
+
 								mAudioTrack.play();
 								state = STATE_PLAYING;
 								String[][] soxEffects = {};
@@ -479,10 +494,15 @@ public class JNIHandler {
 						// timidity stuff for black midi.
 						playThread = new Thread(new Runnable() {
 							public void run() {
-								mAudioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, rate,
-										(channelMode == 2) ? AudioFormat.CHANNEL_OUT_STEREO : AudioFormat.CHANNEL_OUT_MONO,
-										AudioFormat.ENCODING_PCM_16BIT,
-										buffer, AudioTrack.MODE_STREAM);
+								if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+									mAudioTrack = new AudioTrack(mAudioAttributes, new AudioFormat.Builder().setChannelMask((channelMode == 2)?AudioFormat.CHANNEL_OUT_STEREO:AudioFormat.CHANNEL_OUT_MONO).setEncoding(AudioFormat.ENCODING_PCM_16BIT).setSampleRate(rate).build(),
+											buffer, AudioTrack.MODE_STREAM, AudioManager.AUDIO_SESSION_ID_GENERATE);
+								} else {
+									mAudioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, rate,
+											(channelMode == 2) ? AudioFormat.CHANNEL_OUT_STEREO : AudioFormat.CHANNEL_OUT_MONO,
+											AudioFormat.ENCODING_PCM_16BIT,
+											buffer, AudioTrack.MODE_STREAM);
+								}
 
 								if (!(currentWavWriter != null && !currentWavWriter.finishedWriting)) {
 									try {

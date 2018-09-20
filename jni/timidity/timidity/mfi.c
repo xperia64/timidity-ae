@@ -343,7 +343,7 @@ typedef struct LastNoteInfo {
 #define SEND_LASTNOTEINFO(lni, ch)				if (LASTNOTEINFO_HAS_DATA((lni)[ch])) SendLastNoteInfo(lni, ch);
 #define SEND_AND_CLEAR_LASTNOTEINFO(lni, ch)	if (LASTNOTEINFO_HAS_DATA((lni)[ch])) { SendLastNoteInfo(lni, ch); (lni)[ch].on = NO_LAST_NOTE_INFO; }
 
-inline void StoreLastNoteInfo(LastNoteInfo *info, int channel, int time, int duration, int note, int velocity)
+/*inline*/ void StoreLastNoteInfo(LastNoteInfo *info, int channel, int time, int duration, int note, int velocity)
 {
 	info[channel].on = time;
 	info[channel].off = time + duration;
@@ -351,7 +351,7 @@ inline void StoreLastNoteInfo(LastNoteInfo *info, int channel, int time, int dur
 	info[channel].velocity = velocity;
 }
 
-inline void SendLastNoteInfo(const LastNoteInfo *info, int channel)
+/*inline*/ void SendLastNoteInfo(const LastNoteInfo *info, int channel)
 {
 	NOTE_BUF_EV_DEBUGSTR(channel, info[channel].on, note_name[info[channel].note % 12], info[channel].note / 12, info[channel].velocity, info[channel].off);
 	MIDIEVENT(info[channel].on, ME_NOTEON, channel, info[channel].note, info[channel].velocity);

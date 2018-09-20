@@ -26,6 +26,7 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -199,7 +200,12 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 		}
 	}
 
+	boolean getplaylisthreadrunning = false;
 	public void getPlaylists(final String which) {
+
+		if(getplaylisthreadrunning)
+			return;
+
 		if(which == null || which.equals("CURRENT"))
 		{
 			searchTxt.setVisibility(View.GONE);
@@ -207,30 +213,45 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 		}else{
 			searchTxt.setVisibility(View.VISIBLE);
 		}
-		if (shouldUseDragNDrop()) {
-			// We alread check for this in the above statement
-			//noinspection NewApi
-			getPlaylists14(which);
-		} else {
-			getPlaylists13(which);
-		}
-		if(scrollPosition>=0)
-		{
-			if(scrollPosition>=getListView().getCount())
-			{
-				scrollPosition = getListView().getCount()-1;
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				getplaylisthreadrunning = true;
+				ListAdapter l;
+				if (shouldUseDragNDrop()) {
+					// We alread check for this in the above statement
+					//noinspection NewApi
+					l = getPlaylists14(which);
+				} else {
+					l = getPlaylists13(which);
+				}
+				getActivity().runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						setListAdapter(l);
+						if(scrollPosition>=0)
+						{
+							if(scrollPosition>=getListView().getCount())
+							{
+								scrollPosition = getListView().getCount()-1;
+							}
+							getListView().setSelection(scrollPosition);
+							scrollPosition = -1;
+						}
+					}
+				});
+				getplaylisthreadrunning = false;
 			}
-			getListView().setSelection(scrollPosition);
-			scrollPosition = -1;
-		}
+		}).run();
 	}
 
 	@RequiresApi(api = Build.VERSION_CODES.ICE_CREAM_SANDWICH)
-	public void getPlaylists14(final String which) {
+	public ListAdapter getPlaylists14(final String which) {
 		StableArrayAdapter fileList = null;
 		if (which == null) // Root playlist dir.
 		{
 			isPlaylist = false;
+
 			mCallback.needPlaylistBackCallback(false, false);
 			fname = new ArrayList<>();
 			path = new ArrayList<>();
@@ -284,14 +305,13 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 			((DynamicListView) getListView()).setDragState(which.equals("CURRENT")? DynamicListView.DragState.DRAG_DISABLED:(searchTxt.getText().toString().isEmpty()?DynamicListView.DragState.DRAG_ENABLED:DynamicListView.DragState.DRAG_WARNING));
 			ada = fileList = new StableArrayAdapter(getActivity(), R.layout.row_menu, path, this, which.equals("CURRENT"));
 		}
-
-		setListAdapter(fileList);
 		if(ada != null)
 			ada.getFilter().filter(searchTxt.getText());
 		oldSearchTxt = searchTxt.getText().toString();
+		return fileList;
 	}
 
-	public void getPlaylists13(final String which) {
+	ListAdapter getPlaylists13(final String which) {
 		if (which == null) // Root playlist dir.
 		{
 			isPlaylist = false;
@@ -346,9 +366,10 @@ public class PlaylistFragment extends ListFragment implements FileBrowserDialogL
 
 		SearchableArrayAdapter fileList = new SearchableArrayAdapter(getActivity(), R.layout.row, fname, which!=null && which.equals("CURRENT"));
 		ada = fileList;
-		setListAdapter(fileList);
+
 		ada.getFilter().filter(searchTxt.getText());
 		oldSearchTxt = searchTxt.getText().toString();
+		return fileList;
 	}
 
 	public ArrayList<String> parsePlist(String path) {

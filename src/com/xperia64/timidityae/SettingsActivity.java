@@ -14,13 +14,14 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.preference.EditTextPreference;
 import android.preference.PreferenceManager;
-import android.preference.PreferenceScreen;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.preference.EditTextPreference;
+import android.support.v7.preference.PreferenceScreen;
+import android.util.Log;
 import android.view.MenuItem;
 import android.widget.BaseAdapter;
 import android.widget.Toast;
@@ -126,12 +127,12 @@ public class SettingsActivity extends AppCompatActivity implements FileBrowserDi
 						prefs.edit().putString("defaultPath", path).commit();
 						tmpItemEdit.setText(path);
 						SettingsStorage.homeFolder = path;
-						((BaseAdapter) tmpItemScreen.getRootAdapter()).notifyDataSetChanged();
+						//((BaseAdapter) tmpItemScreen.getRootAdapter()).notifyDataSetChanged();
 						break;
 					case 4:
 						prefs.edit().putString("dataDir", path).commit();
 						tmpItemEdit.setText(path);
-						((BaseAdapter) tmpItemScreen.getRootAdapter()).notifyDataSetChanged();
+						//((BaseAdapter) tmpItemScreen.notifyChanged().getRootAdapter()).notifyDataSetChanged();
 						break;
 					case 5:
 						// soundfont fun

@@ -10,6 +10,7 @@ package com.xperia64.timidityae;
 
 import android.annotation.SuppressLint;
 import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -1088,13 +1089,32 @@ public class MusicService extends Service {
 		remoteViews.setOnClickPendingIntent(R.id.notStop, pendingNotificationIntent);
 		final Intent emptyIntent = new Intent(this, TimidityActivity.class);
 		// emptyIntent.addFlags(Intent.FLAG_RECEIVER_FOREGROUND);
+
+		NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+		String NOTIFICATION_CHANNEL_ID = "timidity_playing_channel";
+		NotificationCompat.Builder mBuilder;
 		PendingIntent pendingIntent = PendingIntent.getActivity(this, 5, emptyIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-		NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this).setContentTitle(getResources().getString(R.string.app_name)).setContentText(currTitle).setContentIntent(pendingIntent).setContent(remoteViews);
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-			mBuilder.setSmallIcon(R.drawable.ic_lol);
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+			NotificationChannel notificationChannel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, "Timidity AE", NotificationManager.IMPORTANCE_LOW);
+
+			// Configure the notification channel.
+			notificationChannel.setDescription("Timidity AE Playback Controls");
+			notificationChannel.enableVibration(false);
+			notificationChannel.enableLights(false);
+			mNotificationManager.createNotificationChannel(notificationChannel);
+			mBuilder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID).setSmallIcon(R.drawable.ic_lol);
+
 		} else {
-			mBuilder.setSmallIcon(R.drawable.ic_launcher);
+			mBuilder = new NotificationCompat.Builder(this);
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+				mBuilder.setSmallIcon(R.drawable.ic_lol);
+			} else {
+				mBuilder.setSmallIcon(R.drawable.ic_launcher);
+			}
 		}
+
+		mBuilder = mBuilder.setContentTitle(getResources().getString(R.string.app_name)).setContentText(currTitle).setContentIntent(pendingIntent).setContent(remoteViews);
+
 		mainNotification = mBuilder.build();
 		mainNotification.flags |= Notification.FLAG_ONLY_ALERT_ONCE | Notification.FLAG_ONGOING_EVENT;
 		if (!foreground) {
@@ -1116,7 +1136,7 @@ public class MusicService extends Service {
 			if (!wl.isHeld()) {
 				wl.acquire();
 			}
-			NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
 			mNotificationManager.notify(Globals.NOTIFICATION_ID, mainNotification);
 		}
 		if (shouldDoWidget) {

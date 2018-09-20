@@ -15,15 +15,15 @@ import android.media.AudioTrack;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
-import android.preference.CheckBoxPreference;
-import android.preference.EditTextPreference;
-import android.preference.ListPreference;
-import android.preference.Preference;
+import android.support.v7.preference.CheckBoxPreference;
+import android.support.v7.preference.EditTextPreference;
+import android.support.v7.preference.ListPreference;
+import android.support.v7.preference.Preference;
+import android.support.v7.preference.PreferenceFragmentCompat;
 import android.util.SparseIntArray;
 import android.widget.BaseAdapter;
 import android.widget.Toast;
 
-import com.github.machinarius.preferencefragment.PreferenceFragment;
 import com.xperia64.timidityae.R;
 import com.xperia64.timidityae.SettingsActivity;
 import com.xperia64.timidityae.gui.dialogs.FileBrowserDialog;
@@ -35,7 +35,7 @@ import com.xperia64.timidityae.util.SettingsStorage;
  * Created by xperia64 on 1/2/17.
  */
 
-public class TimidityPrefsFragment extends PreferenceFragment {
+public class TimidityPrefsFragment extends PreferenceFragmentCompat {
 	SettingsActivity s;
 
 	// TiMidity++ Settings
@@ -166,8 +166,8 @@ public class TimidityPrefsFragment extends PreferenceFragment {
 							s.prefs.edit().putString("tplusBuff", Integer.toString(minBuff)).commit();
 							bufferSize.setText(Integer.toString(minBuff));
 							Toast.makeText(s, getResources().getString(R.string.invalidbuff), Toast.LENGTH_SHORT).show();
-							((BaseAdapter) TimidityPrefsFragment.this.getPreferenceScreen().getRootAdapter()).notifyDataSetChanged();
-							((BaseAdapter) TimidityPrefsFragment.this.getPreferenceScreen().getRootAdapter()).notifyDataSetInvalidated();
+							//((BaseAdapter) TimidityPrefsFragment.this.getPreferenceScreen().getRootAdapter()).notifyDataSetChanged();
+							//((BaseAdapter) TimidityPrefsFragment.this.getPreferenceScreen().getRootAdapter()).notifyDataSetInvalidated();
 						}
 					}
 				}
@@ -193,8 +193,8 @@ public class TimidityPrefsFragment extends PreferenceFragment {
 							s.prefs.edit().putString("tplusBuff", Integer.toString(minBuff)).commit();
 							bufferSize.setText(Integer.toString(minBuff));
 							Toast.makeText(s, getResources().getString(R.string.invalidbuff), Toast.LENGTH_SHORT).show();
-							((BaseAdapter) TimidityPrefsFragment.this.getPreferenceScreen().getRootAdapter()).notifyDataSetChanged();
-							((BaseAdapter) TimidityPrefsFragment.this.getPreferenceScreen().getRootAdapter()).notifyDataSetInvalidated();
+							//((BaseAdapter) TimidityPrefsFragment.this.getPreferenceScreen().getRootAdapter()).notifyDataSetChanged();
+							//((BaseAdapter) TimidityPrefsFragment.this.getPreferenceScreen().getRootAdapter()).notifyDataSetInvalidated();
 						}
 					}
 				}
@@ -246,8 +246,8 @@ public class TimidityPrefsFragment extends PreferenceFragment {
 									s.prefs.edit().putString("tplusBuff", Integer.toString(minBuff)).commit();
 									((EditTextPreference) preference).setText(Integer.toString(minBuff));
 									Toast.makeText(s, getResources().getString(R.string.invalidbuff), Toast.LENGTH_SHORT).show();
-									((BaseAdapter) TimidityPrefsFragment.this.getPreferenceScreen().getRootAdapter()).notifyDataSetChanged();
-									((BaseAdapter) TimidityPrefsFragment.this.getPreferenceScreen().getRootAdapter()).notifyDataSetInvalidated();
+									//((BaseAdapter) TimidityPrefsFragment.this.getPreferenceScreen().getRootAdapter()).notifyDataSetChanged();
+									//((BaseAdapter) TimidityPrefsFragment.this.getPreferenceScreen().getRootAdapter()).notifyDataSetInvalidated();
 									return false;
 								}
 							}
@@ -337,5 +337,10 @@ public class TimidityPrefsFragment extends PreferenceFragment {
 				return true;
 			}
 		});
+	}
+
+	@Override
+	public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
+
 	}
 }

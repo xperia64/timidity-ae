@@ -9,5 +9,7 @@
 	<style name="AppBaseTheme" parent="android:Theme.Holo.Light.DarkActionBar">
 		<!-- API 14 theme customizations can go here. -->
 	</style>
-
+	<style name="AppTheme.SettingsTheme" parent="android:Theme.Holo.Light.NoActionBar">
+		<item name="preferenceTheme">@style/PreferenceThemeOverlay.v14.Material</item>
+	</style>
 </resources>

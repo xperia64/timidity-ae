@@ -13,12 +13,12 @@ import android.content.UriPermission;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.preference.EditTextPreference;
-import android.preference.ListPreference;
-import android.preference.Preference;
 import android.support.annotation.RequiresApi;
+import android.support.v7.preference.EditTextPreference;
+import android.support.v7.preference.ListPreference;
+import android.support.v7.preference.Preference;
+import android.support.v7.preference.PreferenceFragmentCompat;
 
-import com.github.machinarius.preferencefragment.PreferenceFragment;
 import com.xperia64.timidityae.R;
 import com.xperia64.timidityae.SettingsActivity;
 import com.xperia64.timidityae.gui.dialogs.FileBrowserDialog;
@@ -28,7 +28,7 @@ import com.xperia64.timidityae.util.SettingsStorage;
 import java.io.IOException;
 import java.util.List;
 
-public class DisplayPrefsFragment extends PreferenceFragment {
+public class DisplayPrefsFragment extends PreferenceFragmentCompat {
 	SettingsActivity s;
 
 	private ListPreference themePref; // Theme selection
@@ -111,5 +111,10 @@ public class DisplayPrefsFragment extends PreferenceFragment {
 				return true;
 			}
 		});
+	}
+
+	@Override
+	public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
+
 	}
 }

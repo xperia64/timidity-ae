@@ -9,11 +9,11 @@
 package com.xperia64.timidityae.gui.fragments;
 
 import android.os.Bundle;
+import android.support.v7.preference.PreferenceFragmentCompat;
 
-import com.github.machinarius.preferencefragment.PreferenceFragment;
 import com.xperia64.timidityae.SettingsActivity;
 
-public class SoxPrefsFragment extends PreferenceFragment {
+public class SoxPrefsFragment extends PreferenceFragmentCompat {
 	SettingsActivity s;
 
 	@Override
@@ -22,6 +22,11 @@ public class SoxPrefsFragment extends PreferenceFragment {
 		s = (SettingsActivity) getActivity();
 		// Load the preferences from an XML resource
 		// TODO addPreferencesFromResource(R.xml.settings_sox);
+
+	}
+
+	@Override
+	public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
 
 	}
 

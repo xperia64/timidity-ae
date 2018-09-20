@@ -9,11 +9,10 @@
 package com.xperia64.timidityae.gui.fragments;
 
 import android.os.Bundle;
-import android.preference.CheckBoxPreference;
-import android.preference.Preference;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v7.preference.Preference;
+import android.support.v7.preference.PreferenceFragmentCompat;
 
-import com.github.machinarius.preferencefragment.PreferenceFragment;
 import com.xperia64.timidityae.R;
 import com.xperia64.timidityae.SettingsActivity;
 import com.xperia64.timidityae.gui.dialogs.SoxEffectsDialog;
@@ -22,7 +21,7 @@ import com.xperia64.timidityae.util.ObjectSerializer;
 import java.io.IOException;
 import java.util.ArrayList;
 
-public class RootPrefsFragment extends PreferenceFragment {
+public class RootPrefsFragment extends PreferenceFragmentCompat {
 	SettingsActivity s;
 
 	private Preference disp;
@@ -110,5 +109,10 @@ public class RootPrefsFragment extends PreferenceFragment {
 			mFragmentTransaction.addToBackStack(SettingsActivity.ROOT_PREFS);
 			mFragmentTransaction.commit();
 		}
+	}
+
+	@Override
+	public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
+
 	}
 }
