@@ -91,7 +91,8 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 	String fileFragDir = null;
 	int oldTheme;
 	boolean oldPlist;
-
+	boolean fromOnCreate = false;
+	boolean fixResume = false;
 	ArrayList<String> queuedPlist = null;
 	int queuedPosition = -1;
 
@@ -235,6 +236,11 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 						queuedPlist = null;
 						queuedPosition = -1;
 					}
+					if(fixResume) {
+						fixResume = false;
+						loop(playFrag.loopMode);
+						shuffle(playFrag.shuffleMode);
+					}
 					break;
 				case Constants.ta_cmd_sox_dialog:
 					new SoxEffectsDialog().create(TimidityActivity.this, getLayoutInflater());
@@ -251,6 +257,22 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 	@Override
 	protected void onResume() {
 		deadlyDeath = false;
+		if(!fromOnCreate) {
+			// TODO Does this die too?
+			if (activityReceiver != null) {
+				// Create an intent filter to listen to the broadcast sent with the
+				// action "ACTION_STRING_ACTIVITY"
+				IntentFilter intentFilter = new IntentFilter(Constants.ta_rec);
+				// Map the intent filter to the receiver
+				registerReceiver(activityReceiver, intentFilter);
+			}
+			if(!isMyServiceRunning(MusicService.class)){
+				fixResume = true;
+				Globals.probablyFresh = 0;
+				startService(new Intent(this, MusicService.class));
+			}
+		}
+		fromOnCreate = false;
 		super.onResume();
 	}
 
@@ -417,6 +439,7 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 		oldTheme = SettingsStorage.theme;
 		oldPlist = SettingsStorage.enableDragNDrop;
 		this.setTheme((SettingsStorage.theme == 1) ? android.support.v7.appcompat.R.style.Theme_AppCompat_Light_DarkActionBar : android.support.v7.appcompat.R.style.Theme_AppCompat);
+		fromOnCreate = true;
 		super.onCreate(savedInstanceState);
 		if (savedInstanceState == null) {
 			Log.i("Timidity", "Initializing");
@@ -441,7 +464,7 @@ public class TimidityActivity extends AppCompatActivity implements FileBrowserFr
 			tmp = getSupportFragmentManager().getFragment(savedInstanceState, "fffrag");
 			if (tmp != null)
 				fileFrag = (FileBrowserFragment) tmp;
-			if (!isMyServiceRunning(MusicService.class)) {
+			if (needService) {
 				SettingsStorage.reloadSettings(this, getAssets());
 				initCallback2();
 				if (viewPager != null) {

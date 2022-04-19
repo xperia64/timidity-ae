@@ -21,6 +21,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.BitmapFactory;
+import android.media.MediaMetadata;
 import android.media.MediaMetadataRetriever;
 import android.media.session.MediaSession;
 import android.media.session.PlaybackState;
@@ -30,6 +31,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.os.SystemClock;
+import android.support.annotation.RequiresApi;
 import android.support.v4.app.NotificationCompat;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
@@ -89,6 +91,7 @@ public class MusicService extends Service {
 	RemoteViews remoteViews;
 	Random random = new Random(System.currentTimeMillis());
 	private final IBinder musicBind = new MusicBinder();
+
 
 	@Override
 	public IBinder onBind(Intent arg0) {
@@ -280,10 +283,10 @@ public class MusicService extends Service {
 						loopMode = tmpMode;
 						break;
 					case Constants.msrv_cmd_shuf_mode: // Shuffle mode
+						shuffleMode = intent.getIntExtra(Constants.msrv_shufmode, 0);
 						if (playList == null) {
 							break;
 						}
-						shuffleMode = intent.getIntExtra(Constants.msrv_shufmode, 0);
 						if (shuffleMode == 1) {
 							fixedShuffle = false;
 							if (SettingsStorage.reShuffle || reverseShuffledIndices == null || shuffledIndices == null) {
@@ -667,8 +670,40 @@ public class MusicService extends Service {
 		}
 	};
 
+	@RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+	public void handleKeycode(int keycode) {
+		switch (keycode) {
+			case KeyEvent.KEYCODE_MEDIA_PLAY:
+			case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
+			case KeyEvent.KEYCODE_MEDIA_PAUSE:
+				if (JNIHandler.isActive()) {
+					audioSession.setPlaybackState(new PlaybackState.Builder().setState(PlaybackState.STATE_PAUSED, 0, 0, 0).build());
+					pause();
+				} else {
+					audioSession.setPlaybackState(new PlaybackState.Builder().setState(PlaybackState.STATE_PLAYING, 0, 0, 0).build());
+					play();
+				}
+				break;
+			case KeyEvent.KEYCODE_MEDIA_NEXT:
+				shouldAdvance = false;
+				next();
+				audioSession.setPlaybackState(new PlaybackState.Builder().setState(PlaybackState.STATE_PLAYING, 0, 0, 0).build());
+				break;
+			case KeyEvent.KEYCODE_MEDIA_PREVIOUS:
+				shouldAdvance = false;
+				previous();
+				audioSession.setPlaybackState(new PlaybackState.Builder().setState(PlaybackState.STATE_PLAYING, 0, 0, 0).build());
+				break;
+			case KeyEvent.KEYCODE_MEDIA_STOP:
+				fullStop = true;
+				shouldAdvance = false;
+				audioSession.setPlaybackState(new PlaybackState.Builder().setState(PlaybackState.STATE_STOPPED, 0, 0, 0).build());
+				stop();
+				break;
+		}
+	}
 	MediaSession audioSession;
-
+	private int d = 0;
 	@Override
 	public void onCreate() {
 		super.onCreate();
@@ -678,7 +713,6 @@ public class MusicService extends Service {
 			intentFilter.addAction(Intent.ACTION_HEADSET_PLUG);
 			intentFilter.addAction(Intent.ACTION_MEDIA_BUTTON);
 			registerReceiver(serviceReceiver, intentFilter);
-
 			// Lollipop+ MediaButton receiver
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && audioSession == null) {
 				audioSession = new MediaSession(getApplicationContext(), "TimidityAE");
@@ -690,29 +724,32 @@ public class MusicService extends Service {
 							KeyEvent event = mediaButtonIntent.getParcelableExtra(Intent.EXTRA_KEY_EVENT);
 							if (event != null) {
 								if (event.getAction() == KeyEvent.ACTION_DOWN) {
-									switch (event.getKeyCode()) {
-										case KeyEvent.KEYCODE_MEDIA_PLAY:
-										case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
-										case KeyEvent.KEYCODE_MEDIA_PAUSE:
-											if (JNIHandler.isActive()) {
-												pause();
-											} else {
-												play();
+									if(event.getKeyCode() == KeyEvent.KEYCODE_HEADSETHOOK) {
+										d++;
+										Handler handler = new Handler();
+										Runnable r = new Runnable() {
+											@Override
+											public void run() {
+												// single click *******************************
+												if (d == 1) {
+													handleKeycode(KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE);
+												}
+												// double click *********************************
+												if (d == 2) {
+													handleKeycode(KeyEvent.KEYCODE_MEDIA_NEXT);
+												}
+
+												if (d == 3) {
+													handleKeycode(KeyEvent.KEYCODE_MEDIA_PREVIOUS);
+												}
+												d = 0;
 											}
-											break;
-										case KeyEvent.KEYCODE_MEDIA_NEXT:
-											shouldAdvance = false;
-											next();
-											break;
-										case KeyEvent.KEYCODE_MEDIA_PREVIOUS:
-											shouldAdvance = false;
-											previous();
-											break;
-										case KeyEvent.KEYCODE_MEDIA_STOP:
-											fullStop = true;
-											shouldAdvance = false;
-											stop();
-											break;
+										};
+										if (d == 1) {
+											handler.postDelayed(r, 500);
+										}
+									} else {
+										handleKeycode(event.getKeyCode());
 									}
 								}
 							}
@@ -725,7 +762,6 @@ public class MusicService extends Service {
 						.setState(PlaybackState.STATE_PLAYING, 0, 0, 0)
 						.build();
 				audioSession.setPlaybackState(state);
-
 				audioSession.setFlags(MediaSession.FLAG_HANDLES_MEDIA_BUTTONS | MediaSession.FLAG_HANDLES_TRANSPORT_CONTROLS);
 
 				audioSession.setActive(true);
@@ -737,7 +773,7 @@ public class MusicService extends Service {
 		outgoingIntent.putExtra(Constants.ta_cmd, Constants.ta_cmd_service_started);
 		sendBroadcast(outgoingIntent);
 		pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
-		wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "Timidity AE");
+		wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "TimidityAE:servicewakelock");
 		wl.setReferenceCounted(false);
 		if (shouldDoWidget)
 			widgetIds = AppWidgetManager.getInstance(getApplication()).getAppWidgetIds(new ComponentName(getApplication(), TimidityAEWidgetProvider.class));
@@ -848,7 +884,6 @@ public class MusicService extends Service {
 				currTitle = handleMetadata(fileName);
 				shouldAdvance = true;
 				paused = false;
-
 				final int x = JNIHandler.play(fileName);
 				if (x != 0) {
 					toastErrorCode(x);
@@ -1169,18 +1204,27 @@ public class MusicService extends Service {
 			} catch (Exception ignored) {}
 		}
 		if (!goodart) {
-			String goodPath = fileName.substring(0, fileName.lastIndexOf('/') + 1) + "folder.jpg";
+			String goodPath = fileName + ".jpg";
 			if (new File(goodPath).exists()) {
 				try {
 					Globals.currArt = BitmapFactory.decodeFile(goodPath);
 				} catch (RuntimeException ignored) {}
 			} else {
-				// Try albumart.jpg
-				goodPath = fileName.substring(0, fileName.lastIndexOf('/') + 1) + "AlbumArt.jpg";
+				goodPath = fileName.substring(0, fileName.lastIndexOf('/') + 1) + "folder.jpg";
 				if (new File(goodPath).exists()) {
 					try {
 						Globals.currArt = BitmapFactory.decodeFile(goodPath);
-					} catch (RuntimeException ignored) {}
+					} catch (RuntimeException ignored) {
+					}
+				} else {
+					// Try albumart.jpg
+					goodPath = fileName.substring(0, fileName.lastIndexOf('/') + 1) + "AlbumArt.jpg";
+					if (new File(goodPath).exists()) {
+						try {
+							Globals.currArt = BitmapFactory.decodeFile(goodPath);
+						} catch (RuntimeException ignored) {
+						}
+					}
 				}
 			}
 		}

@@ -2,6 +2,7 @@ package com.xperia64.timidityae.gui;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,8 +13,10 @@ import android.widget.TextView;
 import com.xperia64.timidityae.R;
 import com.xperia64.timidityae.util.Globals;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * Created by xperia64 on 1/3/17.
@@ -39,7 +42,10 @@ public class SearchableArrayAdapter extends ArrayAdapter<String> implements Sear
 
 	@Override
 	public int getCount() {
-		return displayedList.size();
+		if(displayedList != null)
+			return displayedList.size();
+		else
+			return 0;
 	}
 
 	@Override
@@ -113,11 +119,19 @@ public class SearchableArrayAdapter extends ArrayAdapter<String> implements Sear
 						results.count = list.size();
 						results.values = list;
 					} else {
-						constraint = constraint.toString().toLowerCase();
+						String s = constraint.toString().toLowerCase();
+						if(!s.endsWith("$") && !s.startsWith("^")) {
+							s = "^.*" + s + ".*$";
+						}
+						Pattern p = Pattern.compile(s, Pattern.CASE_INSENSITIVE);
 						realPositions.clear();
 						for (int i = 0; i < list.size(); i++) {
 							String data = list.get(i);
-							if (data.toLowerCase().contains(constraint.toString())) {
+							/*if (data.toLowerCase().contains(s.toString())) {
+								FilteredArrList.add(data);
+								realPositions.add(i);
+							}*/
+							if (p.matcher(data.substring(data.lastIndexOf(File.separatorChar)+1, data.length()-9).toLowerCase()).matches()) {
 								FilteredArrList.add(data);
 								realPositions.add(i);
 							}
@@ -136,6 +150,9 @@ public class SearchableArrayAdapter extends ArrayAdapter<String> implements Sear
 
 	@Override
 	public int currentToReal(int position) {
-		return realPositions.get(position);
+		if(realPositions != null && realPositions.size() > 0)
+			return realPositions.get(position);
+		else
+			return 0;
 	}
 }

@@ -59,8 +59,8 @@ import java.util.Locale;
 public class PlayerFragment extends Fragment {
 
 	//private boolean shouldAdvance = true;
-	private int loopMode = 1;
-	private int shuffleMode = 0;
+	public int loopMode = 1;
+	public int shuffleMode = 0;
 	private boolean firstSelection;
 	private boolean changingTime = false;
 	//

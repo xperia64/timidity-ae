@@ -1,6 +1,5 @@
 #include <jni.h>
 #include <stdlib.h>
-
 #include "sox.h"
 
 int outputOpen = 0;
@@ -20,7 +19,7 @@ float timescale = 1;
 int irate;
 int ichan;
 int stopSox = 0; 
-
+int soxchannels;
 sox_format_t *in;
 sox_format_t *out;
 
@@ -35,12 +34,12 @@ static int update_status(sox_bool all_done, void * client_data)
 {
 	if(jumps>=0)
 	{
-		uint64_t jump = irate*jumps*2; // Input sample rate / where to jump to
-		currPos = rate*jumps*timescale*2;
+		uint64_t jump = irate*jumps*soxchannels; // Input sample rate / where to jump to
+		currPos = rate*jumps*timescale*soxchannels;
 		sox_seek(in, jump, SOX_SEEK_SET);
 		jumps = -1;
 	}
-	int read_time = currPos/(rate*timescale*2);
+	int read_time = currPos/(rate*timescale*soxchannels);
 	(*playEnv)->CallStaticVoidMethod(playEnv, pushClazz, updateSeekId, read_time, -1);
 	return (stopSox ? SOX_EOF : SOX_SUCCESS);
 }
@@ -82,6 +81,17 @@ Java_com_xperia64_timidityae_JNIHandler_soxInit(JNIEnv * env, jobject this, jint
 	return retcode;
 }
 
+JNIEXPORT int JNICALL
+Java_com_xperia64_timidityae_JNIHandler_soxChannels(JNIEnv * env, jobject this, jstring jfilename) {
+	jboolean isCopy;
+	char * filename = (char*)(*env)->GetStringUTFChars(env, jfilename, &isCopy);
+	sox_format_t * temp = sox_open_read(filename, NULL, NULL, NULL);
+	soxchannels = temp->signal.channels;
+	sox_close(temp);
+	(*env)->ReleaseStringUTFChars(env, jfilename, filename);
+	return soxchannels;
+}
+
 	JNIEXPORT int JNICALL
 Java_com_xperia64_timidityae_JNIHandler_soxPlay(JNIEnv * env, jobject this, jstring jfilename, jobjectArray jeffects, jint jignoreSafety)
 {
@@ -107,14 +117,13 @@ Java_com_xperia64_timidityae_JNIHandler_soxPlay(JNIEnv * env, jobject this, jstr
 	out->signal.rate = rate;
 	out->signal.length = SOX_UNSPEC;
 	chain = sox_create_effects_chain(&in->encoding, &out->encoding);
-
 	e = sox_create_effect(sox_find_effect("input"));
 	sargs[0] = (char *) in;
 	sox_effect_options(e, 1, sargs);
 	sox_add_effect(chain, e, &in->signal, &in->signal);
 	free(e);
 	
-	if (in->signal.channels == 1) {
+	/*if (in->signal.channels == 1) {
 		e = sox_create_effect(sox_find_effect("remix"));
 		sargs[0] = "1";
 		sargs[1] = "1";
@@ -127,7 +136,7 @@ Java_com_xperia64_timidityae_JNIHandler_soxPlay(JNIEnv * env, jobject this, jstr
 		{
 			in->signal.rate *= 2;
 		}
-	}
+	}*/
 
 	int numEffects = (*env)->GetArrayLength(env, jeffects);
 	if(numEffects>0)

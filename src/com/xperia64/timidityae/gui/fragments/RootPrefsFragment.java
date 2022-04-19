@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 public class RootPrefsFragment extends PreferenceFragmentCompat {
+	@SuppressWarnings("unchecked")
 	SettingsActivity s;
 
 	private Preference disp;

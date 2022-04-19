@@ -29,9 +29,11 @@ import android.widget.TextView;
 import com.xperia64.timidityae.R;
 import com.xperia64.timidityae.util.Globals;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.regex.Pattern;
 
 public class StableArrayAdapter extends ArrayAdapter<String> implements SearchableAdapter {
 
@@ -66,7 +68,10 @@ public class StableArrayAdapter extends ArrayAdapter<String> implements Searchab
 
 	@Override
 	public int getCount() {
-		return displayedList.size();
+		if(displayedList != null)
+			return displayedList.size();
+		else
+			return 0;
 	}
 
 	@Override
@@ -171,11 +176,19 @@ public class StableArrayAdapter extends ArrayAdapter<String> implements Searchab
 						results.count = list.size();
 						results.values = list;
 					} else {
-						constraint = constraint.toString().toLowerCase();
+						String s = constraint.toString().toLowerCase();
+						if(!s.endsWith("$") && !s.startsWith("^")) {
+							s = "^.*" + s + ".*$";
+						}
+						Pattern p = Pattern.compile(s.toString(), Pattern.CASE_INSENSITIVE);
 						realPositions.clear();
 						for (int i = 0; i < list.size(); i++) {
 							String data = list.get(i);
-							if (data.toLowerCase().contains(constraint.toString())) {
+							/*if (data.toLowerCase().contains(constraint.toString())) {
+								FilteredArrList.add(data);
+								realPositions.add(i);
+							}*/
+							if (p.matcher(data.substring(data.lastIndexOf(File.separatorChar)+1, data.length()-9).toLowerCase()).matches()) {
 								FilteredArrList.add(data);
 								realPositions.add(i);
 							}
@@ -194,6 +207,9 @@ public class StableArrayAdapter extends ArrayAdapter<String> implements Searchab
 
 	@Override
 	public int currentToReal(int position) {
-		return realPositions.get(position);
+		if(realPositions != null && realPositions.size() > 0)
+			return realPositions.get(position);
+		else
+			return 0;
 	}
 }

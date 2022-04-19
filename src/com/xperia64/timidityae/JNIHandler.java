@@ -62,6 +62,8 @@ public class JNIHandler {
 
 	public static native void soxStop();
 
+	public static native int soxChannels(String jfileName);
+
 	// public static DataOutputStream outFile;
 	public static AudioTrack mAudioTrack;
 	public static MediaPlayer mMediaPlayer;
@@ -101,6 +103,8 @@ public class JNIHandler {
 	static boolean shouldPlayNow = true;
 
 	public static String errorReason;
+
+	private static int soxChan;
 
 	public enum PlaybackState {
 		STATE_UNINIT, STATE_IDLE, STATE_LOADING, STATE_PLAYING, STATE_PAUSING,
@@ -453,12 +457,13 @@ public class JNIHandler {
 					case FMT_SOX:
 						playThread = new Thread(new Runnable() {
 							public void run() {
+								soxChan = soxChannels(songTitle);
 								if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-									mAudioTrack = new AudioTrack(mAudioAttributes, new AudioFormat.Builder().setChannelMask(AudioFormat.CHANNEL_OUT_STEREO).setEncoding(AudioFormat.ENCODING_PCM_16BIT).setSampleRate(rate).build(),
+									mAudioTrack = new AudioTrack(mAudioAttributes, new AudioFormat.Builder().setChannelMask(soxChan==2?AudioFormat.CHANNEL_OUT_STEREO:AudioFormat.CHANNEL_OUT_MONO).setEncoding(AudioFormat.ENCODING_PCM_16BIT).setSampleRate(rate).build(),
 											buffer, AudioTrack.MODE_STREAM, AudioManager.AUDIO_SESSION_ID_GENERATE);
 								} else {
 									mAudioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, rate,
-											AudioFormat.CHANNEL_OUT_STEREO,
+											soxChan==2?AudioFormat.CHANNEL_OUT_STEREO:AudioFormat.CHANNEL_OUT_MONO,
 											AudioFormat.ENCODING_PCM_16BIT,
 											buffer, AudioTrack.MODE_STREAM);
 								}
@@ -732,7 +737,7 @@ public class JNIHandler {
 				// Write an extra two seconds of silence to ensure we've flushed fully
 				if(state != STATE_REQSTOP) {
 					state = STATE_STOPPING;
-					buffsox(new short[(rate) * 2], ((rate) * 2));
+					buffsox(new short[(rate) * soxChan], ((rate) * soxChan));
 					mAudioTrack.flush();
 				}
 				mAudioTrack.stop();
