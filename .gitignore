@@ -17,3 +17,4 @@ gradlew.bat
 gradle/
 captures/
 release/
+.cxx/

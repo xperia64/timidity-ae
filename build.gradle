@@ -39,7 +39,6 @@ android {
             renderscript.srcDirs = ['src']
             res.srcDirs = ['res']
             assets.srcDirs = ['assets']
-            jniLibs.srcDirs = ['libs']
         }
     }
 	compileOptions {
@@ -48,7 +47,19 @@ android {
     }
     defaultConfig {
         minSdkVersion 16
+        //noinspection ExpiredTargetSdkVersion
         targetSdkVersion 27
+        externalNativeBuild {
+            ndkBuild {
+                cppFlags ''
+                arguments '-j32'
+            }
+        }
+    }
+    externalNativeBuild {
+        ndkBuild {
+            path file('../../../../home/xperia64/compile/timidity-ae/jni/Android.mk')
+        }
     }
 
 }
