@@ -94,8 +94,8 @@ public class Globals {
 	}
 
 	// Requires TiMidity to be loaded to play these files:
-	private static final String TIMIDITY_FILES = "*.mid*.smf*.kar*.mod*.xm*.s3m*.it*.669*.amf*.dsm*.far*.gdm*.imf*.med*.mtm*.stm*.stx*.ult*.uni*";
-	private static final String MEDIA_FILES = "*.mp3*.m4a*.wav*.ogg*.flac*.mid*.smf*.kar*";
+	private static final String TIMIDITY_FILES = "*.mid*.midi*.smf*.kar*.mod*.xm*.s3m*.it*.669*.amf*.dsm*.far*.gdm*.imf*.med*.mtm*.stm*.stx*.ult*.uni*";
+	private static final String MEDIA_FILES = "*.mp3*.m4a*.wav*.ogg*.flac*.mid*.midi*.smf*.kar*";
 	private static final String VIDEO_FILES = "*.mp4*.3gp*";
 
 	private static final String SOX_FILES = "*.mp4*.m4a*.flac*.ogg*.wv*.wav*.mp3*.opus*.aif*.aiff*.vox*.wve*.gsm*.vorbis*.sox*.caf*.voc*";
